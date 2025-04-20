@@ -2,3 +2,6 @@ __pycache__
 *.pyc
 __
 node_modules
+impl/Python/*.spec
+impl/Python/build/*
+impl/Python/dist/*

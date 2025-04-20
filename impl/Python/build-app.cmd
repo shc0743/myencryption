@@ -1,0 +1,1 @@
+pyinstaller --onefile encryption_app-v2.py
