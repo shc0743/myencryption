@@ -70,6 +70,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
 
     // 分块加密处理
     callback && callback(0);
+    const cryptoKey = await crypto.subtle.importKey('raw', derived_key, { name: 'AES-GCM' }, false, ['encrypt']);
     while (true) {
         // 读取文件块
         const chunk = await file_reader(position, position + chunk_size);
@@ -81,20 +82,11 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
         nonce_counter++;
 
         // 使用WebCrypto进行加密
-        const cryptoKey = await crypto.subtle.importKey(
-            'raw',
-            derived_key,
-            { name: 'AES-GCM' },
-            false,
-            ['encrypt']
-        );
-
         const ivArray = new Uint8Array(iv);
         const ciphertext = await crypto.subtle.encrypt(
             {
                 name: 'AES-GCM',
                 iv: ivArray,
-                tagLength: 128
             },
             cryptoKey,
             chunk
@@ -181,6 +173,7 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
 
     let total_bytes = 0;
     // 分块解密循环
+    const cryptoKey = await crypto.subtle.importKey('raw', derived_key, { name: 'AES-GCM' }, false, ['decrypt']);
     while (true) {
         // 读取分块长度标记
         const chunk_len_bytes = await file_reader(read_pos, read_pos + 8);
@@ -205,14 +198,6 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
         const full_ciphertext = ciphertext;
 
         // 使用WebCrypto解密
-        const cryptoKey = await crypto.subtle.importKey(
-            'raw',
-            derived_key,
-            { name: 'AES-GCM' },
-            false,
-            ['decrypt']
-        );
-
         const decrypted = await crypto.subtle.decrypt(
             {
                 name: 'AES-GCM',
