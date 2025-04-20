@@ -55,7 +55,11 @@ async function example() {
 example();
 ```
 
-File encryption is a little more difficult. To learn more, you can open the [demo](./impl/JavaScript/demo/demo.js).
+File encryption is a little more difficult due to browser limitations. To learn more, you can open the [demo](./impl/JavaScript/demo/demo.js).
+
+# File format
+
+(待完善)
 
 # LICENSE
 GPL-3.0
