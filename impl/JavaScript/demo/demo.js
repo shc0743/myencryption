@@ -1,4 +1,4 @@
-import { encrypt_data, decrypt_data, encrypt_file, decrypt_file } from '../myencryption/main.js';
+import { encrypt_data, decrypt_data, encrypt_file, decrypt_file, export_master_key } from '../myencryption/main.js';
 
 enc.onclick = async () => {
     try {
@@ -84,6 +84,23 @@ decf.onclick = async () => {
         alert(e);
     }  
     await writable.close();
+}
+
+expkey.onclick = async () => {
+    try {
+        const [fileHandle] = await window.showOpenFilePicker();
+
+        const file = await fileHandle.getFile();
+        const blob = file.slice(0, 2048);
+            
+        const old_key = pass.value;
+        const exp_key = prompt('Export key?', '');
+
+        fep.innerText = (await export_master_key(blob, old_key, exp_key));
+    } catch (e) {
+        console.error(e);
+        alert(e);
+    }
 }
 
 import { scrypt } from '../myencryption/derive_key.js';
