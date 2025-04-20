@@ -1,6 +1,8 @@
 # MyEncryption
 
-A cross-platform encryption library, using AES_256_GCM, with cipher details wrapped so that the user can use it easily
+A cross-platform encryption library, using AES_256_GCM, with cipher details wrapped so that the user can use it easily.
+
+[中文版](./README.zh-CN.md)
 
 ## Features
 
@@ -69,11 +71,42 @@ File encryption is a little more difficult due to browser limitations. (That is 
 
 # File format
 
-(待完善)
+The file format is structured as follows:
+
+1. **Header (16 bytes)**: Contains the string `MyEncryption/1.1` to identify the file format and version.
+2. **Encrypted Master Key (1024 bytes)**:
+   - 4 bytes: Length of the encrypted master key.
+   - Variable length: Encrypted master key.
+   - Padding to fill 1024 bytes.
+3. **Header JSON**:
+   - 4 bytes: Length of the JSON metadata.
+   - Variable length: JSON metadata containing parameters like `N`, `iv`, and `parameter`.
+4. **Encrypted Data Blocks**:
+   - Each block contains:
+     - 8 bytes: Original data length.
+     - 12 bytes: IV for the block.
+     - Variable length: Encrypted data.
+     - 16 bytes: Authentication tag.
+5. **Footer**:
+   - 8 bytes: End marker (`0xFF, 0xFD, 0xF0, 0x10, 0x13, 0xD0, 0x12, 0x18`).
+   - 8 bytes: Total bytes of the original file.
+   - 2 bytes: Final marker (`0x55, 0xAA`).
 
 # API Docs
 
-(待完善)
+### Python API
+
+- `encrypt_data(raw_text, password, **kwargs)`: Encrypts a string.
+- `decrypt_data(encrypted_text, password)`: Decrypts a string.
+- `encrypt_file(input_file, output_file, password, **kwargs)`: Encrypts a file.
+- `decrypt_file(input_file, output_file, password)`: Decrypts a file.
+
+### JavaScript API
+
+- `encrypt_data(message, key, phrase = null, N = null)`: Encrypts a string asynchronously.
+- `decrypt_data(message_encrypted, key)`: Decrypts a string asynchronously.
+- `encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024)`: Encrypts a file asynchronously.
+- `decrypt_file(file_reader, file_writer, user_key, callback = null)`: Decrypts a file asynchronously.
 
 # LICENSE
 
