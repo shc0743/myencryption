@@ -1,4 +1,4 @@
-import { encrypt_data, decrypt_data, encrypt_file, decrypt_file, export_master_key } from '../myencryption/main.js';
+import { encrypt_data, decrypt_data, encrypt_file, decrypt_file, export_master_key } from '../dist/main.bundle.js';
 
 enc.onclick = async () => {
     try {
@@ -103,7 +103,7 @@ expkey.onclick = async () => {
     }
 }
 
-import { scrypt } from '../myencryption/derive_key.js';
+import { scrypt } from '../dist/main.bundle.js';
 tests.onclick = async () => {
     alert(await scrypt(stest.value, '123456', 262144, 8, 1, 32));
 }
