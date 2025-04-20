@@ -11,7 +11,8 @@ Currently we have finished [Python](./impl/Python/encryption.py) and [JavaScript
 The easiest way to use is to [Get the application based on the module](./impl/Python/encryption_app-v2.py). If you need to use it in your project:
 
 1. [Get the module](./impl/Python/encryption.py)
-2. It is very easy-to-use.
+2. Ensure that `pycryptodome` is installed.
+3. It is very easy-to-use.
 
 ```python
 # yourcode.py
