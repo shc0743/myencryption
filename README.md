@@ -1,6 +1,14 @@
 # MyEncryption
 
-A cross-platform encryption tool
+A cross-platform encryption library, using AES_256_GCM, with cipher details wrapped so that the user can use it easily
+
+## Features
+
+- Easy-to-use encryption
+- Secure encryption method
+- AES_256_GCM encryption plus Scrypt, with default N=262144
+- Cross-platform (currently: Python and JavaScript)
+- Parameter customizable
 
 # How to use
 
@@ -8,19 +16,21 @@ Currently we have finished [Python](./impl/Python/encryption.py) and [JavaScript
 
 ## Python
 
-The easiest way to use is to [Get the application based on the module](./impl/Python/encryption_app-v2.py). If you need to use it in your project:
+If you are the end user, the easiest way to use the app is to [Get the application based on the module](https://github.com/shc0743/myencryption/releases/).
 
-1. [Get the module](./impl/Python/encryption.py)
+If you are a developer and need to use it in your project:
+
+1. [Get the module from the releases](https://github.com/shc0743/myencryption/releases/)
 2. Ensure that `pycryptodome` is installed.
-3. It is very easy-to-use.
+3. It is easy-to-use.
 
 ```python
 # yourcode.py
 from encryption import encrypt_data, decrypt_data
 
-secure = encrypt_data('raw_text', 'your_password')
+secure = encrypt_data('raw_text', 'your_password')  # No extra arguments required (but optional)
 
-text = decrypt_data(secure, 'your_password')
+text = decrypt_data(secure, 'your_password')  # No necessary to remember parameters
 ```
 
 Encryption a file is also supported.
@@ -40,7 +50,7 @@ decrypt_file('secure.bin', 'new_raw_file.png', 'your_password')
 
 To use the JavaScript version in your project:
 
-1. [Get the module](./impl/JavaScript/myencryption/main.js)
+1. [Get the module from the releases](https://github.com/shc0743/myencryption/releases/)
 2. Import and use the provided functions. Note: The JavaScript version uses `await` for asynchronous operations, so ensure your code is inside an `async` function.
 
 ```javascript
@@ -55,14 +65,19 @@ async function example() {
 example();
 ```
 
-File encryption is a little more difficult due to browser limitations. To learn more, you can open the [demo](./impl/JavaScript/demo/demo.js).
+File encryption is a little more difficult due to browser limitations. (That is not what we can improve!) To learn more, you can open the [demo](./impl/JavaScript/demo/demo.js) to see a simple demo.
 
 # File format
 
 (待完善)
 
+# API Docs
+
+(待完善)
+
 # LICENSE
-GPL-3.0
+
+This project: **GPL-3.0**.
 
 ## 3rd-party libraries
 
@@ -72,3 +87,4 @@ GPL-3.0
 
 [MIT](https://opensource.org/licenses/MIT)
 ```
+
