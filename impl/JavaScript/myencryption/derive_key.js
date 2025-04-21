@@ -83,3 +83,8 @@ export async function derive_key(key, iv, phrase = null, N = null, salt = null, 
 function nextTick() {
     return new Promise(r => setTimeout(r));
 }
+
+
+export async function scrypt_hex(key, salt, N, r, p, dklen) {
+    return hexlify(await scrypt(str_encode(key), str_encode(salt), N, r, p, dklen));
+}

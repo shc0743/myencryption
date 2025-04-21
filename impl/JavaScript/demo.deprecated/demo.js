@@ -103,7 +103,38 @@ expkey.onclick = async () => {
     }
 }
 
-import { scrypt } from '../dist/main.bundle.js';
+import { scrypt_hex } from '../dist/main.bundle.js';
 tests.onclick = async () => {
-    alert(await scrypt(stest.value, '123456', 262144, 8, 1, 32));
+    alert(await scrypt_hex(stest.value, '123456', 262144, 8, 1, 32));
 }
+
+import { change_file_password } from '../dist/main.bundle.js';
+chpass.onclick = async () => {
+    try {
+        const [fileHandle] = await window.showOpenFilePicker({
+            writable: true,
+        });
+
+        const file = await fileHandle.getFile();
+        const blob = file.slice(0, 2048);
+
+        const current_key = pass.value;
+        const new_key = pass2.value;
+
+        if (!new_key) {
+            alert('New password is required.');
+            return;
+        }
+
+        const new_file_head = await change_file_password(blob, current_key, new_key);
+
+        const writable = await fileHandle.createWritable({ keepExistingData: true });
+        await writable.write(new_file_head);
+        await writable.close();
+
+        fep.innerText = 'Password changed successfully.';
+    } catch (e) {
+        console.error(e);
+        alert(e);
+    }
+};

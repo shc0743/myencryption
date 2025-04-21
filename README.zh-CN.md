@@ -107,6 +107,20 @@ example();
 - `decrypt_data(message_encrypted, key)`：异步解密字符串。
 - `encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024)`：异步加密文件。
 - `decrypt_file(file_reader, file_writer, user_key, callback = null)`：异步解密文件。
+- `change_file_password(file_head, current_key, new_key)`：更改加密文件的密码。  
+  **参数**：  
+  - `file_head` (Blob)：文件头。建议提供 2KB，至少提供 1044 字节。  
+  - `current_key` (String)：当前文件密码。  
+  - `new_key` (String)：新密码。  
+  **返回值**：  
+  - `Blob`：新的文件头。请注意，新文件头的大小与原始文件不同。不要用它构造新文件，而是用新文件头直接写回去，覆盖原来的数据，不需要偏移文件。  
+  **异常**：  
+  - `Error`：如果文件头无效或文件大小不足。
+   * 注意: 不建议在web端更改密码。由于浏览器写入文件的工作原理（https://developer.mozilla.org/zh-CN/docs/Web/API/FileSystemFileHandle/createWritable ）
+ * 任何通过写入流造成的更改在写入流被关闭前都不会反映到文件句柄所代表的文件上。这通常是将数据写入到一个临时文件来实现的，然后只有在写入文件流被关闭后才会用临时文件替换掉文件句柄所代表的文件。
+ * 也就是说，旧密码将始终存在于磁盘上。这将导致敏感数据泄露。
+ * 另外，由于这个特性，大文件相关操作会变得非常非常慢。
+ * 所以，除非特殊情况，务必始终使用 native 应用程序来修改文件密码
 
 # 许可证
 

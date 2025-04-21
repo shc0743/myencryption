@@ -107,6 +107,13 @@ The file format is structured as follows:
 - `decrypt_data(message_encrypted, key)`: Decrypts a string asynchronously.
 - `encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024)`: Encrypts a file asynchronously.
 - `decrypt_file(file_reader, file_writer, user_key, callback = null)`: Decrypts a file asynchronously.
+- `change_file_password(file_head, current_key, new_key)`: Changes the password of an encrypted file.
+
+* Note: It is not recommended to change the password in a web browser. Due to the way browsers handle file writing (https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createWritable):
+* Any changes made through a writable stream will not be reflected in the file represented by the file handle until the stream is closed. This is typically implemented by writing data to a temporary file and then replacing the file handle's file with the temporary file once the stream is closed.
+* This means the old password will always remain on disk, potentially leading to sensitive data leakage.
+* Additionally, due to this behavior, operations on large files can become extremely slow.
+* Therefore, unless in special circumstances, always use a native application to modify file passwords.
 
 # LICENSE
 
