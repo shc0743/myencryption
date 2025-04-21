@@ -48,12 +48,12 @@ decrypt_file('secure.bin', 'new_raw_file.png', 'your_password')
 
 ## JavaScript
 
-**注意**：JavaScript 版本功能有限。目前无法在 JavaScript 环境中更改文件的密码。
+**注意**：JavaScript 版本功能有限
 
 在项目中使用 JavaScript 版本：
 
 1. [从发布页面获取模块](https://github.com/shc0743/myencryption/releases/)
-2. 导入并使用提供的函数。注意：JavaScript 版本使用 `await` 进行异步操作，因此请确保代码在 `async` 函数中。
+2. 导入并使用提供的函数。注意：JavaScript 版本使用 `Promise` 进行异步操作。
 
 ```javascript
 // yourcode.js
@@ -67,7 +67,7 @@ async function example() {
 example();
 ```
 
-由于浏览器限制，文件加密稍显复杂。（这不是我们可以改变的！）要了解更多，可以打开 [demo](./impl/JavaScript/demo/demo.js) 查看一个简单的示例。
+由于浏览器限制，文件加密稍显复杂。（这不是我们可以改变的！）
 
 # 文件格式
 

@@ -48,7 +48,7 @@ decrypt_file('secure.bin', 'new_raw_file.png', 'your_password')
 
 ## JavaScript
 
-**Notice**: The JavaScript edition is functional-limited. Currently it is not able to change a file's password in JavaScript context.
+**Notice**: The JavaScript edition is functional-limited
 
 To use the JavaScript version in your project:
 
@@ -67,7 +67,7 @@ async function example() {
 example();
 ```
 
-File encryption is a little more difficult due to browser limitations. (That is not what we can improve!) To learn more, you can open the [demo](./impl/JavaScript/demo/demo.js) to see a simple demo.
+File encryption is a little more difficult due to browser limitations. (That is not what we can improve!)
 
 # File format
 
