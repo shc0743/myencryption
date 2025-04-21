@@ -1,26 +1,40 @@
+const hexTable = new Array(256);
+for (let i = 0; i < 256; i++) {
+    hexTable[i] = i.toString(16).padStart(2, '0');
+}
+
 export function hexlify(data) {
     if (!data || !(data instanceof Uint8Array)) {
         throw new TypeError("Input must be a Uint8Array");
     }
-    return Array.from(data)
-        .map(byte => byte.toString(16).padStart(2, '0'))
-        .join('');
+    const length = data.length;
+    const arr = new Array(length);
+    for (let i = 0; i < length; i++) {
+        arr[i] = hexTable[data[i]];
+    }
+    return arr.join('');
 }
 
 export function unhexlify(hexStr) {
     if (typeof hexStr !== 'string') {
         throw new TypeError("Input must be a string");
     }
-    if (hexStr.length % 2 !== 0) {
+    const length = hexStr.length;
+    if (length % 2 !== 0) {
         throw new TypeError("Hex string must have even length");
     }
-    if (!/^[0-9a-fA-F]*$/.test(hexStr)) {
-        throw new TypeError("Hex string contains invalid characters");
-    }
+    hexStr = hexStr.toLowerCase();
+    const bytes = new Uint8Array(length >> 1);
+    for (let i = 0; i < length; i += 2) {
+        const highCode = hexStr.charCodeAt(i);
+        const lowCode = hexStr.charCodeAt(i + 1);
 
-    const bytes = new Uint8Array(hexStr.length / 2);
-    for (let i = 0; i < hexStr.length; i += 2) {
-        bytes[i / 2] = parseInt(hexStr.substring(i, i + 2), 16);
+        const high = highCode >= 97 && highCode <= 102 ? highCode - 87 :
+            highCode >= 48 && highCode <= 57 ? highCode - 48 : 0;
+        const low = lowCode >= 97 && lowCode <= 102 ? lowCode - 87 :
+            lowCode >= 48 && lowCode <= 57 ? lowCode - 48 : 0;
+
+        bytes[i >> 1] = (high << 4) | low;
     }
     return bytes;
 }
