@@ -1,6 +1,17 @@
-
 const { build } = require('esbuild');
-const { copyFileSync } = require('fs');
+const fs = require('fs');
+const path = require('path');
+
+const outputDir = path.resolve(__dirname, '../dist');
+const filesToDelete = ['main.bundle.js', 'main.bundle.js.map'];
+
+filesToDelete.forEach(file => {
+    const filePath = path.join(outputDir, file);
+    if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log(`🗑️ 已删除文件: ${file}`);
+    }
+});
 
 // 主打包逻辑
 build({

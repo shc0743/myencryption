@@ -11,7 +11,7 @@ scryptAPI.load();
 export const scrypt = (function () {
     const queue = [];
     let running = false;
-    const work = (task) => new Promise(async (resolve) => {
+    const work = (task) => new Promise(async (resolve, reject) => {
         scryptAPI.onprogress = p => {
             if (task.onprogress) task.onprogress(p);
         };
@@ -23,16 +23,20 @@ export const scrypt = (function () {
             task.reject(e);
             resolve(false);
         };
-        scryptAPI.config({ N: task.N, r: task.r, P: task.p }, { maxPassLen: 1024, maxSaltLen: 1024, maxDkLen: 1024, maxThread: 1 });
-        await new Promise(r => scryptAPI.onready = r);
-        scryptAPI.hash(task.key, task.salt, task.dklen);
+        try {
+            scryptAPI.config({ N: task.N, r: task.r, P: task.p }, { maxPassLen: 8192, maxSaltLen: 2048, maxDkLen: 1024, maxThread: 1 });
+            await new Promise(r => scryptAPI.onready = r);
+            scryptAPI.hash(task.key, task.salt, task.dklen);
+        } catch (e) {
+            reject(e);
+        }
     });
     async function thread() {
         while (queue.length) try {
             const task = queue.splice(0, 1)[0];
             await work(task);
             await nextTick();
-        } catch (e) { console.error('[scrypt]', 'Task failed', e); }
+        } catch (e) { console.error('[scrypt]', 'Task failed unexpectedly', e); }
         running = false;
     }
     return function scrypt(key, salt, N, r, p, dklen, onprogress = null) {

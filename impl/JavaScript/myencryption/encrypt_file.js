@@ -44,7 +44,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     await file_writer(padding);
 
     // 生成初始IV用于派生密钥 (12字节)
-    callback && callback(0); await nextTick();
+    callback?.(0); await nextTick();
     const iv_for_key = get_random_bytes(12);
     const { derived_key, parameter, N: N2 } = await derive_key(key, iv_for_key, phrase, N);
     N = N2;
@@ -69,7 +69,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     let position = 0;
 
     // 分块加密处理
-    callback && callback(0);
+    callback?.(0);
     const cryptoKey = await crypto.subtle.importKey('raw', derived_key, { name: 'AES-GCM' }, false, ['encrypt']);
     while (true) {
         // 读取文件块
@@ -108,7 +108,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
         total_bytes += chunk.length;
         position += chunk.length;
 
-        callback && callback(total_bytes);
+        callback?.(total_bytes);
     }
 
     // 写入结束标记和总字节数
@@ -167,7 +167,7 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
     const N = header_json.N;
 
     // 对应加密时，需要提供一个iv，我们把iv取回来，重新生成密钥（所有数据块的密钥是相同的）
-    callback && callback(0);
+    callback?.(0);
     await nextTick();
     const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
 

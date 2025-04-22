@@ -55,6 +55,8 @@ decrypt_file('secure.bin', 'new_raw_file.png', 'your_password')
 1. [从发布页面获取模块](https://github.com/shc0743/myencryption/releases/)
 2. 导入并使用提供的函数。注意：JavaScript 版本使用 `Promise` 进行异步操作。
 
+For a demo, please [go here](https://github.com/shc7432/MyEncryptionApp-Demo/tree/main)
+
 ```javascript
 // yourcode.js
 import { encrypt_data, decrypt_data } from './myencryption/main.js';
@@ -124,7 +126,7 @@ example();
 
 # 许可证
 
-本项目：**GPL-3.0**。
+本项目：**MIT License**。
 
 ## 第三方库
 

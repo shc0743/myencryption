@@ -59,6 +59,10 @@ export async function change_file_password(file_head, current_key, new_key) {
 
     // Decrypt master key with current_key and re-encrypt with export_key
     const new_ekey = await encrypt_data(await decrypt_data(ekey_ciphertext, current_key), new_key);
+    // Check length
+    if (new_ekey.length > 1024) {
+        throw new Error("(Internal Error) This should not happen. Contact the application developer.");
+    }
     const new_ekey_len = new_ekey.length;
     const new_ekey_len_bytes = new ArrayBuffer(4);
     const new_ekey_len_view = new DataView(new_ekey_len_bytes);

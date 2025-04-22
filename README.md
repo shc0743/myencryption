@@ -55,6 +55,8 @@ To use the JavaScript version in your project:
 1. [Get the module from the releases](https://github.com/shc0743/myencryption/releases/)
 2. Import and use the provided functions. Note: The JavaScript version uses `await` for asynchronous operations, so ensure your code is inside an `async` function.
 
+For a demo, please [go here](https://github.com/shc7432/MyEncryptionApp-Demo/tree/main)
+
 ```javascript
 // yourcode.js
 import { encrypt_data, decrypt_data } from './myencryption/main.js';
@@ -117,7 +119,7 @@ The file format is structured as follows:
 
 # LICENSE
 
-This project: **GPL-3.0**.
+This project: **MIT License**.
 
 ## 3rd-party libraries
 
