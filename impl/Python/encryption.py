@@ -115,7 +115,7 @@ def decrypt_data(message_encrypted, key):
         return decrypted_data
 
 # 新增文件处理函数
-def encrypt_file(input_filename, output_filename, key, phrase=None, N=None, chunk_size=32*1024*1024):
+def encrypt_file(input_filename, output_filename, key, callback=None, phrase=None, N=None, chunk_size=32*1024*1024):
     try:
         from Crypto.Cipher import AES
         from Crypto.Random import get_random_bytes
@@ -124,6 +124,8 @@ def encrypt_file(input_filename, output_filename, key, phrase=None, N=None, chun
 
     try:
         with open(input_filename, 'rb') as fin, open(output_filename, 'wb') as fout:
+            file_size = fin.seek(0, 2)  # 获取文件总大小
+            fin.seek(0)  # 重置文件指针
             # 写入文件头标识和版本
             fout.write(b'MyEncryption/1.1')
             
@@ -159,7 +161,7 @@ def encrypt_file(input_filename, output_filename, key, phrase=None, N=None, chun
             fout.write(len(header_json).to_bytes(4, 'little'))
             fout.write(header_json)
             
-            total_bytes = 0  # 新增：用于统计总字节数
+            total_bytes = 0  # 用于统计总字节数
             
             # 分块加密处理
             nonce_counter = 1
@@ -182,6 +184,8 @@ def encrypt_file(input_filename, output_filename, key, phrase=None, N=None, chun
                 fout.write(tag)
                 
                 total_bytes += chunk_len  # 累加总字节数
+                if callback:
+                    callback(total_bytes, file_size)  # 调用回调函数报告进度
             
             # 写入结束标记和总字节数
             fout.write(b'\xFF\xFD\xF0\x10\x13\xD0\x12\x18')  # 8字节结束标记
@@ -193,7 +197,7 @@ def encrypt_file(input_filename, output_filename, key, phrase=None, N=None, chun
     except Exception as e:
         raise e
 
-def decrypt_file(input_filename, output_filename, key):
+def decrypt_file(input_filename, output_filename, key, callback=None):
     try:
         from Crypto.Cipher import AES
     except ImportError as e:
@@ -201,6 +205,9 @@ def decrypt_file(input_filename, output_filename, key):
 
     try:
         with open(input_filename, 'rb') as fin, open(output_filename, 'wb') as fout:
+            file_size = fin.seek(0, 2)  # 获取文件总大小
+            fin.seek(0)  # 重置文件指针
+            
             # 验证文件头
             header = fin.read(16)
             if header != b'MyEncryption/1.1':
@@ -246,6 +253,8 @@ def decrypt_file(input_filename, output_filename, key):
                 fout.write(decrypted_chunk)
                 
                 total = total + chunk_len
+                if callback:
+                    callback(total, file_size)  # 调用回调函数报告进度
             
             # 检查
             # 读取总字节数和结束符
@@ -328,4 +337,4 @@ def export_master_key(encrypted_file_path, current_key, export_key):
 if __name__=='__main__':
     print('This is a module. Always import it instead of running directly.')
 
-# 
+#

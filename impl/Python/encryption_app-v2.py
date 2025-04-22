@@ -29,6 +29,12 @@ def get_password_with_empty_warning(prompt, allow_empty=True):
                 continue  # 重新输入密码
         return key
 
+def progress_callback(processed, total):
+    """进度回调函数"""
+    percent = (processed / total) * 100
+    sys.stdout.write(f"\r进度: {percent:.2f}% ({processed}/{total} 字节)")
+    sys.stdout.flush()
+
 def main():
     print("=== 安全加密解密工具 ===")
     print("1. 加密文本")
@@ -100,6 +106,7 @@ def main():
                         input_file,
                         output_file,
                         key,
+                        callback=progress_callback,
                         phrase=custom_phrase if custom_phrase else None,
                         N=n
                     )
@@ -117,7 +124,12 @@ def main():
                 key = get_password_with_empty_warning("请输入解密密钥: ")
                 
                 try:
-                    success = decrypt_file(input_file, output_file, key)
+                    success = decrypt_file(
+                        input_file,
+                        output_file,
+                        key,
+                        callback=progress_callback
+                    )
                     if success:
                         print(f"\n文件解密成功! 已保存到: {output_file}")
                 except Exception as e:
