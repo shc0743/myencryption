@@ -32,11 +32,15 @@ export const scrypt = (function () {
         }
     });
     async function thread() {
+        let task = null;
         while (queue.length) try {
-            const task = queue.splice(0, 1)[0];
+            task = queue.splice(0, 1)[0];
             await work(task);
             await nextTick();
-        } catch (e) { console.error('[scrypt]', 'Task failed unexpectedly', e); }
+        } catch (e) {
+            console.error('[scrypt]', 'Task failed unexpectedly', e);
+            task?.reject(e);
+        }
         running = false;
     }
     return function scrypt(key, salt, N, r, p, dklen, onprogress = null) {

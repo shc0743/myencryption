@@ -15,6 +15,12 @@ export function hexlify(data) {
     return arr.join('');
 }
 
+const throwing = {
+    get InvalidHexStringException() {
+        throw new TypeError('Invalid hex string');
+    },
+}
+
 export function unhexlify(hexStr) {
     if (typeof hexStr !== 'string') {
         throw new TypeError("Input must be a string");
@@ -30,9 +36,9 @@ export function unhexlify(hexStr) {
         const lowCode = hexStr.charCodeAt(i + 1);
 
         const high = highCode >= 97 && highCode <= 102 ? highCode - 87 :
-            highCode >= 48 && highCode <= 57 ? highCode - 48 : 0;
+            highCode >= 48 && highCode <= 57 ? highCode - 48 : throwing.InvalidHexStringException;
         const low = lowCode >= 97 && lowCode <= 102 ? lowCode - 87 :
-            lowCode >= 48 && lowCode <= 57 ? lowCode - 48 : 0;
+            lowCode >= 48 && lowCode <= 57 ? lowCode - 48 : throwing.InvalidHexStringException;
 
         bytes[i >> 1] = (high << 4) | low;
     }

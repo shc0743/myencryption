@@ -78,6 +78,10 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
 
         // 为每个分块生成新IV (12字节)
         const iv = new ArrayBuffer(12);
+        // 确保 IV 唯一
+        if (nonce_counter >= 2 ** 64 || nonce_counter >= Number.MAX_SAFE_INTEGER) {
+            throw new Error("FATAL: IV Exception: nonce_counter exceeded the maximum value.");
+        }
         new DataView(iv).setBigUint64(4, BigInt(nonce_counter)); // 写入8字节计数器
         nonce_counter++;
 

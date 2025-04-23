@@ -172,6 +172,8 @@ def encrypt_file(input_filename, output_filename, key, callback=None, phrase=Non
                 
                 # 为每个分块生成新IV
                 iv = nonce_counter.to_bytes(12, 'big')
+                if nonce_counter >= 2**64:
+                    raise ValueError("FATAL: IV Exception: nonce_counter exceeded the maximum value.")
                 nonce_counter = nonce_counter + 1
                 cipher = AES.new(derived_key, AES.MODE_GCM, nonce=iv)
                 ciphertext, tag = cipher.encrypt_and_digest(chunk)
