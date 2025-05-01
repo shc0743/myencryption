@@ -2,9 +2,11 @@ import { derive_key, scrypt, scrypt_hex } from "./derive_key.js";
 import { encrypt_data, decrypt_data } from "./encrypt_data.js";
 import { encrypt_file, decrypt_file } from "./encrypt_file.js";
 import { export_master_key, change_file_password } from "./key_management.js";
+import { crypt_context_create, crypt_context_destroy } from "./context.js";
 import { hexlify, unhexlify } from "./binascii.js";
 import { get_random_bytes, get_random_int8_number, get_random_uint8_number } from "./random.js";
 import { str_encode, str_decode } from "./str.js";
+import { VERSION } from "./version.js";
 
 export {
     derive_key,
@@ -16,6 +18,8 @@ export {
     decrypt_file,
     export_master_key,
     change_file_password,
+    crypt_context_create,
+    crypt_context_destroy,
     hexlify,
     unhexlify,
     str_encode,
@@ -23,4 +27,5 @@ export {
     get_random_bytes,
     get_random_int8_number,
     get_random_uint8_number,
+    VERSION,
 };

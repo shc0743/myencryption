@@ -2,12 +2,13 @@ import { get_random_bytes } from "./random.js";
 import { derive_key } from "./derive_key.js";
 import { hexlify, unhexlify } from "./binascii.js";
 import { str_decode, str_encode } from "./str.js";
+import * as Exceptions from './exceptions.js';
 
 function safeparse(json) {
     try {
         return JSON.parse(json);
     } catch {
-        throw new TypeError('Invalid Parameter.');
+        throw new Exceptions.InvalidParameterException('The JSON is not valid.');
     }
 }
 
@@ -60,8 +61,8 @@ export async function decrypt_data(message_encrypted, key) {
     const [phrase, salt_b64] = parameter.split(':');
     const salt = unhexlify(salt_b64);
 
-    if (isNaN(N) || !parameter || !encrypted_data || !salt) throw new TypeError('The message or parameters are bad.')
-    if (encrypted_data.length < 28) throw new TypeError("The message was too short.");
+    if (isNaN(N) || !parameter || !encrypted_data || !salt) throw new Exceptions.BadDataException('The message or parameters are bad.')
+    if (encrypted_data.length < 28) throw new Exceptions.BadDataException("The message was too short.");
 
     // 提取 IV (前12字节)、密文和认证标签(最后16字节)
     const iv = encrypted_data.slice(0, 12);
@@ -72,19 +73,28 @@ export async function decrypt_data(message_encrypted, key) {
 
     const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
 
-    const decrypted_data = await crypto.subtle.decrypt(
-        {
-            name: "AES-GCM",
-            iv: iv,
-        },
-        cipher,
-        new Uint8Array([...ciphertext, ...tag])
-    );
-
     try {
-        return str_decode(decrypted_data);
-    } catch {
-        return decrypted_data;
+        const decrypted_data = await crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: iv,
+            },
+            cipher,
+            new Uint8Array([...ciphertext, ...tag])
+        );
+
+        try {
+            return str_decode(decrypted_data);
+        } catch {
+            return decrypted_data;
+        }
+    }
+    catch (e) {
+        if (!e) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
+        const name = e.name;
+        if (name === 'InvalidAccessError') throw new Exceptions.InvalidParameterException('InvalidAccessError.', { cause: e });
+        if (name === 'OperationError') throw new Exceptions.CannotDecryptException('Cannot decrypt. Did you provide the correct password?', { cause: e });
+        if (!e) throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
     }
 }
 

@@ -3,6 +3,7 @@ const scryptAPI = await load_deps_es5('scrypt', import.meta.resolve('./WebScrypt
 import { hexlify } from "./binascii.js";
 import { get_random_bytes, get_random_uint8_number } from "./random.js";
 import { str_encode } from "./str.js";
+import * as Exceptions from './exceptions.js';
 
 scryptAPI.setResPath(import.meta.resolve('./WebScrypt/asset/'));
 scryptAPI.load();
@@ -38,7 +39,6 @@ export const scrypt = (function () {
             await work(task);
             await nextTick();
         } catch (e) {
-            console.error('[scrypt]', 'Task failed unexpectedly', e);
             task?.reject(e);
         }
         running = false;
@@ -60,7 +60,7 @@ export const deriveKey__phrases = ['Furina', 'Neuvillette', 'Venti', 'Nahida', '
 export async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
     if (N === null) N = 262144;
     if (typeof N !== "number" || N > 2097152) {
-        throw new TypeError("Invalid or too large N value!");
+        throw new Exceptions.InvalidScryptParameterException();
     }
 
     // (2) 生成salt
@@ -73,7 +73,7 @@ export async function derive_key(key, iv, phrase = null, N = null, salt = null, 
         phrase = deriveKey__phrases[(get_random_uint8_number()) % deriveKey__phrases.length];
     }
     if (phrase.includes(":")) {
-        throw new Error("phrase MUST NOT contain \":\"");
+        throw new Exceptions.InvalidParameterException("phrase MUST NOT contain \":\"");
     }
 
     const parameter = `${phrase}:${hexlify(salt)}`;
