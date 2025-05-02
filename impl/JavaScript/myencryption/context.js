@@ -1,8 +1,12 @@
+import * as Exceptions from './exceptions.js';
+
 const CRYPT_CONTEXT = Object.create(null);
 CRYPT_CONTEXT[Symbol.toStringTag] = 'CryptContext';
 CRYPT_CONTEXT['toString'] = function () {
     return `${this[Symbol.toStringTag]} Object`;
 };
+
+export { CRYPT_CONTEXT as CryptContext };
 
 async function _await(PromiseLike) {
     if (PromiseLike instanceof Promise) return await PromiseLike;
@@ -16,6 +20,7 @@ export async function crypt_context_create() {
 }
 
 export async function crypt_context_destroy(ctx) {
+    if (!ctx || ctx._released) throw new Exceptions.InvalidParameterException("Invalid context");
     for (const i of Reflect.ownKeys(ctx)) {
         const o = Reflect.get(ctx, i);
         if (o) {
@@ -26,7 +31,7 @@ export async function crypt_context_destroy(ctx) {
         }
         if (!i.startsWith('_')) Reflect.deleteProperty(ctx, i);
     }
-    ctx._released = true;
+    Object.defineProperty(ctx, '_released', { value: true });
     return true;
 }
 

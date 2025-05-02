@@ -25,9 +25,11 @@ export const END_MARKER = [
     0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
     0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
 ];
+export const FILE_END_MARKER = [0xFF, 0xFD, 0xF0, 0x10, 0x13, 0xD0, 0x12, 0x18, 0x55, 0xAA];
 
 export function normalize_version(major_version, version_marker) {
     if (!major_version) return `Unknown Version`;
+    if (String(major_version) === '1.1') version_marker = null;
     if (!version_marker) return `${major_version}/0`;
     return `${major_version}/${version_marker}`;
 }
@@ -46,7 +48,7 @@ export const ENCRYPTION_FILE_VER_1_2_10020 = normalize_version('1.2', 10020);
  * @param {number} chunk_size - 分块大小，默认为16MB
  * @returns {Promise<boolean>} 返回加密是否成功
  */
-export async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 16 * 1024 * 1024) {
+export async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024) {
     // 写入文件头标识和版本 (16字节)
     await file_writer(str_encode('MyEncryption/1.2'));
 
@@ -166,55 +168,37 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     const totalBytesBuffer = new ArrayBuffer(8);
     new DataView(totalBytesBuffer).setBigUint64(0, BigInt(total_bytes), true);
     await file_writer(new Uint8Array(totalBytesBuffer));
-    await file_writer(new Uint8Array([0xFF, 0xFD, 0xF0, 0x10, 0x13, 0xD0, 0x12, 0x18, 0x55, 0xAA]));
+    await file_writer(new Uint8Array(FILE_END_MARKER));
 
     return true;
 }
+
 /**
- * 解密文件
+ * 解密文件（1.1）
+ * @deprecated 仅供兼容1.1版本使用。
  * @param {Object} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
  * @param {Object} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {string} user_key - 用户提供的解密密钥
  * @param {Function} [callback=null] - 进度回调函数
  * @returns {Promise<boolean>} 返回解密是否成功
  */
-export async function decrypt_file(file_reader, file_writer, user_key, callback = null) {
+export async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback = null) {
     // 读取文件头并验证
-    const header = await file_reader(0, 13);
-    if (str_decode(header) !== 'MyEncryption/') {
-        throw new Exceptions.InvalidFileFormatException();
+    const header = await file_reader(0, 16);
+    if (str_decode(header) !== 'MyEncryption/1.1') {
+        throw new TypeError("Invalid file format");
     }
-    const top_header_version = (str_decode(await file_reader(13, 16)));
-    if(!(['1.1', '1.2'].includes(top_header_version))) {
-        throw new Exceptions.EncryptionVersionMismatchException();
-    }
-    const version_marker = new DataView((await file_reader(16, 20)).buffer).getUint32(0, true);
-    const version = normalize_version(top_header_version, version_marker);
-    let read_pos = 16 + 4;
+    let read_pos = 16;
 
-    let ekey_len_bytes, ekey_len, ekey;
-    if (version === ENCRYPTION_FILE_VER_1_1_0) {
-        // 读取主密钥密文长度
-        ekey_len_bytes = await file_reader(read_pos, read_pos + 4);
-        ekey_len = new DataView(ekey_len_bytes.buffer).getUint32(0, true);
-        read_pos += 4;
+    // 读取主密钥密文长度
+    const ekey_len_bytes = await file_reader(read_pos, read_pos + 4);
+    const ekey_len = new DataView(ekey_len_bytes.buffer).getUint32(0, true);
+    read_pos += 4;
 
-        // 读取主密钥密文并跳过填充
-        ekey = str_decode(await file_reader(read_pos, read_pos + ekey_len));
-        read_pos += 1024; // 直接跳过1024字节区域
-    }
-    if (version === ENCRYPTION_FILE_VER_1_2_10020) {
-        ekey_len_bytes = await file_reader(read_pos, read_pos + 4);
-        ekey_len = new DataView(ekey_len_bytes.buffer).getUint32(0, true);
-        ekey = str_decode(await file_reader(read_pos + 4, read_pos + 4 + ekey_len));
+    // 读取主密钥密文并跳过填充
+    const ekey = str_decode(await file_reader(read_pos, read_pos + ekey_len));
+    read_pos += 1024; // 直接跳过1024字节区域
 
-        read_pos += PADDING_SIZE;
-        
-        if (ekey_len > PADDING_SIZE) {
-            throw new Exceptions.InternalError("(Internal Error) This should not happen. Contact the application developer.");
-        }
-    }
-        
     // 解密主密钥
     const key = await decrypt_data(ekey, user_key);
 
@@ -230,78 +214,37 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
     read_pos += json_len;
 
     // 提取派生参数
-    const header_version = header_json.v;
-    if (!([5.5].includes(header_version))) throw new Exceptions.EncryptionVersionMismatchException();
     const [phrase, salt_hex] = header_json.parameter.split(':');
     const salt = unhexlify(salt_hex);
     const iv4key = unhexlify(header_json.iv);
     const N = header_json.N;
-
-    // 获取chunk size和iv参数
-    let chunk_size, nonce_counter;
-    if (version === ENCRYPTION_FILE_VER_1_2_10020) {
-        const chunk_size_bytes = await file_reader(read_pos, read_pos + 8);
-        chunk_size = Number(new DataView(chunk_size_bytes.buffer).getBigUint64(0, true));
-        const nonce_counter_start = await file_reader(read_pos + 8, read_pos + 16);
-        nonce_counter = Number(new DataView(nonce_counter_start.buffer).getBigUint64(0, true));
-        read_pos += 16;
-    }
 
     // 对应加密时，需要提供一个iv，我们把iv取回来，重新生成密钥（所有数据块的密钥是相同的）
     callback?.(0);
     await nextTick();
     const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
 
-    let total_bytes = 0, is_final_chunk = false;
+    let total_bytes = 0;
     // 分块解密循环
     const cryptoKey = await crypto.subtle.importKey('raw', derived_key, { name: 'AES-GCM' }, false, ['decrypt']);
     while (true) {
         // 读取分块长度标记
         const chunk_len_bytes = await file_reader(read_pos, read_pos + 8);
-        if (version === ENCRYPTION_FILE_VER_1_1_0) read_pos += 8;
+        read_pos += 8;
 
         // 检查结束标记
-        let real_size = 0;
-        if (version === ENCRYPTION_FILE_VER_1_1_0) {
-            if ((chunk_len_bytes).every((v, i) =>
-                v === [0xFF, 0xFD, 0xF0, 0x10, 0x13, 0xD0, 0x12, 0x18][i]
-            )) break;
-        } else if ((chunk_len_bytes).every((v, i) => v === END_MARKER[i])) {
-            const full_bytes = await file_reader(read_pos, read_pos + 32); // 读取完整标记
-            if (full_bytes.every((v, i) => v === END_MARKER[i])) break;
-            if (full_bytes.every((v, i) => v === TAIL_BLOCK_MARKER[i])) {
-                is_final_chunk = true;
-                read_pos += 32; // 跳过标记
-                // 读取分块长度'
-                const chunk_len_bytes = await file_reader(read_pos, read_pos + 8);
-                read_pos += 8;
-                real_size = Number(new DataView(chunk_len_bytes.buffer).getBigUint64(0, true));
-                if (real_size === 0) break; // 读取到0字节，结束循环
-            }
-        }
+        if (chunk_len_bytes.every((v, i) =>
+            v === [0xFF, 0xFD, 0xF0, 0x10, 0x13, 0xD0, 0x12, 0x18][i]
+        )) break;
 
         // 解析分块长度
-        const chunk_len = (version === ENCRYPTION_FILE_VER_1_1_0) ?
-            (Number(new DataView(chunk_len_bytes.buffer).getBigUint64(0, true))) :
-            ((version === ENCRYPTION_FILE_VER_1_2_10020) ?
-                (is_final_chunk ? real_size : chunk_size) :
-                Exceptions.raise("Code was tampered with"));
+        const chunk_len = Number(
+            new DataView(chunk_len_bytes.buffer).getBigUint64(0, true)
+        );
 
         // 读取IV(12字节)、密文和tag(16字节)
-        const iv_array = new ArrayBuffer(12);
-        if (version === ENCRYPTION_FILE_VER_1_2_10020) {
-            if (nonce_counter >= 2 ** 64 || nonce_counter >= Number.MAX_SAFE_INTEGER) {
-                throw new Exceptions.IVException("nonce_counter exceeded the maximum value.");
-            }
-            const dv = new DataView(iv_array);
-            dv.setInt32(0, 0, true); // first 4 bytes as zero
-            dv.setBigUint64(4, BigInt(nonce_counter), true); // 写入8字节计数器
-            nonce_counter++;
-        }
-        const iv = (version === ENCRYPTION_FILE_VER_1_1_0) ?
-            (await file_reader(read_pos, read_pos + 12)) :
-            new Uint8Array(iv_array);
-        if (version === ENCRYPTION_FILE_VER_1_1_0) read_pos += 12;
+        const iv = await file_reader(read_pos, read_pos + 12);
+        read_pos += 12;
         const ciphertext = await file_reader(read_pos, read_pos + chunk_len + 16);
         read_pos += chunk_len + 16;
 
@@ -331,8 +274,152 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
     read_pos += 8;
 
     const end_marker = await file_reader(read_pos, read_pos + 2);
+    if (total_bytes !== total_bytes_decrypted) throw new Exceptions.FileCorruptedException("File corrupted: total bytes mismatch")
+    if (!end_marker.every((v, i) => v === [0x55, 0xAA][i])) throw new Exceptions.InvalidEndMarkerException("Invalid end marker");
+
+    return true;
+}
+/**
+ * 解密文件
+ * @param {Object} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {Object} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
+ * @param {string} user_key - 用户提供的解密密钥
+ * @param {Function} [callback=null] - 进度回调函数
+ * @returns {Promise<boolean>} 返回解密是否成功
+ */
+export async function decrypt_file(file_reader, file_writer, user_key, callback = null) {
+    // 读取文件头并验证
+    const header = await file_reader(0, 13);
+    if (str_decode(header) !== 'MyEncryption/') {
+        throw new Exceptions.InvalidFileFormatException();
+    }
+    const top_header_version = (str_decode(await file_reader(13, 16)));
+    if(!(['1.1', '1.2'].includes(top_header_version))) {
+        throw new Exceptions.EncryptionVersionMismatchException();
+    }
+    const version_marker = new DataView((await file_reader(16, 20)).buffer).getUint32(0, true);
+    const version = normalize_version(top_header_version, version_marker);
+    let read_pos = 16 + 4;
+
+    if (version === ENCRYPTION_FILE_VER_1_1_0) {
+        return await decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback);
+    }
+
+    const ekey_len = new DataView((await file_reader(read_pos, read_pos + 4)).buffer).getUint32(0, true);
+    const ekey = str_decode(await file_reader(read_pos + 4, read_pos + 4 + ekey_len));
+
+    read_pos += PADDING_SIZE;
+    
+    if (ekey_len > PADDING_SIZE) {
+        throw new Exceptions.InternalError("(Internal Error) This should not happen. Contact the application developer.");
+    }
+        
+    // 解密主密钥
+    const key = await decrypt_data(ekey, user_key);
+
+    // 读取头部JSON长度
+    const json_len_bytes = await file_reader(read_pos, read_pos + 4);
+    const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
+    read_pos += 4;
+
+    // 解析头部JSON
+    const header_json = JSON.parse(
+        str_decode(await file_reader(read_pos, read_pos + json_len))
+    );
+    read_pos += json_len;
+
+    // 提取派生参数
+    const header_version = header_json.v;
+    if (!([5.5].includes(header_version))) throw new Exceptions.EncryptionVersionMismatchException();
+    const [phrase, salt_hex] = header_json.parameter.split(':');
+    const salt = unhexlify(salt_hex);
+    const iv4key = unhexlify(header_json.iv);
+    const N = header_json.N;
+
+    // 获取chunk size和iv参数
+    const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
+    let nonce_counter = Number(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
+    read_pos += 16;
+
+    // 对应加密时，需要提供一个iv，我们把iv取回来，重新生成密钥（所有数据块的密钥是相同的）
+    callback?.(0);
+    await nextTick();
+    const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
+
+    let total_bytes = 0, is_final_chunk = false;
+    // 分块解密循环
+    const cryptoKey = await crypto.subtle.importKey('raw', derived_key, { name: 'AES-GCM' }, false, ['decrypt']);
+    while (true) {
+        // 读取分块长度标记
+        const chunk_tag = await file_reader(read_pos, read_pos + 8);
+
+        // 检查结束标记
+        let real_size = 0;
+        if ((chunk_tag).every((v, i) => v === END_IDENTIFIER[i])) {
+            const full_bytes = await file_reader(read_pos, read_pos + 32); // 读取完整标记
+            if (full_bytes.every((v, i) => v === END_MARKER[i])) {
+                read_pos += 32; // 跳过标记
+                break;
+            }
+            if (full_bytes.every((v, i) => v === TAIL_BLOCK_MARKER[i])) {
+                is_final_chunk = true;
+                read_pos += 32; // 跳过标记
+                // 读取分块长度
+                const chunk_len_bytes = await file_reader(read_pos, read_pos + 8);
+                read_pos += 8;
+                real_size = Number(new DataView(chunk_len_bytes.buffer).getBigUint64(0, true));
+                if (real_size === 0) break; // 读取到0字节，结束循环
+            }
+        }
+
+        // 解析分块长度（不包括16字节标签）
+        const ciphertext_length = (is_final_chunk ? real_size : chunk_size)
+
+        // 获取iv
+        const iv_array = new ArrayBuffer(12);
+        new DataView(iv_array).setBigUint64(4, BigInt(nonce_counter), true);
+        nonce_counter++;
+        
+        // 读取密文和tag(16字节)
+        const ciphertext = await file_reader(read_pos, read_pos + ciphertext_length + 16);
+        read_pos += ciphertext_length + 16;
+
+        const full_ciphertext = ciphertext;
+
+        // 使用WebCrypto解密
+        try {
+            const decrypted = await crypto.subtle.decrypt(
+                {
+                    name: 'AES-GCM',
+                    iv: new Uint8Array(iv_array),
+                },
+                cryptoKey,
+                full_ciphertext
+            );
+
+            // 写入解密后的数据
+            await file_writer(new Uint8Array(decrypted));
+            total_bytes += decrypted.byteLength;
+        } catch (e) {
+            if (!e) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
+            const name = e.name;
+            if (name === 'InvalidAccessError') throw new Exceptions.InvalidParameterException('InvalidAccessError.', { cause: e });
+            if (name === 'OperationError') throw new Exceptions.CannotDecryptException('Cannot decrypt. Did you provide the correct password?', { cause: e });
+            if (!e) throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
+        }
+        if (callback) callback(total_bytes);
+    }
+
+    // 验证总字节数和结束标记
+    const total_bytes_bytes = await file_reader(read_pos, read_pos + 8);
+    const total_bytes_decrypted = Number(
+        new DataView(total_bytes_bytes.buffer).getBigUint64(0, true)
+    );
+    read_pos += 8;
+
+    const end_marker = await file_reader(read_pos, read_pos + FILE_END_MARKER.length);
     if (total_bytes !== total_bytes_decrypted) throw new Exceptions.FileCorruptedException("total bytes mismatch")
-    if (!end_marker.every((v, i) => v === [0x55, 0xAA][i])) throw new Exceptions.InvalidEndMarkerException();
+    if (!end_marker.every((v, i) => v === FILE_END_MARKER[i])) throw new Exceptions.InvalidEndMarkerException();
 
     return true;
 }

@@ -1,4 +1,6 @@
-import { encrypt_data, decrypt_data, encrypt_file, decrypt_file, export_master_key } from '../dist/main.bundle.js';
+import {
+    encrypt_data, decrypt_data, encrypt_file, decrypt_file, export_master_key,
+} from '../myencryption/main.js';
 
 enc.onclick = async () => {
     try {
@@ -91,7 +93,7 @@ expkey.onclick = async () => {
         const [fileHandle] = await window.showOpenFilePicker();
 
         const file = await fileHandle.getFile();
-        const blob = file.slice(0, 2048);
+        const blob = file.slice(0, 5000);
             
         const old_key = pass.value;
         const exp_key = prompt('Export key?', '');
@@ -103,12 +105,12 @@ expkey.onclick = async () => {
     }
 }
 
-import { scrypt_hex } from '../dist/main.bundle.js';
+import { scrypt_hex } from '../myencryption/main.js';
 tests.onclick = async () => {
     alert(await scrypt_hex(stest.value, '123456', 262144, 8, 1, 32));
 }
 
-import { change_file_password } from '../dist/main.bundle.js';
+import { change_file_password } from '../myencryption/main.js';
 chpass.onclick = async () => {
     try {
         const [fileHandle] = await window.showOpenFilePicker({
@@ -116,15 +118,10 @@ chpass.onclick = async () => {
         });
 
         const file = await fileHandle.getFile();
-        const blob = file.slice(0, 2048);
+        const blob = file.slice(0, 5000);
 
         const current_key = pass.value;
         const new_key = pass2.value;
-
-        if (!new_key) {
-            alert('New password is required.');
-            return;
-        }
 
         const new_file_head = await change_file_password(blob, current_key, new_key);
 

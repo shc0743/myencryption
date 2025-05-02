@@ -5,3 +5,4 @@ node_modules
 impl/Python/*.spec
 impl/Python/build/*
 impl/Python/dist/*
+trashbin

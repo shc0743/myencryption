@@ -79,3 +79,44 @@ export class CannotDecryptException extends EncryptionError {
     }
 }
 
+export class CryptContextReusedException extends EncryptionError {
+    constructor(message = 'Not allowed to reuse a crypt context.', additional = undefined) {
+        super(message, additional);
+        this.name = 'CryptContextReusedException';
+    }
+}
+
+export class NotSupportedException extends EncryptionError {
+    constructor(message = 'Operation not supported', additional = undefined) {
+        super(message, additional);
+        this.name = 'NotSupportedException';
+    }
+}
+
+export class EndOfFileException extends EncryptionError {
+    constructor(message = 'End of File', additional = undefined) {
+        super(message, additional);
+        this.name = 'EndOfFileException';
+    }
+}
+
+export class CryptContextNotInitedException extends EncryptionError {
+    constructor(message = 'Crypt context is not initialized.', additional = undefined) {
+        super(message, additional);
+        this.name = 'CryptContextNotInitedException';
+    }
+}
+
+export class InvalidCryptContextTypeException extends EncryptionError {
+    constructor(message = 'Invalid crypt context type.', additional = undefined) {
+        super(message, additional);
+        this.name = 'InvalidCryptContextTypeException';
+    }
+}
+
+export class CryptContextReleasedException extends EncryptionError {
+    constructor(message = 'Crypt context has been released.', additional = undefined) {
+        super(message, additional);
+        this.name = 'CryptContextReleasedException';
+    }
+}
