@@ -221,7 +221,8 @@ export async function PlayMp4Video(video, ms, fileReader, bs = 1000000) {
         else return null;
     }
     queueMicrotask(async () => {
-        if (Logs) console.log('loadSegment=', await loadSegment(0, 999999));
+        const r = await loadSegment(0, 999999);
+        if (Logs) console.log('loadSegment=', r);
     });
 
     return cleanup;
