@@ -18,6 +18,8 @@ Currently we have finished [Python](./impl/Python/encryption.py) and [JavaScript
 
 ## Python
 
+**Important**: The Python edition is currently out-dated. Please try not to use it while I am working on the new edition.
+
 If you are the end user, the easiest way to use the app is to [Get the application based on the module](https://github.com/shc0743/myencryption/releases/).
 
 If you are a developer and need to use it in your project:
