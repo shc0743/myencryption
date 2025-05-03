@@ -1,6 +1,6 @@
 import {
     encrypt_data, decrypt_data, encrypt_file, decrypt_file, export_master_key,
-} from '../myencryption/main.js';
+} from '../dist/main.bundle.js';
 
 enc.onclick = async () => {
     try {
@@ -36,11 +36,12 @@ encf.onclick = async () => {
         };
 
         const key = pass.value;
+        const bsize = ((+bs.value) * 1048576) || (undefined);
 
         fep.innerText = 'Reading file.';
         const success = await encrypt_file(fileReader, fileWriter, key, (current) => {
             fep.innerText = `Encrypt file progress: ${current} / ${file.size} ${current / file.size}`
-        });
+        }, undefined, undefined, bsize);
         if (success) {
             fep.innerText = 'Done.';
         } else {
@@ -105,12 +106,12 @@ expkey.onclick = async () => {
     }
 }
 
-import { scrypt_hex } from '../myencryption/main.js';
+import { scrypt_hex } from '../dist/main.bundle.js';
 tests.onclick = async () => {
     alert(await scrypt_hex(stest.value, '123456', 262144, 8, 1, 32));
 }
 
-import { change_file_password } from '../myencryption/main.js';
+import { change_file_password } from '../dist/main.bundle.js';
 chpass.onclick = async () => {
     try {
         const [fileHandle] = await window.showOpenFilePicker({

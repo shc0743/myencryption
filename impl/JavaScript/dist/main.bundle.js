@@ -1,2 +1,1067 @@
-var Ne=Object.defineProperty;var Ce=(e,t)=>{for(var n in t)Ne(e,n,{get:t[n],enumerable:!0})};function Ve(e){return new Promise((t,n)=>{let i=document.createElement("script");i.src=e,i.onload=()=>t(i),i.onerror=a=>n(a),document.head.append(i)})}function Ie(e,t){return Reflect.has(globalThis,e)?Promise.resolve(Reflect.get(globalThis,e)):Ve(t).then(()=>Reflect.get(globalThis,e))}var Be=new Array(256);for(let e=0;e<256;e++)Be[e]=e.toString(16).padStart(2,"0");function K(e){if(!e||!(e instanceof Uint8Array))throw new TypeError("Input must be a Uint8Array");let t=e.length,n=new Array(t);for(let i=0;i<t;i++)n[i]=Be[e[i]];return n.join("")}var ke={get InvalidHexStringException(){throw new TypeError("Invalid hex string")}};function V(e){if(typeof e!="string")throw new TypeError("Input must be a string");let t=e.length;if(t%2!==0)throw new TypeError("Hex string must have even length");e=e.toLowerCase();let n=new Uint8Array(t>>1);for(let i=0;i<t;i+=2){let a=e.charCodeAt(i),o=e.charCodeAt(i+1),p=a>=97&&a<=102?a-87:a>=48&&a<=57?a-48:ke.InvalidHexStringException,s=o>=97&&o<=102?o-87:o>=48&&o<=57?o-48:ke.InvalidHexStringException;n[i>>1]=p<<4|s}return n}function L(e){let t=new Uint8Array(e);return crypto.getRandomValues(t),t}function Te(){let e=L(1);return new Int8Array(e)[0]}function _e(){let e=L(1);return new Uint8Array(e)[0]}function k(e,t="utf-8"){if(typeof e!="string")throw new TypeError("Input must be a string");if(t.toLowerCase()!=="utf-8")throw new Error("Only 'utf-8' encoding is supported");return new TextEncoder().encode(e)}function x(e,t="utf-8"){if(e instanceof Uint8Array||(e=new Uint8Array(e)),t.toLowerCase()!=="utf-8")throw new Error("Only 'utf-8' encoding is supported");return new TextDecoder().decode(e)}var W={};Ce(W,{BadDataException:()=>$,CannotDecryptException:()=>Y,CryptContextNotInitedException:()=>ie,CryptContextReleasedException:()=>se,CryptContextReusedException:()=>re,EncryptionError:()=>h,EncryptionVersionMismatchException:()=>U,EndOfFileException:()=>me,FileCorruptedException:()=>Q,IVException:()=>ne,InternalError:()=>A,InvalidCryptContextTypeException:()=>ae,InvalidEndMarkerException:()=>ee,InvalidFileFormatException:()=>j,InvalidParameterException:()=>g,InvalidScryptParameterException:()=>te,NotSupportedException:()=>oe,raise:()=>Re});var h=class extends Error{constructor(t="Encryption Error",n=void 0){super(t,n),this.name="EncryptionError"}},A=class extends h{constructor(t="(Internal Error)",n=void 0){super(t,n),this.name="InternalError"}};function Re(e,t){throw new A(e,t)}var g=class extends h{constructor(t="The parameter provided is invalid.",n=void 0){super(t,n),this.name="InvalidParameterException"}},$=class extends h{constructor(t="The data is bad.",n=void 0){super(t,n),this.name="BadDataException"}},te=class extends h{constructor(t="The N, r, or p is not valid or out of range.",n=void 0){super(t,n),this.name="InvalidScryptParameterException"}},U=class extends h{constructor(t="The version of the encryption library doesn't match.",n=void 0){super(t,n),this.name="EncryptionVersionMismatchException"}},j=class extends h{constructor(t="The file format is invalid.",n=void 0){super(t,n),this.name="InvalidFileFormatException"}},ne=class extends h{constructor(t="IV Exception.",n=void 0){super(t,n),this.name="IVException"}},Q=class extends h{constructor(t="File is corrupted.",n=void 0){super(t,n),this.name="FileCorruptedException"}},ee=class extends h{constructor(t="The end marker is invalid.",n=void 0){super(t,n),this.name="InvalidEndMarkerException"}},Y=class extends h{constructor(t="Cannot decrypt",n=void 0){super(t,n),this.name="CannotDecryptException"}},re=class extends h{constructor(t="Not allowed to reuse a crypt context.",n=void 0){super(t,n),this.name="CryptContextReusedException"}},oe=class extends h{constructor(t="Operation not supported",n=void 0){super(t,n),this.name="NotSupportedException"}},me=class extends h{constructor(t="End of File",n=void 0){super(t,n),this.name="EndOfFileException"}},ie=class extends h{constructor(t="Crypt context is not initialized.",n=void 0){super(t,n),this.name="CryptContextNotInitedException"}},ae=class extends h{constructor(t="Invalid crypt context type.",n=void 0){super(t,n),this.name="InvalidCryptContextTypeException"}},se=class extends h{constructor(t="Crypt context has been released.",n=void 0){super(t,n),this.name="CryptContextReleasedException"}};var Z=await Ie("scrypt",import.meta.resolve("./WebScrypt/scrypt.js"));Z.setResPath(import.meta.resolve("./WebScrypt/asset/"));Z.load();var Ee=function(){let e=[],t=!1,n=a=>new Promise(async(o,p)=>{Z.onprogress=s=>{a.onprogress&&a.onprogress(s)},Z.oncomplete=s=>{a.resolve(s),o(!0)},Z.onerror=s=>{a.reject(s),o(!1)};try{Z.config({N:a.N,r:a.r,P:a.p},{maxPassLen:8192,maxSaltLen:2048,maxDkLen:1024,maxThread:1}),await new Promise(s=>Z.onready=s),Z.hash(a.key,a.salt,a.dklen)}catch(s){p(s)}});async function i(){let a=null;for(;e.length;)try{a=e.splice(0,1)[0],await n(a),await Me()}catch(o){a?.reject(o)}t=!1}return function(o,p,s,r,c,u,y=null){return new Promise((f,_)=>{e.push({key:o,salt:p,N:s,r,p:c,dklen:u,resolve:f,reject:_,onprogress:y}),t||(t=!0,setTimeout(i))})}}(),De=["Furina","Neuvillette","Venti","Nahida","Kinich","Kazuha"];async function z(e,t,n=null,i=null,a=null,o=8,p=1,s=32){if(i===null&&(i=262144),typeof i!="number"||i>2097152)throw new te;if(a||(a=L(64)),n||(n=De[_e()%De.length]),n.includes(":"))throw new g('phrase MUST NOT contain ":"');let r=`${n}:${K(a)}`,c=`MyEncryption/1.1 Fontaine/4.2 Iv/${K(t)} user_parameter=${r} user_key=${e}`;return{derived_key:await Ee(k(c),a,i,o,p,s),parameter:r,N:i}}function Me(){return new Promise(e=>setTimeout(e))}async function Se(e,t,n,i,a,o){return K(await Ee(k(e),k(t),n,i,a,o))}function Fe(e){try{return JSON.parse(e)}catch{throw new g("The JSON is not valid.")}}async function q(e,t,n=null,i=null){let a=L(12),{derived_key:o,parameter:p,N:s}=await z(t,a,n,i);i=s;let r=await crypto.subtle.importKey("raw",o,"AES-GCM",!1,["encrypt"]);typeof e=="string"&&(e=k(e));let c=await crypto.subtle.encrypt({name:"AES-GCM",iv:a},r,e),u=new Uint8Array(a.length+c.byteLength);u.set(a,0),u.set(new Uint8Array(c),a.length);let y=K(u);return JSON.stringify({data:y,parameter:p,N:i,v:5.5})}async function T(e,t){let n=Fe(e),i=n.parameter,a=parseInt(n.N),o=V(n.data),[p,s]=i.split(":"),r=V(s);if(isNaN(a)||!i||!o||!r)throw new $("The message or parameters are bad.");if(o.length<28)throw new $("The message was too short.");let c=o.slice(0,12),u=o.slice(12,-16),y=o.slice(-16),{derived_key:f}=await z(t,c,p,a,r),_=await crypto.subtle.importKey("raw",f,"AES-GCM",!1,["decrypt"]);try{let w=await crypto.subtle.decrypt({name:"AES-GCM",iv:c},_,new Uint8Array([...u,...y]));try{return x(w)}catch{return w}}catch(w){if(!w)throw new A("Internal error.",{cause:w});let v=w.name;if(v==="InvalidAccessError")throw new g("InvalidAccessError.",{cause:w});if(v==="OperationError")throw new Y("Cannot decrypt. Did you provide the correct password?",{cause:w});if(!w)throw new A("Unexpected error.",{cause:w})}}function Ae(){return new Promise(e=>requestAnimationFrame(e))}var R=4096,ge=[85,170,85,170,85,170,85,170],de=[85,170,85,170,85,170,85,170,170,85,170,85,170,85,170,85,85,170,85,170,85,170,85,170,170,85,170,85,170,85,170,85],fe=[85,170,85,170,85,170,85,170,85,170,85,170,85,170,85,170,85,170,85,170,85,170,85,170,85,170,85,170,85,170,85,170],ce=[255,253,240,16,19,208,18,24,85,170];function J(e,t){return e?(String(e)==="1.1"&&(t=null),t?`${e}/${t}`:`${e}/0`):"Unknown Version"}var pe=J("1.1"),ue=J("1.2",10020);async function Oe(e,t,n,i=null,a=null,o=null,p=32*1024*1024){await t(k("MyEncryption/1.2"));let s=10020,r=new ArrayBuffer(4);new DataView(r).setUint32(0,s,!0),await t(new Uint8Array(r));let c=K(L(64)),u=await q(c,n),y=k(u);if(y.length>R)throw new A("(Internal Error) This should not happen. Contact the application developer.");let f=new ArrayBuffer(4);new DataView(f).setUint32(0,y.length,!0),await t(new Uint8Array(f)),await t(y);let _=new Uint8Array(R-y.length-4).fill(0);await t(_),i?.(0),await Ae();let w=L(12),{derived_key:v,parameter:M,N:I}=await z(c,w,a,o);o=I;let d={parameter:M,N:o,v:5.5,iv:K(w)},N=k(JSON.stringify(d)),B=new ArrayBuffer(4);new DataView(B).setUint32(0,N.length,!0),await t(new Uint8Array(B)),await t(N);let S=new ArrayBuffer(8);new DataView(S).setBigUint64(0,BigInt(p),!0),await t(new Uint8Array(S));let C=0,D=1,m=0,l=new ArrayBuffer(8);new DataView(l).setBigUint64(0,BigInt(D),!0),await t(new Uint8Array(l)),i?.(0);let E=await crypto.subtle.importKey("raw",v,{name:"AES-GCM"},!1,["encrypt"]);for(;;){let O=await e(m,m+p);if(O.length===0)break;let X=O.length<p,H=new ArrayBuffer(12);if(D>=2**64||D>=Number.MAX_SAFE_INTEGER)throw new ne("nonce_counter exceeded the maximum value.");if(new DataView(H).setBigUint64(4,BigInt(D),!0),D++,X){await t(new Uint8Array(de));let le=new ArrayBuffer(8);new DataView(le).setBigUint64(0,BigInt(O.length),!0),await t(new Uint8Array(le))}let G=new Uint8Array(H),we=await crypto.subtle.encrypt({name:"AES-GCM",iv:G},E,O),ye=new Uint8Array(we);await t(ye),C+=O.length,m+=O.length,i?.(C)}await t(new Uint8Array(fe));let F=new ArrayBuffer(8);return new DataView(F).setBigUint64(0,BigInt(C),!0),await t(new Uint8Array(F)),await t(new Uint8Array(ce)),!0}async function Pe(e,t,n,i=null){let a=await e(0,16);if(x(a)!=="MyEncryption/1.1")throw new TypeError("Invalid file format");let o=16,p=await e(o,o+4),s=new DataView(p.buffer).getUint32(0,!0);o+=4;let r=x(await e(o,o+s));o+=1024;let c=await T(r,n),u=await e(o,o+4),y=new DataView(u.buffer).getUint32(0,!0);o+=4;let f=JSON.parse(x(await e(o,o+y)));o+=y;let[_,w]=f.parameter.split(":"),v=V(w),M=V(f.iv),I=f.N;i?.(0),await Ae();let{derived_key:d}=await z(c,M,_,I,v),N=0,B=await crypto.subtle.importKey("raw",d,{name:"AES-GCM"},!1,["decrypt"]);for(;;){let m=await e(o,o+8);if(o+=8,m.every((H,G)=>H===[255,253,240,16,19,208,18,24][G]))break;let l=Number(new DataView(m.buffer).getBigUint64(0,!0)),E=await e(o,o+12);o+=12;let F=await e(o,o+l+16);o+=l+16;let O=F,X=await crypto.subtle.decrypt({name:"AES-GCM",iv:E},B,O);await t(new Uint8Array(X)),N+=X.byteLength,i&&i(N)}let S=await e(o,o+8),C=Number(new DataView(S.buffer).getBigUint64(0,!0));o+=8;let D=await e(o,o+2);if(N!==C)throw new Q("File corrupted: total bytes mismatch");if(!D.every((m,l)=>m===[85,170][l]))throw new ee("Invalid end marker");return!0}async function Ke(e,t,n,i=null){let a=await e(0,13);if(x(a)!=="MyEncryption/")throw new j;let o=x(await e(13,16));if(!["1.1","1.2"].includes(o))throw new U;let p=new DataView((await e(16,20)).buffer).getUint32(0,!0),s=J(o,p),r=20;if(s===pe)return await Pe(e,t,n,i);let c=new DataView((await e(r,r+4)).buffer).getUint32(0,!0),u=x(await e(r+4,r+4+c));if(r+=R,c>R)throw new A("(Internal Error) This should not happen. Contact the application developer.");let y=await T(u,n),f=await e(r,r+4),_=new DataView(f.buffer).getUint32(0,!0);r+=4;let w=JSON.parse(x(await e(r,r+_)));r+=_;let v=w.v;if(![5.5].includes(v))throw new U;let[M,I]=w.parameter.split(":"),d=V(I),N=V(w.iv),B=w.N,S=Number(new DataView((await e(r,r+8)).buffer).getBigUint64(0,!0)),C=Number(new DataView((await e(r+8,r+16)).buffer).getBigUint64(0,!0));r+=16,i?.(0),await Ae();let{derived_key:D}=await z(y,N,M,B,d),m=0,l=!1,E=await crypto.subtle.importKey("raw",D,{name:"AES-GCM"},!1,["decrypt"]);for(;;){let H=await e(r,r+8),G=0;if(H.every((b,P)=>b===ge[P])){let b=await e(r,r+32);if(b.every((P,he)=>P===fe[he])){r+=32;break}if(b.every((P,he)=>P===de[he])){l=!0,r+=32;let P=await e(r,r+8);if(r+=8,G=Number(new DataView(P.buffer).getBigUint64(0,!0)),G===0)break}}let we=l?G:S,ye=new ArrayBuffer(12);new DataView(ye).setBigUint64(4,BigInt(C),!0),C++;let le=await e(r,r+we+16);r+=we+16;let Ue=le;try{let b=await crypto.subtle.decrypt({name:"AES-GCM",iv:new Uint8Array(ye)},E,Ue);await t(new Uint8Array(b)),m+=b.byteLength}catch(b){if(!b)throw new A("Internal error.",{cause:b});let P=b.name;if(P==="InvalidAccessError")throw new g("InvalidAccessError.",{cause:b});if(P==="OperationError")throw new Y("Cannot decrypt. Did you provide the correct password?",{cause:b});if(!b)throw new A("Unexpected error.",{cause:b})}i&&i(m)}let F=await e(r,r+8),O=Number(new DataView(F.buffer).getBigUint64(0,!0));r+=8;let X=await e(r,r+ce.length);if(m!==O)throw new Q("total bytes mismatch");if(!X.every((H,G)=>H===ce[G]))throw new ee;return!0}async function Le(e,t,n){if(e.size<1044)throw new $("Data not enough");if(await e.slice(0,13).text()!=="MyEncryption/")throw new j;let o=await e.slice(13,16).text();if(!["1.1","1.2"].includes(o))throw new U;let p=new DataView(await e.slice(16,20).arrayBuffer()).getUint32(0,!0),s=J(o,p);if(s===pe){let r=new DataView(await e.slice(16,20).arrayBuffer()).getUint32(0,!0),c=await e.slice(20,20+r).arrayBuffer(),u=x(c);return await q(await T(u,t),n)}if(s===ue){if(e.size<16+R)throw new $("Data not enough");let r=new DataView(await e.slice(20,24).arrayBuffer()).getUint32(0,!0),c=await e.slice(24,24+r).arrayBuffer(),u=x(c);return await q(await T(u,t),n)}throw new U}async function je(e,t,n){if(e.size<1044)throw new Error("Data not enough");let i=e.slice(0,16);if(await i.text()!=="MyEncryption/1.1")throw new TypeError("Invalid file format");let o=new DataView(await e.slice(16,20).arrayBuffer()).getUint32(0,!0),p=x(await e.slice(20,20+o).arrayBuffer()),s=await q(await T(p,t),n);if(s.length>1024)throw new Error("(Internal Error) This should not happen. Contact the application developer.");let r=s.length,c=new ArrayBuffer(4);new DataView(c).setUint32(0,r,!0);let y=[i,c,k(s)],f=new Uint8Array(1024-s.length).fill(0);return y.push(f),new Blob(y)}async function ze(e,t,n){if(e.size<1044)throw new Error("Data not enough");if(await e.slice(0,13).text()!=="MyEncryption/")throw new j;let o=await e.slice(13,16).text();if(!["1.1","1.2"].includes(o))throw new U;let p=new DataView(await e.slice(16,20).arrayBuffer()).getUint32(0,!0);if(J(o,p)===pe)return await je(e,t,n);let r=new DataView(await e.slice(20,24).arrayBuffer()).getUint32(0,!0),c=x(await e.slice(24,24+r).arrayBuffer()),u=await q(await T(c,t),n);if(u.length>1024)throw new Error("(Internal Error) This should not happen. Contact the application developer.");let y=u.length,f=new ArrayBuffer(4);new DataView(f).setUint32(0,y,!0);let w=[e.slice(0,20),f,k(u)],v=new Uint8Array(R-u.length-4).fill(0);return w.push(v),new Blob(w)}var ve=Object.create(null);ve[Symbol.toStringTag]="CryptContext";ve.toString=function(){return`${this[Symbol.toStringTag]} Object`};async function xe(e){return e instanceof Promise?await e:e}async function Ge(){let e=Object.create(ve);return e._created=!0,e}async function $e(e){if(!e||e._released)throw new g("Invalid context");for(let t of Reflect.ownKeys(e)){let n=Reflect.get(e,t);n&&(n.release?await xe(n.release()):n.free?await xe(n.free()):n.reset?await xe(n.reset()):n.clear&&await xe(n.clear())),t.startsWith("_")||Reflect.deleteProperty(e,t)}return Object.defineProperty(e,"_released",{value:!0}),!0}var be=class{#t=null;#e={position:null,end:null,data:null};get[Symbol.toStringTag](){return"Stream"}constructor(t){if(typeof t!="function")throw new g("Invalid reader");this.#t=t}async read(t,n,i=null){if(!this.#t)throw new Error("Stream is closed.");if(this.#e.position&&this.#e.end&&this.#e.data&&t>=this.#e.position&&n<=this.#e.end)return this.#e.data.slice(t-this.#e.position,n-this.#e.position);if(i){let o=await this.#t(t,i);return this.#e.position=t,this.#e.end=t+o.length,this.#e.data=o,o.slice(0,n-t)}return await this.#t(t,n)}purge(){this.#e.position=this.#e.data=this.#e.end=null}close(){this.#t=null,this.purge()}};async function Ye(e,t,n,i){if(e._inited)throw new re;Object.defineProperty(e,"_inited",{value:!0}),e._type="@decrypt_stream",e.stream={stream:t,release:()=>e.stream.stream.close()};let a=await t.read(0,13);if(x(a)!=="MyEncryption/")throw new j;let o=x(await t.read(13,16));if(!["1.1","1.2"].includes(o))throw new U;let p=new DataView((await t.read(16,20)).buffer).getUint32(0,!0),s=J(o,p),r=20;if(s!==ue)throw new oe("Cannot perform a streamed decryption on V1.1 files");let c=new DataView((await t.read(r,r+4)).buffer).getUint32(0,!0),u=x(await t.read(r+4,r+4+c));if(r+=R,c>R)throw new A("(Internal Error) This should not happen. Contact the application developer.");let y=await T(u,i),f=await t.read(r,r+4),_=new DataView(f.buffer).getUint32(0,!0);r+=4;let w=JSON.parse(x(await t.read(r,r+_)));r+=_;let v=w.v;if(![5.5].includes(v))throw new U;let[M,I]=w.parameter.split(":"),d=V(I),N=V(w.iv),B=w.N,S=Number(new DataView((await t.read(r,r+8)).buffer).getBigUint64(0,!0)),C=Number(new DataView((await t.read(r+8,r+16)).buffer).getBigUint64(0,!0));r+=16;let{derived_key:D}=await z(y,N,M,B,d),m=await crypto.subtle.importKey("raw",D,{name:"AES-GCM"},!1,["decrypt"]);return e.key=m,e.chunk_size=S,e.nonce_counter=C,e.header_json_length=_,e.size=n,!0}async function Je(e,t,n){if(!e._inited)throw new ie;if(e._type!=="@decrypt_stream")throw new ae(e._type);if(e._released)throw new se;let i=e.stream.stream,a=e.chunk_size,o=e.nonce_counter,p=[],s=20+R+4+e.header_json_length+8+8,r=a+16,c=Math.floor((e.size-s-(80+ce.length))/r),u=Math.max(0,Math.floor(t/a)),y=Math.min(c,Math.floor(n/a));if(y<0||u>c)throw new g("Out of range");let f=async I=>{let d=s+I*r,N=await i.read(d,d+8,d+2*r),B=0;if(N.every((l,E)=>l===ge[E])){let l=await i.read(d,d+32);if(d+=32,l.every((E,F)=>E===fe[F]))return!1;if(l.every((E,F)=>E===de[F])){let E=await i.read(d,d+8);if(d+=8,B=Number(new DataView(E.buffer).getBigUint64(0,!0)),B===0)return!1}}let S=B||a,C=await i.read(d,d+S+16),D=o+I,m=new ArrayBuffer(12);new DataView(m).setBigUint64(4,BigInt(D),!0);try{return await crypto.subtle.decrypt({name:"AES-GCM",iv:new Uint8Array(m)},e.key,C)}catch(l){if(!l)throw new A("Internal error.",{cause:l});let E=l.name;if(E==="InvalidAccessError")throw new g("InvalidAccessError.",{cause:l});if(E==="OperationError")throw new Y("Cannot decrypt. Did you provide the correct password?",{cause:l});if(!l)throw new A("Unexpected error.",{cause:l})}},_=!1;for(let I=u;I<=y;I++){let d=await f(I);if(!d){_=!0;break}p.push(d)}let w=new Blob(p),v=u*a,M=w.slice(t-v,n-v);return _&&(M.eof=!0),M}var He="Encryption/5.5 FileEncryption/1.2 Patch/0.0";export{pe as ENCRYPTION_FILE_VER_1_1_0,ue as ENCRYPTION_FILE_VER_1_2_10020,W as Exceptions,be as Stream,He as VERSION,ze as change_file_password,Ge as crypt_context_create,$e as crypt_context_destroy,T as decrypt_data,Ke as decrypt_file,Je as decrypt_stream,Ye as decrypt_stream_init,z as derive_key,q as encrypt_data,Oe as encrypt_file,Le as export_master_key,L as get_random_bytes,Te as get_random_int8_number,_e as get_random_uint8_number,K as hexlify,J as normalize_version,Ee as scrypt,Se as scrypt_hex,x as str_decode,k as str_encode,V as unhexlify};
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// loader.js
+function load_script(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve(script);
+    script.onerror = (e) => reject(e);
+    document.head.append(script);
+  });
+}
+function load_deps_es5(deps_name, deps_src) {
+  if (Reflect.has(globalThis, deps_name)) return Promise.resolve(Reflect.get(globalThis, deps_name));
+  return load_script(deps_src).then(() => {
+    return Reflect.get(globalThis, deps_name);
+  });
+}
+
+// binascii.js
+var hexTable = new Array(256);
+for (let i = 0; i < 256; i++) {
+  hexTable[i] = i.toString(16).padStart(2, "0");
+}
+function hexlify(data) {
+  if (!data || !(data instanceof Uint8Array)) {
+    throw new TypeError("Input must be a Uint8Array");
+  }
+  const length = data.length;
+  const arr = new Array(length);
+  for (let i = 0; i < length; i++) {
+    arr[i] = hexTable[data[i]];
+  }
+  return arr.join("");
+}
+var throwing = {
+  get InvalidHexStringException() {
+    throw new TypeError("Invalid hex string");
+  }
+};
+function unhexlify(hexStr) {
+  if (typeof hexStr !== "string") {
+    throw new TypeError("Input must be a string");
+  }
+  const length = hexStr.length;
+  if (length % 2 !== 0) {
+    throw new TypeError("Hex string must have even length");
+  }
+  hexStr = hexStr.toLowerCase();
+  const bytes = new Uint8Array(length >> 1);
+  for (let i = 0; i < length; i += 2) {
+    const highCode = hexStr.charCodeAt(i);
+    const lowCode = hexStr.charCodeAt(i + 1);
+    const high = highCode >= 97 && highCode <= 102 ? highCode - 87 : highCode >= 48 && highCode <= 57 ? highCode - 48 : throwing.InvalidHexStringException;
+    const low = lowCode >= 97 && lowCode <= 102 ? lowCode - 87 : lowCode >= 48 && lowCode <= 57 ? lowCode - 48 : throwing.InvalidHexStringException;
+    bytes[i >> 1] = high << 4 | low;
+  }
+  return bytes;
+}
+
+// random.js
+function get_random_bytes(count) {
+  const randomBytes = new Uint8Array(count);
+  crypto.getRandomValues(randomBytes);
+  return randomBytes;
+}
+function get_random_int8_number() {
+  const randomBytes = get_random_bytes(1);
+  return new Int8Array(randomBytes)[0];
+}
+function get_random_uint8_number() {
+  const randomBytes = get_random_bytes(1);
+  return new Uint8Array(randomBytes)[0];
+}
+
+// str.js
+function str_encode(input, encoding = "utf-8") {
+  if (typeof input !== "string") {
+    throw new TypeError("Input must be a string");
+  }
+  if (encoding.toLowerCase() !== "utf-8") {
+    throw new Error("Only 'utf-8' encoding is supported");
+  }
+  return new TextEncoder().encode(input);
+}
+function str_decode(input, encoding = "utf-8") {
+  if (!(input instanceof Uint8Array)) {
+    input = new Uint8Array(input);
+  }
+  if (encoding.toLowerCase() !== "utf-8") {
+    throw new Error("Only 'utf-8' encoding is supported");
+  }
+  return new TextDecoder().decode(input);
+}
+
+// exceptions.js
+var exceptions_exports = {};
+__export(exceptions_exports, {
+  BadDataException: () => BadDataException,
+  CannotDecryptException: () => CannotDecryptException,
+  CryptContextNotInitedException: () => CryptContextNotInitedException,
+  CryptContextReleasedException: () => CryptContextReleasedException,
+  CryptContextReusedException: () => CryptContextReusedException,
+  EncryptionError: () => EncryptionError,
+  EncryptionVersionMismatchException: () => EncryptionVersionMismatchException,
+  EndOfFileException: () => EndOfFileException,
+  FileCorruptedException: () => FileCorruptedException,
+  IVException: () => IVException,
+  InternalError: () => InternalError,
+  InvalidCryptContextTypeException: () => InvalidCryptContextTypeException,
+  InvalidEndMarkerException: () => InvalidEndMarkerException,
+  InvalidFileFormatException: () => InvalidFileFormatException,
+  InvalidParameterException: () => InvalidParameterException,
+  InvalidScryptParameterException: () => InvalidScryptParameterException,
+  NotSupportedException: () => NotSupportedException,
+  raise: () => raise
+});
+var EncryptionError = class extends Error {
+  constructor(message = "Encryption Error", additional = void 0) {
+    super(message, additional);
+    this.name = "EncryptionError";
+  }
+};
+var InternalError = class extends EncryptionError {
+  constructor(message = "(Internal Error)", additional = void 0) {
+    super(message, additional);
+    this.name = "InternalError";
+  }
+};
+function raise(message, additional) {
+  throw new InternalError(message, additional);
+}
+var InvalidParameterException = class extends EncryptionError {
+  constructor(message = "The parameter provided is invalid.", additional = void 0) {
+    super(message, additional);
+    this.name = "InvalidParameterException";
+  }
+};
+var BadDataException = class extends EncryptionError {
+  constructor(message = "The data is bad.", additional = void 0) {
+    super(message, additional);
+    this.name = "BadDataException";
+  }
+};
+var InvalidScryptParameterException = class extends EncryptionError {
+  constructor(message = "The N, r, or p is not valid or out of range.", additional = void 0) {
+    super(message, additional);
+    this.name = "InvalidScryptParameterException";
+  }
+};
+var EncryptionVersionMismatchException = class extends EncryptionError {
+  constructor(message = "The version of the encryption library doesn't match.", additional = void 0) {
+    super(message, additional);
+    this.name = "EncryptionVersionMismatchException";
+  }
+};
+var InvalidFileFormatException = class extends EncryptionError {
+  constructor(message = "The file format is invalid.", additional = void 0) {
+    super(message, additional);
+    this.name = "InvalidFileFormatException";
+  }
+};
+var IVException = class extends EncryptionError {
+  constructor(message = "IV Exception.", additional = void 0) {
+    super(message, additional);
+    this.name = "IVException";
+  }
+};
+var FileCorruptedException = class extends EncryptionError {
+  constructor(message = "File is corrupted.", additional = void 0) {
+    super(message, additional);
+    this.name = "FileCorruptedException";
+  }
+};
+var InvalidEndMarkerException = class extends EncryptionError {
+  constructor(message = "The end marker is invalid.", additional = void 0) {
+    super(message, additional);
+    this.name = "InvalidEndMarkerException";
+  }
+};
+var CannotDecryptException = class extends EncryptionError {
+  constructor(message = "Cannot decrypt", additional = void 0) {
+    super(message, additional);
+    this.name = "CannotDecryptException";
+  }
+};
+var CryptContextReusedException = class extends EncryptionError {
+  constructor(message = "Not allowed to reuse a crypt context.", additional = void 0) {
+    super(message, additional);
+    this.name = "CryptContextReusedException";
+  }
+};
+var NotSupportedException = class extends EncryptionError {
+  constructor(message = "Operation not supported", additional = void 0) {
+    super(message, additional);
+    this.name = "NotSupportedException";
+  }
+};
+var EndOfFileException = class extends EncryptionError {
+  constructor(message = "End of File", additional = void 0) {
+    super(message, additional);
+    this.name = "EndOfFileException";
+  }
+};
+var CryptContextNotInitedException = class extends EncryptionError {
+  constructor(message = "Crypt context is not initialized.", additional = void 0) {
+    super(message, additional);
+    this.name = "CryptContextNotInitedException";
+  }
+};
+var InvalidCryptContextTypeException = class extends EncryptionError {
+  constructor(message = "Invalid crypt context type.", additional = void 0) {
+    super(message, additional);
+    this.name = "InvalidCryptContextTypeException";
+  }
+};
+var CryptContextReleasedException = class extends EncryptionError {
+  constructor(message = "Crypt context has been released.", additional = void 0) {
+    super(message, additional);
+    this.name = "CryptContextReleasedException";
+  }
+};
+
+// derive_key.js
+var scryptAPI = await load_deps_es5("scrypt", import.meta.resolve("./WebScrypt/scrypt.js"));
+scryptAPI.setResPath(import.meta.resolve("./WebScrypt/asset/"));
+scryptAPI.load();
+var scrypt = /* @__PURE__ */ function() {
+  const queue = [];
+  let running = false;
+  const work = (task) => new Promise(async (resolve, reject) => {
+    scryptAPI.onprogress = (p) => {
+      if (task.onprogress) task.onprogress(p);
+    };
+    scryptAPI.oncomplete = (dk) => {
+      task.resolve(dk);
+      resolve(true);
+    };
+    scryptAPI.onerror = (e) => {
+      task.reject(e);
+      resolve(false);
+    };
+    try {
+      scryptAPI.config({ N: task.N, r: task.r, P: task.p }, { maxPassLen: 8192, maxSaltLen: 2048, maxDkLen: 1024, maxThread: 1 });
+      await new Promise((r) => scryptAPI.onready = r);
+      scryptAPI.hash(task.key, task.salt, task.dklen);
+    } catch (e) {
+      reject(e);
+    }
+  });
+  async function thread() {
+    let task = null;
+    while (queue.length) try {
+      task = queue.splice(0, 1)[0];
+      await work(task);
+      await nextTick();
+    } catch (e) {
+      task?.reject(e);
+    }
+    running = false;
+  }
+  return function scrypt2(key, salt, N, r, p, dklen, onprogress = null) {
+    return new Promise((resolve, reject) => {
+      queue.push({
+        key,
+        salt,
+        N,
+        r,
+        p,
+        dklen,
+        resolve,
+        reject,
+        onprogress
+      });
+      if (!running) {
+        running = true;
+        setTimeout(thread);
+      }
+    });
+  };
+}();
+var deriveKey__phrases = ["Furina", "Neuvillette", "Venti", "Nahida", "Kinich", "Kazuha"];
+async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
+  if (N === null) N = 262144;
+  if (typeof N !== "number" || N > 2097152) {
+    throw new InvalidScryptParameterException();
+  }
+  if (!salt) {
+    salt = get_random_bytes(64);
+  }
+  if (!phrase) {
+    phrase = deriveKey__phrases[get_random_uint8_number() % deriveKey__phrases.length];
+  }
+  if (phrase.includes(":")) {
+    throw new InvalidParameterException('phrase MUST NOT contain ":"');
+  }
+  const parameter = `${phrase}:${hexlify(salt)}`;
+  const keyInput = `MyEncryption/1.1 Fontaine/4.2 Iv/${hexlify(iv)} user_parameter=${parameter} user_key=${key}`;
+  const derived_key = await scrypt(str_encode(keyInput), salt, N, r, p, dklen);
+  return { derived_key, parameter, N };
+}
+function nextTick() {
+  return new Promise((r) => setTimeout(r));
+}
+async function scrypt_hex(key, salt, N, r, p, dklen) {
+  return hexlify(await scrypt(str_encode(key), str_encode(salt), N, r, p, dklen));
+}
+
+// encrypt_data.js
+function safeparse(json) {
+  try {
+    return JSON.parse(json);
+  } catch {
+    throw new InvalidParameterException("The JSON is not valid.");
+  }
+}
+async function encrypt_data(message, key, phrase = null, N = null) {
+  const iv = get_random_bytes(12);
+  const { derived_key, parameter, N: N2 } = await derive_key(key, iv, phrase, N);
+  N = N2;
+  const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
+  if (typeof message === "string") {
+    message = str_encode(message);
+  }
+  const ciphertext = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv
+    },
+    cipher,
+    message
+  );
+  const encrypted_message = new Uint8Array(iv.length + ciphertext.byteLength);
+  encrypted_message.set(iv, 0);
+  encrypted_message.set(new Uint8Array(ciphertext), iv.length);
+  const message_encrypted = hexlify(encrypted_message);
+  return JSON.stringify({
+    data: message_encrypted,
+    parameter,
+    N,
+    v: 5.5
+  });
+}
+async function decrypt_data(message_encrypted, key) {
+  const jsoned = safeparse(message_encrypted);
+  const parameter = jsoned.parameter;
+  const N = parseInt(jsoned.N);
+  const encrypted_data = unhexlify(jsoned.data);
+  const [phrase, salt_b64] = parameter.split(":");
+  const salt = unhexlify(salt_b64);
+  if (isNaN(N) || !parameter || !encrypted_data || !salt) throw new BadDataException("The message or parameters are bad.");
+  if (encrypted_data.length < 28) throw new BadDataException("The message was too short.");
+  const iv = encrypted_data.slice(0, 12);
+  const ciphertext = encrypted_data.slice(12, -16);
+  const tag = encrypted_data.slice(-16);
+  const { derived_key } = await derive_key(key, iv, phrase, N, salt);
+  const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
+  try {
+    const decrypted_data = await crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv
+      },
+      cipher,
+      new Uint8Array([...ciphertext, ...tag])
+    );
+    try {
+      return str_decode(decrypted_data);
+    } catch {
+      return decrypted_data;
+    }
+  } catch (e) {
+    if (!e) throw new InternalError(`Internal error.`, { cause: e });
+    const name = e.name;
+    if (name === "InvalidAccessError") throw new InvalidParameterException("InvalidAccessError.", { cause: e });
+    if (name === "OperationError") throw new CannotDecryptException("Cannot decrypt. Did you provide the correct password?", { cause: e });
+    if (!e) throw new InternalError(`Unexpected error.`, { cause: e });
+  }
+}
+
+// encrypt_file.js
+function nextTick2() {
+  return new Promise((r) => requestAnimationFrame(r));
+}
+var PADDING_SIZE = 4096;
+var END_IDENTIFIER = [
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170
+];
+var TAIL_BLOCK_MARKER = [
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85
+];
+var END_MARKER = [
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170,
+  85,
+  170
+];
+var FILE_END_MARKER = [255, 253, 240, 16, 19, 208, 18, 24, 85, 170];
+function normalize_version(major_version, version_marker) {
+  if (!major_version) return `Unknown Version`;
+  if (String(major_version) === "1.1") version_marker = null;
+  if (!version_marker) return `${major_version}/0`;
+  return `${major_version}/${version_marker}`;
+}
+var ENCRYPTION_FILE_VER_1_1_0 = normalize_version("1.1");
+var ENCRYPTION_FILE_VER_1_2_10020 = normalize_version("1.2", 10020);
+async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024) {
+  if (!chunk_size) throw new InvalidParameterException("chunk_size must be greater than 0.");
+  await file_writer(str_encode("MyEncryption/1.2"));
+  const VERSION_MARKER = 10020;
+  const versionMarkerBuffer = new ArrayBuffer(4);
+  new DataView(versionMarkerBuffer).setUint32(0, VERSION_MARKER, true);
+  await file_writer(new Uint8Array(versionMarkerBuffer));
+  const key = hexlify(get_random_bytes(64));
+  const ekey = await encrypt_data(key, user_key);
+  const ekey_bytes = str_encode(ekey);
+  if (ekey_bytes.length > PADDING_SIZE) {
+    throw new InternalError("(Internal Error) This should not happen. Contact the application developer.");
+  }
+  const lengthBuffer = new ArrayBuffer(4);
+  new DataView(lengthBuffer).setUint32(0, ekey_bytes.length, true);
+  await file_writer(new Uint8Array(lengthBuffer));
+  await file_writer(ekey_bytes);
+  const padding = new Uint8Array(PADDING_SIZE - ekey_bytes.length - 4).fill(0);
+  await file_writer(padding);
+  callback?.(0);
+  await nextTick2();
+  const iv_for_key = get_random_bytes(12);
+  const { derived_key, parameter, N: N2 } = await derive_key(key, iv_for_key, phrase, N);
+  N = N2;
+  const header_data = {
+    "parameter": parameter,
+    "N": N,
+    "v": 5.5,
+    "iv": hexlify(iv_for_key)
+  };
+  const header_json = str_encode(JSON.stringify(header_data));
+  const headerLengthBuffer = new ArrayBuffer(4);
+  new DataView(headerLengthBuffer).setUint32(0, header_json.length, true);
+  await file_writer(new Uint8Array(headerLengthBuffer));
+  await file_writer(header_json);
+  const chunkSizeBuffer = new ArrayBuffer(8);
+  new DataView(chunkSizeBuffer).setBigUint64(0, BigInt(chunk_size), true);
+  await file_writer(new Uint8Array(chunkSizeBuffer));
+  let total_bytes = 0;
+  let nonce_counter = 1;
+  let position = 0;
+  const nonce_counter_start = new ArrayBuffer(8);
+  new DataView(nonce_counter_start).setBigUint64(0, BigInt(nonce_counter), true);
+  await file_writer(new Uint8Array(nonce_counter_start));
+  callback?.(0);
+  const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["encrypt"]);
+  while (true) {
+    const chunk = await file_reader(position, position + chunk_size);
+    if (chunk.length === 0) break;
+    const isFinalChunk = chunk.length < chunk_size;
+    const iv = new ArrayBuffer(12);
+    if (nonce_counter >= 2 ** 64 || nonce_counter >= Number.MAX_SAFE_INTEGER) {
+      throw new IVException("nonce_counter exceeded the maximum value.");
+    }
+    new DataView(iv).setBigUint64(4, BigInt(nonce_counter), true);
+    nonce_counter++;
+    if (isFinalChunk) {
+      await file_writer(new Uint8Array(TAIL_BLOCK_MARKER));
+      const chunkLengthBuffer = new ArrayBuffer(8);
+      new DataView(chunkLengthBuffer).setBigUint64(0, BigInt(chunk.length), true);
+      await file_writer(new Uint8Array(chunkLengthBuffer));
+    }
+    const ivArray = new Uint8Array(iv);
+    const ciphertext = await crypto.subtle.encrypt(
+      {
+        name: "AES-GCM",
+        iv: ivArray
+      },
+      cryptoKey,
+      chunk
+    );
+    const ciphertextArray = new Uint8Array(ciphertext);
+    await file_writer(ciphertextArray);
+    total_bytes += chunk.length;
+    position += chunk.length;
+    callback?.(total_bytes);
+  }
+  await file_writer(new Uint8Array(END_MARKER));
+  const totalBytesBuffer = new ArrayBuffer(8);
+  new DataView(totalBytesBuffer).setBigUint64(0, BigInt(total_bytes), true);
+  await file_writer(new Uint8Array(totalBytesBuffer));
+  await file_writer(new Uint8Array(FILE_END_MARKER));
+  return true;
+}
+async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback = null) {
+  const header = await file_reader(0, 16);
+  if (str_decode(header) !== "MyEncryption/1.1") {
+    throw new TypeError("Invalid file format");
+  }
+  let read_pos = 16;
+  const ekey_len_bytes = await file_reader(read_pos, read_pos + 4);
+  const ekey_len = new DataView(ekey_len_bytes.buffer).getUint32(0, true);
+  read_pos += 4;
+  const ekey = str_decode(await file_reader(read_pos, read_pos + ekey_len));
+  read_pos += 1024;
+  const key = await decrypt_data(ekey, user_key);
+  const json_len_bytes = await file_reader(read_pos, read_pos + 4);
+  const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
+  read_pos += 4;
+  const header_json = JSON.parse(
+    str_decode(await file_reader(read_pos, read_pos + json_len))
+  );
+  read_pos += json_len;
+  const [phrase, salt_hex] = header_json.parameter.split(":");
+  const salt = unhexlify(salt_hex);
+  const iv4key = unhexlify(header_json.iv);
+  const N = header_json.N;
+  callback?.(0);
+  await nextTick2();
+  const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
+  let total_bytes = 0;
+  const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
+  while (true) {
+    const chunk_len_bytes = await file_reader(read_pos, read_pos + 8);
+    read_pos += 8;
+    if (chunk_len_bytes.every(
+      (v, i) => v === [255, 253, 240, 16, 19, 208, 18, 24][i]
+    )) break;
+    const chunk_len = Number(
+      new DataView(chunk_len_bytes.buffer).getBigUint64(0, true)
+    );
+    const iv = await file_reader(read_pos, read_pos + 12);
+    read_pos += 12;
+    const ciphertext = await file_reader(read_pos, read_pos + chunk_len + 16);
+    read_pos += chunk_len + 16;
+    const full_ciphertext = ciphertext;
+    const decrypted = await crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv
+      },
+      cryptoKey,
+      full_ciphertext
+    );
+    await file_writer(new Uint8Array(decrypted));
+    total_bytes += decrypted.byteLength;
+    if (callback) callback(total_bytes);
+  }
+  const total_bytes_bytes = await file_reader(read_pos, read_pos + 8);
+  const total_bytes_decrypted = Number(
+    new DataView(total_bytes_bytes.buffer).getBigUint64(0, true)
+  );
+  read_pos += 8;
+  const end_marker = await file_reader(read_pos, read_pos + 2);
+  if (total_bytes !== total_bytes_decrypted) throw new FileCorruptedException("File corrupted: total bytes mismatch");
+  if (!end_marker.every((v, i) => v === [85, 170][i])) throw new InvalidEndMarkerException("Invalid end marker");
+  return true;
+}
+async function decrypt_file(file_reader, file_writer, user_key, callback = null) {
+  const header = await file_reader(0, 13);
+  if (str_decode(header) !== "MyEncryption/") {
+    throw new InvalidFileFormatException();
+  }
+  const top_header_version = str_decode(await file_reader(13, 16));
+  if (!["1.1", "1.2"].includes(top_header_version)) {
+    throw new EncryptionVersionMismatchException();
+  }
+  const version_marker = new DataView((await file_reader(16, 20)).buffer).getUint32(0, true);
+  const version = normalize_version(top_header_version, version_marker);
+  let read_pos = 16 + 4;
+  if (version === ENCRYPTION_FILE_VER_1_1_0) {
+    return await decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback);
+  }
+  const ekey_len = new DataView((await file_reader(read_pos, read_pos + 4)).buffer).getUint32(0, true);
+  const ekey = str_decode(await file_reader(read_pos + 4, read_pos + 4 + ekey_len));
+  read_pos += PADDING_SIZE;
+  if (ekey_len > PADDING_SIZE) {
+    throw new InternalError("(Internal Error) This should not happen. Contact the application developer.");
+  }
+  const key = await decrypt_data(ekey, user_key);
+  const json_len_bytes = await file_reader(read_pos, read_pos + 4);
+  const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
+  read_pos += 4;
+  const header_json = JSON.parse(
+    str_decode(await file_reader(read_pos, read_pos + json_len))
+  );
+  read_pos += json_len;
+  const header_version = header_json.v;
+  if (![5.5].includes(header_version)) throw new EncryptionVersionMismatchException();
+  const [phrase, salt_hex] = header_json.parameter.split(":");
+  const salt = unhexlify(salt_hex);
+  const iv4key = unhexlify(header_json.iv);
+  const N = header_json.N;
+  const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
+  let nonce_counter = Number(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
+  read_pos += 16;
+  callback?.(0);
+  await nextTick2();
+  const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
+  let total_bytes = 0, is_final_chunk = false;
+  const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
+  while (true) {
+    const chunk_tag = await file_reader(read_pos, read_pos + 8);
+    let real_size = 0;
+    if (chunk_tag.every((v, i) => v === END_IDENTIFIER[i])) {
+      const full_bytes = await file_reader(read_pos, read_pos + 32);
+      if (full_bytes.every((v, i) => v === END_MARKER[i])) {
+        read_pos += 32;
+        break;
+      }
+      if (full_bytes.every((v, i) => v === TAIL_BLOCK_MARKER[i])) {
+        is_final_chunk = true;
+        read_pos += 32;
+        const chunk_len_bytes = await file_reader(read_pos, read_pos + 8);
+        read_pos += 8;
+        real_size = Number(new DataView(chunk_len_bytes.buffer).getBigUint64(0, true));
+        if (real_size === 0) break;
+      }
+    }
+    const ciphertext_length = is_final_chunk ? real_size : chunk_size;
+    const iv_array = new ArrayBuffer(12);
+    new DataView(iv_array).setBigUint64(4, BigInt(nonce_counter), true);
+    nonce_counter++;
+    const ciphertext = await file_reader(read_pos, read_pos + ciphertext_length + 16);
+    read_pos += ciphertext_length + 16;
+    const full_ciphertext = ciphertext;
+    try {
+      const decrypted = await crypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv: new Uint8Array(iv_array)
+        },
+        cryptoKey,
+        full_ciphertext
+      );
+      await file_writer(new Uint8Array(decrypted));
+      total_bytes += decrypted.byteLength;
+    } catch (e) {
+      if (!e) throw new InternalError(`Internal error.`, { cause: e });
+      const name = e.name;
+      if (name === "InvalidAccessError") throw new InvalidParameterException("InvalidAccessError.", { cause: e });
+      if (name === "OperationError") throw new CannotDecryptException("Cannot decrypt. Did you provide the correct password?", { cause: e });
+      if (!e) throw new InternalError(`Unexpected error.`, { cause: e });
+    }
+    if (callback) callback(total_bytes);
+  }
+  const total_bytes_bytes = await file_reader(read_pos, read_pos + 8);
+  const total_bytes_decrypted = Number(
+    new DataView(total_bytes_bytes.buffer).getBigUint64(0, true)
+  );
+  read_pos += 8;
+  const end_marker = await file_reader(read_pos, read_pos + FILE_END_MARKER.length);
+  if (total_bytes !== total_bytes_decrypted) throw new FileCorruptedException("total bytes mismatch");
+  if (!end_marker.every((v, i) => v === FILE_END_MARKER[i])) throw new InvalidEndMarkerException();
+  return true;
+}
+
+// key_management.js
+async function export_master_key(file_head, current_key, export_key) {
+  if (file_head.size < 1024 + 16 + 4) throw new BadDataException("Data not enough");
+  const headerBlob = file_head.slice(0, 13);
+  const header = await headerBlob.text();
+  if (header !== "MyEncryption/") {
+    throw new InvalidFileFormatException();
+  }
+  const top_header_version = await file_head.slice(13, 16).text();
+  if (!["1.1", "1.2"].includes(top_header_version)) {
+    throw new EncryptionVersionMismatchException();
+  }
+  const version_marker = new DataView(await file_head.slice(16, 20).arrayBuffer()).getUint32(0, true);
+  const version = normalize_version(top_header_version, version_marker);
+  if (version === ENCRYPTION_FILE_VER_1_1_0) {
+    const ekey_len = new DataView(await file_head.slice(16, 20).arrayBuffer()).getUint32(0, true);
+    const buffer = await file_head.slice(20, 20 + ekey_len).arrayBuffer();
+    const ekey_ciphertext = str_decode(buffer);
+    return await encrypt_data(await decrypt_data(ekey_ciphertext, current_key), export_key);
+  }
+  if (version === ENCRYPTION_FILE_VER_1_2_10020) {
+    if (file_head.size < 16 + PADDING_SIZE) throw new BadDataException("Data not enough");
+    const ekey_len = new DataView(await file_head.slice(20, 24).arrayBuffer()).getUint32(0, true);
+    const buffer = await file_head.slice(24, 24 + ekey_len).arrayBuffer();
+    const ekey_ciphertext = str_decode(buffer);
+    return await encrypt_data(await decrypt_data(ekey_ciphertext, current_key), export_key);
+  }
+  throw new EncryptionVersionMismatchException();
+}
+async function change_file_password_1_1_0(file_head, current_key, new_key) {
+  if (file_head.size < 1024 + 16 + 4) throw new Error("Data not enough");
+  const headerBlob = file_head.slice(0, 16);
+  const header = await headerBlob.text();
+  if (header !== "MyEncryption/1.1") {
+    throw new TypeError("Invalid file format");
+  }
+  const ekey_len = new DataView(await file_head.slice(16, 20).arrayBuffer()).getUint32(0, true);
+  const ekey_ciphertext = str_decode(await file_head.slice(20, 20 + ekey_len).arrayBuffer());
+  const new_ekey = await encrypt_data(await decrypt_data(ekey_ciphertext, current_key), new_key);
+  if (new_ekey.length > 1024) {
+    throw new Error("(Internal Error) This should not happen. Contact the application developer.");
+  }
+  const new_ekey_len = new_ekey.length;
+  const new_ekey_len_bytes = new ArrayBuffer(4);
+  const new_ekey_len_view = new DataView(new_ekey_len_bytes);
+  new_ekey_len_view.setUint32(0, new_ekey_len, true);
+  const new_ekey_parts = [headerBlob, new_ekey_len_bytes, str_encode(new_ekey)];
+  const padding = new Uint8Array(1024 - new_ekey.length).fill(0);
+  new_ekey_parts.push(padding);
+  return new Blob(new_ekey_parts);
+}
+async function change_file_password(file_head, current_key, new_key) {
+  if (file_head.size < 1024 + 16 + 4) throw new Error("Data not enough");
+  const headerBlob = file_head.slice(0, 13);
+  const header = await headerBlob.text();
+  if (header !== "MyEncryption/") {
+    throw new InvalidFileFormatException();
+  }
+  const top_header_version = await file_head.slice(13, 16).text();
+  if (!["1.1", "1.2"].includes(top_header_version)) {
+    throw new EncryptionVersionMismatchException();
+  }
+  const version_marker = new DataView(await file_head.slice(16, 20).arrayBuffer()).getUint32(0, true);
+  const version = normalize_version(top_header_version, version_marker);
+  if (version === ENCRYPTION_FILE_VER_1_1_0) return await change_file_password_1_1_0(file_head, current_key, new_key);
+  const ekey_len = new DataView(await file_head.slice(20, 24).arrayBuffer()).getUint32(0, true);
+  const ekey_ciphertext = str_decode(await file_head.slice(24, 24 + ekey_len).arrayBuffer());
+  const new_ekey = await encrypt_data(await decrypt_data(ekey_ciphertext, current_key), new_key);
+  if (new_ekey.length > 1024) {
+    throw new Error("(Internal Error) This should not happen. Contact the application developer.");
+  }
+  const new_ekey_len = new_ekey.length;
+  const new_ekey_len_bytes = new ArrayBuffer(4);
+  const new_ekey_len_view = new DataView(new_ekey_len_bytes);
+  new_ekey_len_view.setUint32(0, new_ekey_len, true);
+  const new_ekey_parts = [file_head.slice(0, 20), new_ekey_len_bytes, str_encode(new_ekey)];
+  const padding = new Uint8Array(PADDING_SIZE - new_ekey.length - 4).fill(0);
+  new_ekey_parts.push(padding);
+  return new Blob(new_ekey_parts);
+}
+
+// context.js
+var CRYPT_CONTEXT = /* @__PURE__ */ Object.create(null);
+CRYPT_CONTEXT[Symbol.toStringTag] = "CryptContext";
+CRYPT_CONTEXT["toString"] = function() {
+  return `${this[Symbol.toStringTag]} Object`;
+};
+async function _await(PromiseLike) {
+  if (PromiseLike instanceof Promise) return await PromiseLike;
+  return PromiseLike;
+}
+async function crypt_context_create() {
+  const ctx = Object.create(CRYPT_CONTEXT);
+  Object.defineProperty(ctx, "_created", { value: true });
+  return ctx;
+}
+async function crypt_context_destroy(ctx) {
+  if (!ctx || ctx._released) throw new InvalidParameterException("Invalid context");
+  for (const i of Reflect.ownKeys(ctx)) {
+    const o = Reflect.get(ctx, i);
+    if (o) {
+      if (o.release) await _await(o.release());
+      else if (o.free) await _await(o.free());
+      else if (o.reset) await _await(o.reset());
+      else if (o.clear) await _await(o.clear());
+    }
+    if (!i.startsWith("_")) Reflect.deleteProperty(ctx, i);
+  }
+  Object.defineProperty(ctx, "_released", { value: true });
+  return true;
+}
+
+// stream.js
+var Stream = class {
+  #reader = null;
+  #cache = {
+    position: null,
+    end: null,
+    data: null
+  };
+  #size = null;
+  get [Symbol.toStringTag]() {
+    return "Stream";
+  }
+  // reader 应该返回 AwaitAble<Uint8Array>
+  constructor(reader, size) {
+    if (typeof reader !== "function") throw new InvalidParameterException("Stream: Invalid reader");
+    this.#reader = reader;
+    if (size !== null && typeof size !== "number") throw new InvalidParameterException("Stream: Invalid size");
+    this.#size = size;
+  }
+  get size() {
+    return this.#size;
+  }
+  /**
+   * Read a stream
+   * @param {Number} start start pos
+   * @param {Number} end end pos
+   * @param {Number|null} suggestion_end The suggested end. Used for caching.
+   * @returns {Promise<Uint8Array>}
+   */
+  async read(start, end, suggestion_end = null) {
+    if (!this.#reader) throw new Error("Stream: The stream has been closed.");
+    if (this.#cache.position && this.#cache.end && this.#cache.data && (start >= this.#cache.position && end <= this.#cache.end)) {
+      return this.#cache.data.slice(start - this.#cache.position, end - this.#cache.position);
+    }
+    if (start < 0) throw new InvalidParameterException("Stream: Invalid start position");
+    if (end > this.#size) end = this.#size;
+    if (suggestion_end > this.#size) suggestion_end = this.#size;
+    if (suggestion_end) {
+      const data2 = await this.#reader(start, suggestion_end);
+      this.#cache.position = start;
+      this.#cache.end = start + data2.length;
+      this.#cache.data = data2;
+      return data2.slice(0, end - start);
+    }
+    const data = await this.#reader(start, end);
+    return data;
+  }
+  purge() {
+    this.#cache.position = this.#cache.data = this.#cache.end = null;
+  }
+  close() {
+    this.#reader = null;
+    this.purge();
+  }
+};
+async function decrypt_stream_init(ctx, stream, password, {
+  cache = true,
+  cache_max_size = 256 * 1024 * 1024
+} = {}) {
+  if (ctx._inited) throw new CryptContextReusedException();
+  Object.defineProperty(ctx, "_inited", { value: true });
+  ctx._type = "@decrypt_stream";
+  ctx.stream = {
+    stream,
+    release: () => ctx.stream.stream.close()
+  };
+  const header = await stream.read(0, 13, 4200);
+  if (str_decode(header) !== "MyEncryption/") {
+    throw new InvalidFileFormatException();
+  }
+  const top_header_version = str_decode(await stream.read(13, 16));
+  if (!["1.1", "1.2"].includes(top_header_version)) {
+    throw new EncryptionVersionMismatchException();
+  }
+  const version_marker = new DataView((await stream.read(16, 20)).buffer).getUint32(0, true);
+  const version = normalize_version(top_header_version, version_marker);
+  let read_pos = 16 + 4;
+  if (version !== ENCRYPTION_FILE_VER_1_2_10020) {
+    throw new NotSupportedException("Cannot perform a streamed decryption on V1.1 files");
+  }
+  const ekey_len = new DataView((await stream.read(read_pos, read_pos + 4)).buffer).getUint32(0, true);
+  const ekey = str_decode(await stream.read(read_pos + 4, read_pos + 4 + ekey_len));
+  read_pos += PADDING_SIZE;
+  if (ekey_len > PADDING_SIZE) {
+    throw new InternalError("(Internal Error) This should not happen. Contact the application developer.");
+  }
+  const key = await decrypt_data(ekey, password);
+  const json_len_bytes = await stream.read(read_pos, read_pos + 4);
+  const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
+  read_pos += 4;
+  const header_json = JSON.parse(
+    str_decode(await stream.read(read_pos, read_pos + json_len))
+  );
+  read_pos += json_len;
+  const header_version = header_json.v;
+  if (![5.5].includes(header_version)) throw new EncryptionVersionMismatchException();
+  const [phrase, salt_hex] = header_json.parameter.split(":");
+  const salt = unhexlify(salt_hex);
+  const iv4key = unhexlify(header_json.iv);
+  const N = header_json.N;
+  const chunk_size = Number(new DataView((await stream.read(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
+  let nonce_counter = Number(new DataView((await stream.read(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
+  read_pos += 16;
+  const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
+  const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
+  ctx.key = cryptoKey;
+  ctx.chunk_size = chunk_size;
+  ctx.nonce_counter = nonce_counter;
+  ctx.header_json_length = json_len;
+  ctx.cache_enabled = !!cache;
+  ctx.cached_chunks = /* @__PURE__ */ new Map();
+  ctx.cached_chunks_add_order = new Array();
+  ctx.cached_size = 0;
+  ctx.cache_max_size = cache_max_size;
+  return true;
+}
+async function decrypt_stream(ctx, bytes_start, bytes_end) {
+  if (!ctx._inited) throw new CryptContextNotInitedException();
+  if (ctx._type !== "@decrypt_stream") throw new InvalidCryptContextTypeException(ctx._type);
+  if (ctx._released) throw new CryptContextReleasedException();
+  const stream = ctx.stream.stream;
+  const chunk_size = ctx.chunk_size;
+  const nonce_counter_start = ctx.nonce_counter;
+  const result = [];
+  const chunks_start = 16 + 4 + PADDING_SIZE + 4 + ctx.header_json_length + 8 + 8;
+  const size_per_chunk = chunk_size + 16;
+  const max_chunk = Math.floor((stream.size - chunks_start - (32 + 8 + 32 + 8 + FILE_END_MARKER.length)) / size_per_chunk);
+  const start_chunk = Math.max(0, Math.floor(bytes_start / chunk_size));
+  const end_chunk = Math.min(max_chunk, Math.floor(bytes_end / chunk_size));
+  if (end_chunk < 0 || start_chunk > max_chunk) throw new InvalidParameterException("Out of range");
+  const read_chunk = async (chunk) => {
+    if (ctx.cache_enabled && ctx.cached_chunks.has(chunk)) {
+      return ctx.cached_chunks.get(chunk);
+    }
+    let pos = chunks_start + chunk * size_per_chunk;
+    const eight_bytes = await stream.read(pos, pos + 8, pos + 2 * size_per_chunk);
+    let real_size = 0;
+    if (eight_bytes.every((v, i) => v === END_IDENTIFIER[i])) {
+      const full_bytes = await stream.read(pos, pos + 32);
+      pos += 32;
+      if (full_bytes.every((v, i) => v === END_MARKER[i])) {
+        return false;
+      }
+      if (full_bytes.every((v, i) => v === TAIL_BLOCK_MARKER[i])) {
+        const chunk_len_bytes = await stream.read(pos, pos + 8);
+        pos += 8;
+        real_size = Number(new DataView(chunk_len_bytes.buffer).getBigUint64(0, true));
+        if (real_size === 0) return false;
+      }
+    }
+    const ciphertext_length = real_size ? real_size : chunk_size;
+    const ciphertext = await stream.read(pos, pos + ciphertext_length + 16);
+    const nonce_counter = nonce_counter_start + chunk;
+    const iv_array = new ArrayBuffer(12);
+    new DataView(iv_array).setBigUint64(4, BigInt(nonce_counter), true);
+    try {
+      const data = await crypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv: new Uint8Array(iv_array)
+        },
+        ctx.key,
+        ciphertext
+      );
+      if (ctx.cache_enabled) {
+        if (data.byteLength < ctx.cache_max_size) {
+          ctx.cached_chunks_add_order.push(chunk);
+          ctx.cached_chunks.set(chunk, data);
+          ctx.cached_size += data.byteLength;
+        }
+        while (ctx.cached_size > ctx.cache_max_size) {
+          const oldest_chunk = ctx.cached_chunks_add_order.shift();
+          ctx.cached_size -= ctx.cached_chunks.get(oldest_chunk).byteLength;
+          ctx.cached_chunks.delete(oldest_chunk);
+        }
+      }
+      return data;
+    } catch (e) {
+      if (!e) throw new InternalError(`Internal error.`, { cause: e });
+      const name = e.name;
+      if (name === "InvalidAccessError") throw new InvalidParameterException("InvalidAccessError.", { cause: e });
+      if (name === "OperationError") throw new CannotDecryptException("Cannot decrypt. Did you provide the correct password?", { cause: e });
+      if (!e) throw new InternalError(`Unexpected error.`, { cause: e });
+    }
+  };
+  let EOFbit = false;
+  for (let i = start_chunk; i <= end_chunk; i++) {
+    const decrypted_chunk = await read_chunk(i);
+    if (!decrypted_chunk) {
+      EOFbit = true;
+      break;
+    }
+    result.push(decrypted_chunk);
+  }
+  const blob_full = new Blob(result);
+  const startpos = start_chunk * chunk_size;
+  const blob = blob_full.slice(bytes_start - startpos, bytes_end - startpos);
+  if (EOFbit) blob.eof = true;
+  return blob;
+}
+
+// version.js
+var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.0";
+export {
+  ENCRYPTION_FILE_VER_1_1_0,
+  ENCRYPTION_FILE_VER_1_2_10020,
+  exceptions_exports as Exceptions,
+  Stream,
+  VERSION,
+  change_file_password,
+  crypt_context_create,
+  crypt_context_destroy,
+  decrypt_data,
+  decrypt_file,
+  decrypt_stream,
+  decrypt_stream_init,
+  derive_key,
+  encrypt_data,
+  encrypt_file,
+  export_master_key,
+  get_random_bytes,
+  get_random_int8_number,
+  get_random_uint8_number,
+  hexlify,
+  normalize_version,
+  scrypt,
+  scrypt_hex,
+  str_decode,
+  str_encode,
+  unhexlify
+};
 //# sourceMappingURL=main.bundle.js.map

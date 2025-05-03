@@ -15,7 +15,7 @@ async function _await(PromiseLike) {
 
 export async function crypt_context_create() {
     const ctx = Object.create(CRYPT_CONTEXT);
-    ctx._created = true;
+    Object.defineProperty(ctx, '_created', { value: true });
     return ctx;
 }
 

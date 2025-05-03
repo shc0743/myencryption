@@ -49,6 +49,8 @@ export const ENCRYPTION_FILE_VER_1_2_10020 = normalize_version('1.2', 10020);
  * @returns {Promise<boolean>} 返回加密是否成功
  */
 export async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024) {
+    if (!chunk_size) throw new Exceptions.InvalidParameterException('chunk_size must be greater than 0.');
+
     // 写入文件头标识和版本 (16字节)
     await file_writer(str_encode('MyEncryption/1.2'));
 

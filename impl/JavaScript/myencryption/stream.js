@@ -15,14 +15,21 @@ export class Stream {
         end: null,
         data: null,
     };
+    #size = null;
     get [Symbol.toStringTag]() {
         return 'Stream';
     }
 
     // reader 应该返回 AwaitAble<Uint8Array>
-    constructor(reader) {
-        if (typeof reader !== 'function') throw new Exceptions.InvalidParameterException('Invalid reader');
+    constructor(reader, size) {
+        if (typeof reader !== 'function') throw new Exceptions.InvalidParameterException('Stream: Invalid reader');
         this.#reader = reader;
+        if (size !== null && typeof size !== 'number') throw new Exceptions.InvalidParameterException('Stream: Invalid size');
+        this.#size = size;
+    }
+
+    get size() {
+        return this.#size;
     }
 
     /**
@@ -33,11 +40,17 @@ export class Stream {
      * @returns {Promise<Uint8Array>}
      */
     async read(start, end, suggestion_end = null) {
-        if (!this.#reader) throw new Error('Stream is closed.');
+        if (!this.#reader) throw new Error('Stream: The stream has been closed.');
         if (this.#cache.position && this.#cache.end && this.#cache.data && (start >= this.#cache.position && end <= this.#cache.end)) {
             // cache match
             return this.#cache.data.slice(start - this.#cache.position, end - this.#cache.position);
         }
+
+        // normalize parameters
+        if (start < 0) throw new Exceptions.InvalidParameterException('Stream: Invalid start position');
+        if (end > this.#size) end = this.#size;
+        if (suggestion_end > this.#size) suggestion_end = this.#size;
+
         if (suggestion_end) {
             // cache policy
             const data = await this.#reader(start, suggestion_end);
@@ -69,8 +82,14 @@ export class Stream {
  * @param {CryptContext} ctx Context
  * @param {Stream} stream The stream to decrypt.
  * @param {String} password The password.
+ * @param {Object} [param3={}] Options.
+ * @param {boolean} [param3.cache=true] Set if the cache is enabled.
+ * @param {number} [param3.cache_max_size=256 * 1024 * 1024] Set the maximium size of the cache.
  */
-export async function decrypt_stream_init(ctx, stream, size, password) {
+export async function decrypt_stream_init(ctx, stream, password, {
+    cache = true,
+    cache_max_size = 256 * 1024 * 1024,
+} = {}) {
     if (ctx._inited) throw new Exceptions.CryptContextReusedException();
     Object.defineProperty(ctx, '_inited', { value: true });
 
@@ -81,7 +100,7 @@ export async function decrypt_stream_init(ctx, stream, size, password) {
     };
 
     // 派生密钥
-    const header = await stream.read(0, 13);
+    const header = await stream.read(0, 13, 4200);
     if (str_decode(header) !== 'MyEncryption/') {
         throw new Exceptions.InvalidFileFormatException();
     }
@@ -141,7 +160,11 @@ export async function decrypt_stream_init(ctx, stream, size, password) {
     ctx.chunk_size = chunk_size;
     ctx.nonce_counter = nonce_counter;
     ctx.header_json_length = json_len;
-    ctx.size = size;
+    ctx.cache_enabled = !!cache;
+    ctx.cached_chunks = new Map();
+    ctx.cached_chunks_add_order = new Array();
+    ctx.cached_size = 0;
+    ctx.cache_max_size = cache_max_size;
 
     return true;
 }
@@ -167,16 +190,21 @@ export async function decrypt_stream(ctx, bytes_start, bytes_end) {
     // 文件头16 + 版本标识4 + 主密钥4096 + JSON长度4 + JSON + chunk_size8 + IV8
     const chunks_start = 16 + 4 + PADDING_SIZE + 4 + ctx.header_json_length + 8 + 8;
     // tag 16字节
-    const size_per_chunk = chunk_size + 16
+    const size_per_chunk = chunk_size + 16;
 
     // 确定需要解密的分块位置
-    const max_chunk = Math.floor((ctx.size - chunks_start - (32 + 8 + 32 + 8 + FILE_END_MARKER.length)) / size_per_chunk);
+    const max_chunk = Math.floor((stream.size - chunks_start - (32 + 8 + 32 + 8 + FILE_END_MARKER.length)) / size_per_chunk);
     const start_chunk = Math.max(0, Math.floor(bytes_start / chunk_size));
     const end_chunk = Math.min(max_chunk, Math.floor(bytes_end / chunk_size));
     if (end_chunk < 0 || start_chunk > max_chunk) throw new Exceptions.InvalidParameterException("Out of range")
 
     // 用于读取chunk
     const read_chunk = async (chunk) => {
+        // 检查缓存
+        if (ctx.cache_enabled && ctx.cached_chunks.has(chunk)) {
+            return ctx.cached_chunks.get(chunk);
+        }
+
         // 定位对应chunk
         let pos = chunks_start + (chunk * size_per_chunk);
         // 读取8字节
@@ -209,7 +237,7 @@ export async function decrypt_stream(ctx, bytes_start, bytes_end) {
 
         // 使用WebCrypto解密
         try {
-            return await crypto.subtle.decrypt(
+            const data = await crypto.subtle.decrypt(
                 {
                     name: 'AES-GCM',
                     iv: new Uint8Array(iv_array),
@@ -217,6 +245,22 @@ export async function decrypt_stream(ctx, bytes_start, bytes_end) {
                 ctx.key,
                 ciphertext
             );
+            // 保存到缓存
+            if (ctx.cache_enabled) {
+                if (data.byteLength < ctx.cache_max_size) {
+                    ctx.cached_chunks_add_order.push(chunk);
+                    ctx.cached_chunks.set(chunk, data);
+                    ctx.cached_size += data.byteLength;
+                }
+
+                // 检查缓存大小
+                while (ctx.cached_size > ctx.cache_max_size) {
+                    const oldest_chunk = ctx.cached_chunks_add_order.shift();
+                    ctx.cached_size -= ctx.cached_chunks.get(oldest_chunk).byteLength;
+                    ctx.cached_chunks.delete(oldest_chunk);
+                }
+            }
+            return data;
         }
         catch (e) {
             if (!e) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
