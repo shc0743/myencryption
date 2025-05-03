@@ -522,6 +522,7 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
   const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["encrypt"]);
   while (true) {
     const chunk = await file_reader(position, position + chunk_size);
+    if (!(chunk instanceof Uint8Array)) throw new BadDataException("The file chunk is not a Uint8Array.");
     if (chunk.length === 0) break;
     const isFinalChunk = chunk.length < chunk_size;
     const iv = new ArrayBuffer(12);
@@ -1035,7 +1036,7 @@ async function decrypt_stream(ctx, bytes_start, bytes_end) {
 }
 
 // version.js
-var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.0";
+var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.2";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,

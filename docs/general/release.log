@@ -1,0 +1,28 @@
+>npm publish --access public
+npm notice
+npm notice package: simple-web-encryption@1.2.40
+npm notice === Tarball Contents ===
+npm notice 21.7kB  WebScrypt/asset/asmjs.js
+npm notice 1.1kB   WebScrypt/LICENSE.txt
+npm notice 154B    WebScrypt/README.md
+npm notice 5.4kB   WebScrypt/scrypt.js
+npm notice 102.3kB WebScrypt/sourcemap/asmjs.js.map
+npm notice 24.6kB  WebScrypt/sourcemap/scrypt.js.map
+npm notice 39.5kB  main.bundle.js
+npm notice 85.6kB  main.bundle.js.map
+npm notice 19.6kB  main.bundle.min.js
+npm notice 89.7kB  main.bundle.min.js.map
+npm notice 828B    package.json
+npm notice 42B     test.js
+npm notice === Tarball Details ===
+npm notice name:          simple-web-encryption
+npm notice version:       1.2.40
+npm notice filename:      simple-web-encryption-1.2.40.tgz
+npm notice package size:  94.6 kB
+npm notice unpacked size: 390.6 kB
+npm notice shasum:        e00c9ecc47061a989d98e180de4860e69e69b702
+npm notice integrity:     sha512-GCkIwTsm1EJ+j[...]6bgEAG2MO6yCw==
+npm notice total files:   12
+npm notice
+npm notice Publishing to https://registry.npmjs.org/
++ simple-web-encryption@1.2.40

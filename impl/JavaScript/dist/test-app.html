@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - simple-web-encryption</title>
+    <script type="importmap">{
+        "imports": {
+            "simple-web-encryption": "./main.bundle.js"
+        }
+    }</script>
+</head>
+<body>
+    <h1>Test - simple-web-encryption</h1>
+
+    <div id="log">Check your browser log for the results.</div>
+    <button id="cleanup">cleanup</button>
+
+    <script>cleanup.onclick = () => {
+        fetch('/server-stop').finally(()=>close());
+    }</script>
+
+    <script type="module" src="./test-app.js"></script>
+
+</body>
+</html>

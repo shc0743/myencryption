@@ -122,6 +122,8 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     while (true) {
         // 读取文件块
         const chunk = await file_reader(position, position + chunk_size);
+        // chunk should be a Uint8Array
+        if (!(chunk instanceof Uint8Array)) throw new Exceptions.BadDataException("The file chunk is not a Uint8Array.");
         if (chunk.length === 0) break;
         const isFinalChunk = chunk.length < chunk_size;
 
