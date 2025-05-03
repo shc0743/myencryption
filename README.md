@@ -52,10 +52,20 @@ decrypt_file('secure.bin', 'new_raw_file.png', 'your_password')
 
 To use the JavaScript version in your project:
 
-1. [Get the module from the releases](https://github.com/shc0743/myencryption/releases/)
+1. Install by npm (**Recommended**) or [Get the module from the releases](https://github.com/shc0743/myencryption/releases/)
 2. Import and use the provided functions. Note: The JavaScript version uses `await` for asynchronous operations, so ensure your code is inside an `async` function.
 
 For a demo, please [go here](https://github.com/shc7432/MyEncryptionApp-Demo/tree/main)
+
+### npm usage
+
+Install by the following command:
+
+```bash
+npm i simple-web-encryption
+```
+
+### Example usage
 
 ```javascript
 // yourcode.js

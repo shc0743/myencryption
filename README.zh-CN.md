@@ -50,12 +50,22 @@ decrypt_file('secure.bin', 'new_raw_file.png', 'your_password')
 
 **注意**：JavaScript 版本功能有限
 
-在项目中使用 JavaScript 版本：
+要在项目中使用 JavaScript 版本：
 
-1. [从发布页面获取模块](https://github.com/shc0743/myencryption/releases/)
+1. 使用 npm 安装（**推荐**） 或 [从发布页面获取模块](https://github.com/shc0743/myencryption/releases/)
 2. 导入并使用提供的函数。注意：JavaScript 版本使用 `Promise` 进行异步操作。
 
 For a demo, please [go here](https://github.com/shc7432/MyEncryptionApp-Demo/tree/main)
+
+### 通过 npm 安装
+
+运行以下命令：
+
+```bash
+npm i simple-web-encryption
+```
+
+### 示例
 
 ```javascript
 // yourcode.js
