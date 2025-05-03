@@ -1,6 +1,6 @@
 {
   "name": "simple-web-encryption",
-  "version": "1.2.42",
+  "version": "1.2.43",
   "description": "A comprehensive encryption library providing simple tools for data and file encryption/decryption with modern cryptographic standards.",
   "main": "main.bundle.js",
   "type": "module",
@@ -9,10 +9,10 @@
     "main.bundle.js.map",
     "main.bundle.min.js",
     "main.bundle.min.js.map",
-    "WebScrypt/**",
-    "test.js",
     "test-app.html",
-    "test-app.js"
+    "test-app.js",
+    "WebScrypt/**",
+    "test.js"
   ],
   "scripts": {
     "test": "node test.js"

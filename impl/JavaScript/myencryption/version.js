@@ -1,1 +1,1 @@
-export const VERSION = 'Encryption/5.5 FileEncryption/1.2 Patch/4.2';
+export const VERSION = 'Encryption/5.5 FileEncryption/1.2 Patch/4.3';
