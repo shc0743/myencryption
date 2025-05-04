@@ -74,7 +74,7 @@ declare module "simple-web-encryption" {
      * @param callback - Progress callback function
      * @param phrase - Optional phrase for key derivation
      * @param N - scrypt parameter N
-     * @param chunk_size - Chunk size, defaults to 16MB
+     * @param chunk_size - Chunk size, defaults to 32MiB
      * @returns Returns whether encryption was successful
      */
     export function encrypt_file(

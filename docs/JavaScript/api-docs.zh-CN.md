@@ -45,7 +45,7 @@
   - `callback`: `(progress: number, total: number) => void` (可选) - 进度回调。
   - `phrase`: `string | null` (可选) - 可选的密码短语。
   - `N`: `number | null` (可选) - scrypt 参数 N。
-  - `chunk_size`: `number` (可选) - 分块大小（默认：32MB）。
+  - `chunk_size`: `number` (可选) - 分块大小（默认：32MiB）。
 - **返回值**：`Promise<boolean>` - 加密是否成功。
 
 ---

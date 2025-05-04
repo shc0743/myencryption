@@ -49,7 +49,7 @@ export const ENCRYPTION_FILE_VER_1_2_10020 = normalize_version('1.2', 10020);
  * @param {string} user_key - 用户密钥
  * @param {string|null} phrase - 可选短语，用于密钥派生
  * @param {number|null} N - scrypt参数N
- * @param {number} chunk_size - 分块大小，默认为16MB
+ * @param {number} chunk_size - 分块大小，默认为32MiB
  * @returns {Promise<boolean>} 返回加密是否成功
  */
 export async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024) {

@@ -1,0 +1,142 @@
+D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\lib>npm run make
+
+> simple-web-encryption@1.2.49 make
+> npm run build && npm run test && npm pack --dry-run
+
+
+> simple-web-encryption@1.2.49 build
+> node build.cjs
+
+🗑️ 已删除文件: main.bundle.js
+🗑️ 已删除文件: main.bundle.js.map
+🗑️ 已删除文件: main.bundle.min.js
+🗑️ 已删除文件: main.bundle.min.js.map
+🗑️ 已删除文件: main.bundle.d.ts
+🗑️ 已删除文件: main.bundle.min.d.ts
+
+🔄 打包中...
+✅ 打包完成，所有ESM特性保留！
+
+🔄 编译中...
+✅ 编译完成，所有ESM特性保留！
+
+🔄 复制类型定义文件...
+✅ 类型定义文件已复制！
+
+编译用时: 2.003s
+✅✅ 🐍build🐍: 成功! ✅✅
+
+> simple-web-encryption@1.2.49 test
+> node test.js
+
+Test is running in your browser now. URL: http://127.0.0.1:36429/test/test-app.html
+Test completed.
+npm notice
+npm notice package: simple-web-encryption@1.2.49
+npm notice Tarball Contents
+npm notice 2.2kB build.cjs
+npm notice 9.7kB dist/main.bundle.d.ts
+npm notice 40.3kB dist/main.bundle.js
+npm notice 87.5kB dist/main.bundle.js.map
+npm notice 9.7kB dist/main.bundle.min.d.ts
+npm notice 19.9kB dist/main.bundle.min.js
+npm notice 91.7kB dist/main.bundle.min.js.map
+npm notice 21.7kB dist/WebScrypt/asset/asmjs.js
+npm notice 1.1kB dist/WebScrypt/LICENSE.txt
+npm notice 154B dist/WebScrypt/README.md
+npm notice 5.4kB dist/WebScrypt/scrypt.js
+npm notice 102.3kB dist/WebScrypt/sourcemap/asmjs.js.map
+npm notice 24.6kB dist/WebScrypt/sourcemap/scrypt.js.map
+npm notice 1.1kB package.json
+npm notice 1.6kB src/binascii.js
+npm notice 1.4kB src/context.js
+npm notice 3.4kB src/derive_key.js
+npm notice 3.7kB src/encrypt_data.js
+npm notice 17.9kB src/encrypt_file.js
+npm notice 4.2kB src/exceptions.js
+npm notice 7.3kB src/key_management.js
+npm notice 663B src/loader.js
+npm notice 1.4kB src/main.js
+npm notice 469B src/random.js
+npm notice 723B src/str.js
+npm notice 12.5kB src/stream.js
+npm notice 71B src/version.js
+npm notice 21.7kB src/WebScrypt/asset/asmjs.js
+npm notice 1.1kB src/WebScrypt/LICENSE.txt
+npm notice 154B src/WebScrypt/README.md
+npm notice 5.4kB src/WebScrypt/scrypt.js
+npm notice 102.3kB src/WebScrypt/sourcemap/asmjs.js.map
+npm notice 24.6kB src/WebScrypt/sourcemap/scrypt.js.map
+npm notice 2.7kB test.js
+npm notice 697B test/test-app.html
+npm notice 5.8kB test/test-app.js
+npm notice 9.7kB types/types.d.ts
+npm notice Tarball Details
+npm notice name: simple-web-encryption
+npm notice version: 1.2.49
+npm notice filename: simple-web-encryption-1.2.49.tgz
+npm notice package size: 140.3 kB
+npm notice unpacked size: 646.8 kB
+npm notice shasum: c33e6acbac5ae83bd81f981375668513adc4bb20
+npm notice integrity: sha512-tl83PIak0ZhEd[...]FeAQK4l2O9ewA==
+npm notice total files: 37
+npm notice
+simple-web-encryption-1.2.49.tgz
+
+D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\lib>npm publish
+npm notice
+npm notice package: simple-web-encryption@1.2.49
+npm notice Tarball Contents
+npm notice 2.2kB build.cjs
+npm notice 9.7kB dist/main.bundle.d.ts
+npm notice 40.3kB dist/main.bundle.js
+npm notice 87.5kB dist/main.bundle.js.map
+npm notice 9.7kB dist/main.bundle.min.d.ts
+npm notice 19.9kB dist/main.bundle.min.js
+npm notice 91.7kB dist/main.bundle.min.js.map
+npm notice 21.7kB dist/WebScrypt/asset/asmjs.js
+npm notice 1.1kB dist/WebScrypt/LICENSE.txt
+npm notice 154B dist/WebScrypt/README.md
+npm notice 5.4kB dist/WebScrypt/scrypt.js
+npm notice 102.3kB dist/WebScrypt/sourcemap/asmjs.js.map
+npm notice 24.6kB dist/WebScrypt/sourcemap/scrypt.js.map
+npm notice 1.1kB package.json
+npm notice 1.6kB src/binascii.js
+npm notice 1.4kB src/context.js
+npm notice 3.4kB src/derive_key.js
+npm notice 3.7kB src/encrypt_data.js
+npm notice 17.9kB src/encrypt_file.js
+npm notice 4.2kB src/exceptions.js
+npm notice 7.3kB src/key_management.js
+npm notice 663B src/loader.js
+npm notice 1.4kB src/main.js
+npm notice 469B src/random.js
+npm notice 723B src/str.js
+npm notice 12.5kB src/stream.js
+npm notice 71B src/version.js
+npm notice 21.7kB src/WebScrypt/asset/asmjs.js
+npm notice 1.1kB src/WebScrypt/LICENSE.txt
+npm notice 154B src/WebScrypt/README.md
+npm notice 5.4kB src/WebScrypt/scrypt.js
+npm notice 102.3kB src/WebScrypt/sourcemap/asmjs.js.map
+npm notice 24.6kB src/WebScrypt/sourcemap/scrypt.js.map
+npm notice 2.7kB test.js
+npm notice 697B test/test-app.html
+npm notice 5.8kB test/test-app.js
+npm notice 9.7kB types/types.d.ts
+npm notice Tarball Details
+npm notice name: simple-web-encryption
+npm notice version: 1.2.49
+npm notice filename: simple-web-encryption-1.2.49.tgz
+npm notice package size: 140.3 kB
+npm notice unpacked size: 646.8 kB
+npm notice shasum: c33e6acbac5ae83bd81f981375668513adc4bb20
+npm notice integrity: sha512-tl83PIak0ZhEd[...]FeAQK4l2O9ewA==
+npm notice total files: 37
+npm notice
+npm notice Publishing to https://registry.npmjs.org/ with tag latest and default access
+Authenticate your account at:
+https://www.npmjs.com/auth/cli/883fc1c3-2a9f-4fe0-ad0f-5423cb014b34
+Press ENTER to open in the browser...
+
++ simple-web-encryption@1.2.49

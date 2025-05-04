@@ -45,7 +45,7 @@ Encrypts a file asynchronously.
   - `callback`: `(progress: number, total: number) => void` (optional) - Progress callback.
   - `phrase`: `string | null` (optional) - Optional passphrase.
   - `N`: `number | null` (optional) - scrypt parameter N.
-  - `chunk_size`: `number` (optional) - Chunk size in bytes (default: 32MB).
+  - `chunk_size`: `number` (optional) - Chunk size in bytes (default: 32MiB).
 - **Returns**: `Promise<boolean>` - Whether the encryption was successful.
 
 ---
