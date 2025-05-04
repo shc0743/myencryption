@@ -37,16 +37,30 @@ declare module "simple-web-encryption" {
         dklen: number,
         onprogress?: (progress: number) => void
     ): Promise<string>;
-    export function hexlify(data: Uint8Array): string;
-    export function unhexlify(hexStr: string): Uint8Array;
-    export function str_encode(input: string, encoding: 'utf-8'): Uint8Array;
-    export function str_decode(input: Uint8Array | ArrayBuffer, encoding: 'utf-8'): string;
+    export function hexlify(data: Uint8Array): string & { throws: | TypeError };
+    export function unhexlify(hexStr: string): Uint8Array & { throws: | TypeError };
+    export function str_encode(input: string, encoding: 'utf-8'): Uint8Array & { throws: | TypeError | Error };
+    export function str_decode(input: Uint8Array | ArrayBuffer, encoding: 'utf-8'): string & { throws: | Error };
     export function get_random_bytes(count: number): Uint8Array;
     export function get_random_int8_number(): number;
     export function get_random_uint8_number(): number;
         
-    export function encrypt_data(message: string | Uint8Array, key: string, phrase?: string, N?: number): string;
-    export function decrypt_data(message_encrypted: string, key: string): string | ArrayBuffer;
+    export function encrypt_data(
+        message: string | Uint8Array, key: string, phrase?: string, N?: number
+    ): Promise<string> & {
+        throws:
+        | Exceptions.InvalidScryptParameterException
+        | Exceptions.InvalidParameterException
+    };
+    export function decrypt_data(
+        message_encrypted: string, key: string
+    ): Promise<string | ArrayBuffer> & {
+        throws:
+        | Exceptions.InvalidParameterException
+        | Exceptions.BadDataException
+        | Exceptions.InternalError
+        | Exceptions.CannotDecryptException
+    }
     
     type FileReader = (start: number, end: number) => Promise<Uint8Array>;
     type FileWriter = (data: Uint8Array) => Promise<void> | void;
@@ -71,7 +85,13 @@ declare module "simple-web-encryption" {
         phrase?: string | null,
         N?: number | null,
         chunk_size?: number
-    ): Promise<boolean>;
+    ): Promise<boolean> & {
+        throws: 
+        | Exceptions.InvalidParameterException
+        | Exceptions.InternalError
+        | Exceptions.BadDataException
+        | Exceptions.IVException
+    }
 
     /**
      * Decrypt file
@@ -86,7 +106,17 @@ declare module "simple-web-encryption" {
         file_writer: FileWriter,
         user_key: string,
         callback?: ProgressCallback | null
-    ): Promise<boolean>;
+    ): Promise<boolean> & {
+        throws:
+        | TypeError
+        | Exceptions.FileCorruptedException
+        | Exceptions.InvalidEndMarkerException
+        | Exceptions.InvalidFileFormatException
+        | Exceptions.EncryptionVersionMismatchException
+        | Exceptions.InternalError
+        | Exceptions.InvalidParameterException
+        | Exceptions.CannotDecryptException
+    };
 
     /**
      * Export the file's master key.
@@ -99,7 +129,12 @@ declare module "simple-web-encryption" {
         file_head: Blob,
         current_key: string,
         export_key: string
-    ): Promise<string>;
+    ): Promise<string> & {
+        throws: 
+        | Exceptions.BadDataException
+        | Exceptions.InvalidFileFormatException
+        | Exceptions.EncryptionVersionMismatchException
+    };
 
     /**
      * Change file password
@@ -123,6 +158,7 @@ declare module "simple-web-encryption" {
     ): Promise<Blob> & {
         throws:
         | Error
+        | TypeError
         | Exceptions.InvalidFileFormatException
         | Exceptions.EncryptionVersionMismatchException;
     };
@@ -131,7 +167,10 @@ declare module "simple-web-encryption" {
 
     export interface CryptContext { };
     export function crypt_context_create() : Promise<CryptContext>;
-    export function crypt_context_destroy(ctx: CryptContext): Promise<true>;
+    export function crypt_context_destroy(ctx: CryptContext): Promise<true> & {
+        throws:
+        | Error | Exceptions.InvalidParameterException
+    };
 
     export interface DecryptStreamInitOptions {
         /**
@@ -158,7 +197,16 @@ declare module "simple-web-encryption" {
         stream: Stream,
         password: string,
         options?: DecryptStreamInitOptions
-    ): Promise<void>;
+    ): Promise<true> & {
+        throws:
+        | Error
+        | Exceptions.CryptContextReusedException
+        | Exceptions.InvalidFileFormatException
+        | Exceptions.EncryptionVersionMismatchException
+        | Exceptions.NotSupportedException
+        | Exceptions.InternalError
+        | Exceptions.InvalidParameterException
+    };
 
     /**
      * Decrypt a stream.
@@ -173,7 +221,16 @@ declare module "simple-web-encryption" {
         bytes_start: number,
         bytes_end: number,
         abort?: AbortController,
-    ): Promise<Blob>;
+    ): Promise<Blob> & {
+        throws:
+        | Error
+        | Exceptions.CannotDecryptException
+        | Exceptions.InvalidParameterException
+        | Exceptions.CryptContextNotInitedException
+        | Exceptions.InvalidCryptContextTypeException
+        | Exceptions.CryptContextReleasedException
+        | Exceptions.InternalError
+    };
         
     export class Stream {
         constructor(
@@ -181,7 +238,7 @@ declare module "simple-web-encryption" {
             size: number
         );
 
-        get size(): number | null;
+        get size(): number;
 
         read(
             start: number,
