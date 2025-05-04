@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { str_encode, str_decode } from "./str.js";
 import { encrypt_data, decrypt_data } from "./encrypt_data.js";
 import { PADDING_SIZE, normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020 } from "./encrypt_file.js";

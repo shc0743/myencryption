@@ -3,7 +3,7 @@ import {
     decrypt_stream_init,
     Stream,
     decrypt_stream
-} from '../dist/main.bundle.js';
+} from '../myencryption/dist/main.bundle.js';
 
 import { PlayMp4Video, setLogEnabled } from './play_video.js';
 

@@ -8,6 +8,9 @@ CRYPT_CONTEXT['toString'] = function () {
 
 export { CRYPT_CONTEXT as CryptContext };
 
+/**
+ * @param {any} PromiseLike
+ */
 async function _await(PromiseLike) {
     if (PromiseLike instanceof Promise) return await PromiseLike;
     return PromiseLike;
@@ -22,6 +25,10 @@ export async function crypt_context_create() {
 export async function crypt_context_destroy(ctx) {
     if (!ctx || ctx._released) throw new Exceptions.InvalidParameterException("Invalid context");
     for (const i of Reflect.ownKeys(ctx)) {
+        if (typeof i === 'symbol') {
+            Reflect.deleteProperty(ctx, i);
+            continue;
+        }
         const o = Reflect.get(ctx, i);
         if (o) {
             if (o.release) await _await(o.release());

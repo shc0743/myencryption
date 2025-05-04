@@ -3,6 +3,10 @@ for (let i = 0; i < 256; i++) {
     hexTable[i] = i.toString(16).padStart(2, '0');
 }
 
+/**
+ * @param {Uint8Array} data
+ * @returns {string}
+ */
 export function hexlify(data) {
     if (!data || !(data instanceof Uint8Array)) {
         throw new TypeError("Input must be a Uint8Array");
@@ -21,6 +25,10 @@ const throwing = {
     },
 }
 
+/**
+ * @param {string} hexStr
+ * @returns {Uint8Array}
+ */
 export function unhexlify(hexStr) {
     if (typeof hexStr !== 'string') {
         throw new TypeError("Input must be a string");
@@ -40,6 +48,7 @@ export function unhexlify(hexStr) {
         const low = lowCode >= 97 && lowCode <= 102 ? lowCode - 87 :
             lowCode >= 48 && lowCode <= 57 ? lowCode - 48 : throwing.InvalidHexStringException;
 
+        // @ts-ignore
         bytes[i >> 1] = (high << 4) | low;
     }
     return bytes;

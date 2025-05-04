@@ -27,6 +27,10 @@ export const END_MARKER = [
 ];
 export const FILE_END_MARKER = [0xFF, 0xFD, 0xF0, 0x10, 0x13, 0xD0, 0x12, 0x18, 0x55, 0xAA];
 
+/**
+ * @param {string} major_version
+ * @param {number} [version_marker]
+ */
 export function normalize_version(major_version, version_marker) {
     if (!major_version) return `Unknown Version`;
     if (String(major_version) === '1.1') version_marker = null;
@@ -40,9 +44,9 @@ export const ENCRYPTION_FILE_VER_1_2_10020 = normalize_version('1.2', 10020);
 
 /**
  * 加密文件
- * @param {Object} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
- * @param {Object} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
- * @param {string} key - 用户密钥
+ * @param {Function} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
+ * @param {string} user_key - 用户密钥
  * @param {string|null} phrase - 可选短语，用于密钥派生
  * @param {number|null} N - scrypt参数N
  * @param {number} chunk_size - 分块大小，默认为16MB
@@ -180,8 +184,8 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
 /**
  * 解密文件（1.1）
  * @deprecated 仅供兼容1.1版本使用。
- * @param {Object} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
- * @param {Object} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
+ * @param {Function} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {string} user_key - 用户提供的解密密钥
  * @param {Function} [callback=null] - 进度回调函数
  * @returns {Promise<boolean>} 返回解密是否成功
@@ -285,8 +289,8 @@ export async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, c
 }
 /**
  * 解密文件
- * @param {Object} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
- * @param {Object} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
+ * @param {Function} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {string} user_key - 用户提供的解密密钥
  * @param {Function} [callback=null] - 进度回调函数
  * @returns {Promise<boolean>} 返回解密是否成功

@@ -12,6 +12,12 @@ function safeparse(json) {
     }
 }
 
+/**
+ * @param {string | Uint8Array} message
+ * @param {string} key
+ * @param {?string} [phrase] phrase
+ * @param {number} [N] N
+ */
 export async function encrypt_data(message, key, phrase = null, N = null) {
     // (1) 生成随机IV (12 bytes for GCM)
     const iv = get_random_bytes(12);
@@ -51,6 +57,10 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
 }
 
 
+/**
+ * @param {string} message_encrypted
+ * @param {string} key
+ */
 export async function decrypt_data(message_encrypted, key) {
     const jsoned = safeparse(message_encrypted);
     const parameter = jsoned.parameter;

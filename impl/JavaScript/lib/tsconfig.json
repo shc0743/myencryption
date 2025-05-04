@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "outDir": "types",
+        "module": "es2022",
+        "target": "es2022",
+        "lib": [
+            "es2022",
+            "dom",
+            "dom.iterable"
+        ],
+        "downlevelIteration": true,
+        "strict": false,
+        "noImplicitAny": false,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*.js"
+    ],
+    "exclude": [
+        "src/WebScrypt/**"
+    ]
+}

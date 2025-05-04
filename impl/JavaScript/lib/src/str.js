@@ -1,3 +1,6 @@
+/**
+ * @param {string} input
+ */
 export function str_encode(input, encoding = "utf-8") {
     if (typeof input !== "string") {
         throw new TypeError("Input must be a string");
@@ -7,6 +10,9 @@ export function str_encode(input, encoding = "utf-8") {
     }
     return new TextEncoder().encode(input);
 }
+/**
+ * @param {Uint8Array|ArrayBuffer} input
+ */
 export function str_decode(input, encoding = "utf-8") {
     if (!(input instanceof Uint8Array)) {
         input = new Uint8Array(input);

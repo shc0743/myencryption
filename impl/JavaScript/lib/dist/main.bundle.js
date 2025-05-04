@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// loader.js
+// src/loader.js
 function load_script(src) {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
@@ -21,7 +21,7 @@ function load_deps_es5(deps_name, deps_src) {
   });
 }
 
-// binascii.js
+// src/binascii.js
 var hexTable = new Array(256);
 for (let i = 0; i < 256; i++) {
   hexTable[i] = i.toString(16).padStart(2, "0");
@@ -62,7 +62,7 @@ function unhexlify(hexStr) {
   return bytes;
 }
 
-// random.js
+// src/random.js
 function get_random_bytes(count) {
   const randomBytes = new Uint8Array(count);
   crypto.getRandomValues(randomBytes);
@@ -77,7 +77,7 @@ function get_random_uint8_number() {
   return new Uint8Array(randomBytes)[0];
 }
 
-// str.js
+// src/str.js
 function str_encode(input, encoding = "utf-8") {
   if (typeof input !== "string") {
     throw new TypeError("Input must be a string");
@@ -97,7 +97,7 @@ function str_decode(input, encoding = "utf-8") {
   return new TextDecoder().decode(input);
 }
 
-// exceptions.js
+// src/exceptions.js
 var exceptions_exports = {};
 __export(exceptions_exports, {
   BadDataException: () => BadDataException,
@@ -225,7 +225,7 @@ var CryptContextReleasedException = class extends EncryptionError {
   }
 };
 
-// derive_key.js
+// src/derive_key.js
 var scryptAPI = await load_deps_es5("scrypt", import.meta.resolve("./WebScrypt/scrypt.js"));
 scryptAPI.setResPath(import.meta.resolve("./WebScrypt/asset/"));
 scryptAPI.load();
@@ -310,7 +310,7 @@ async function scrypt_hex(key, salt, N, r, p, dklen) {
   return hexlify(await scrypt(str_encode(key), str_encode(salt), N, r, p, dklen));
 }
 
-// encrypt_data.js
+// src/encrypt_data.js
 function safeparse(json) {
   try {
     return JSON.parse(json);
@@ -382,7 +382,7 @@ async function decrypt_data(message_encrypted, key) {
   }
 }
 
-// encrypt_file.js
+// src/encrypt_file.js
 function nextTick2() {
   return new Promise((r) => requestAnimationFrame(r));
 }
@@ -722,7 +722,7 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   return true;
 }
 
-// key_management.js
+// src/key_management.js
 async function export_master_key(file_head, current_key, export_key) {
   if (file_head.size < 1024 + 16 + 4) throw new BadDataException("Data not enough");
   const headerBlob = file_head.slice(0, 13);
@@ -803,7 +803,7 @@ async function change_file_password(file_head, current_key, new_key) {
   return new Blob(new_ekey_parts);
 }
 
-// context.js
+// src/context.js
 var CRYPT_CONTEXT = /* @__PURE__ */ Object.create(null);
 CRYPT_CONTEXT[Symbol.toStringTag] = "CryptContext";
 CRYPT_CONTEXT["toString"] = function() {
@@ -821,6 +821,10 @@ async function crypt_context_create() {
 async function crypt_context_destroy(ctx) {
   if (!ctx || ctx._released) throw new InvalidParameterException("Invalid context");
   for (const i of Reflect.ownKeys(ctx)) {
+    if (typeof i === "symbol") {
+      Reflect.deleteProperty(ctx, i);
+      continue;
+    }
     const o = Reflect.get(ctx, i);
     if (o) {
       if (o.release) await _await(o.release());
@@ -834,7 +838,7 @@ async function crypt_context_destroy(ctx) {
   return true;
 }
 
-// stream.js
+// src/stream.js
 var Stream = class {
   #reader = null;
   #cache = {
@@ -846,11 +850,14 @@ var Stream = class {
   get [Symbol.toStringTag]() {
     return "Stream";
   }
-  // reader 应该返回 AwaitAble<Uint8Array>
+  /**
+   * @param {function(number, number): Promise<Uint8Array>} reader The reader function
+   * @param {number} size The size of the stream
+   */
   constructor(reader, size) {
     if (typeof reader !== "function") throw new InvalidParameterException("Stream: Invalid reader");
     this.#reader = reader;
-    if (size !== null && typeof size !== "number") throw new InvalidParameterException("Stream: Invalid size");
+    if (typeof size !== "number") throw new InvalidParameterException("Stream: Invalid size");
     this.#size = size;
   }
   get size() {
@@ -1035,8 +1042,8 @@ async function decrypt_stream(ctx, bytes_start, bytes_end) {
   return blob;
 }
 
-// version.js
-var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.3";
+// src/version.js
+var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.4";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,

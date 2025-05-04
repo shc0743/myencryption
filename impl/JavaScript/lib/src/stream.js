@@ -20,11 +20,14 @@ export class Stream {
         return 'Stream';
     }
 
-    // reader 应该返回 AwaitAble<Uint8Array>
+    /**
+     * @param {function(number, number): Promise<Uint8Array>} reader The reader function
+     * @param {number} size The size of the stream
+     */
     constructor(reader, size) {
         if (typeof reader !== 'function') throw new Exceptions.InvalidParameterException('Stream: Invalid reader');
         this.#reader = reader;
-        if (size !== null && typeof size !== 'number') throw new Exceptions.InvalidParameterException('Stream: Invalid size');
+        if (typeof size !== 'number') throw new Exceptions.InvalidParameterException('Stream: Invalid size');
         this.#size = size;
     }
 
@@ -290,6 +293,7 @@ export async function decrypt_stream(ctx, bytes_start, bytes_end) {
     // bytes_start, bytes_end
     const blob = blob_full.slice(bytes_start - startpos, bytes_end - startpos);
     
+    // @ts-ignore
     if (EOFbit) blob.eof = true;
     return blob;
 }

@@ -1,0 +1,38 @@
+{
+    "name": "simple-web-encryption",
+    "version": "1.2.44",
+    "description": "A comprehensive encryption library providing simple tools for data and file encryption/decryption with modern cryptographic standards.",
+    "main": "dist/main.bundle.js",
+    "type": "module",
+    "files": [
+        "src/**",
+        "dist/**",
+        "types/**",
+        "test/**",
+        "build.cjs",
+        "test.js"
+    ],
+    "scripts": {
+        "test": "node test.js",
+        "build": "node build.cjs"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/shc0743/myencryption.git"
+    },
+    "keywords": [
+        "encryption",
+        "webcrypto",
+        "decryption",
+        "front-end"
+    ],
+    "author": "chcs1013",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/shc0743/myencryption/issues"
+    },
+    "homepage": "https://github.com/shc0743/myencryption#readme",
+    "devDependencies": {
+        "esbuild": "^0.25.3"
+    }
+}

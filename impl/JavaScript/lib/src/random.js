@@ -1,3 +1,6 @@
+/**
+ * @param {number} count
+ */
 export function get_random_bytes(count) {
     const randomBytes = new Uint8Array(count);
     crypto.getRandomValues(randomBytes);

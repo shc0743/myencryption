@@ -4,6 +4,8 @@ import path from 'path';
 import url from 'url';
 import { exec } from 'child_process';
 
+let ttid = 0;
+
 const server = http.createServer((req, res) => {
     const requestPath = url.parse(req.url).pathname;
     const filePath = path.join(process.cwd(), requestPath);
@@ -23,6 +25,7 @@ const server = http.createServer((req, res) => {
                 else console.log('Test completed.');
             });
             server.closeAllConnections();
+            clearTimeout(ttid);
             return;
         }
 
@@ -58,10 +61,17 @@ const server = http.createServer((req, res) => {
 
 
 server.listen(36429, '127.0.0.1', () => {
-    console.log("Test is running in your browser now. URL: http://127.0.0.1:36429/test-app.html");
+    console.log("Test is running in your browser now. URL: http://127.0.0.1:36429/test/test-app.html");
     // 启动浏览器
     const platform = process.platform;
     const cmd = platform === 'win32' ? 'start' : platform === 'darwin' ? 'open' : 'xdg-open';
-    exec(`${cmd} http://127.0.0.1:36429/test-app.html`);
+    exec(`${cmd} http://127.0.0.1:36429/test/test-app.html`);
+
+    ttid = setTimeout(() => {
+        server.close(() => {
+            console.error('Test timed out.');
+        });
+        server.closeAllConnections();
+    }, 30000);
 });
 
