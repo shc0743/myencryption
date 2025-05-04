@@ -59,6 +59,8 @@ decrypt_file('secure.bin', 'new_raw_file.png', 'your_password')
 
 For a demo, please [go here](https://github.com/shc7432/MyEncryptionApp-Demo/tree/main)
 
+**注意**：当前由于动态脚本加载语句的原因，在 Vite 或其他构建工具中使用此库可能会出现问题。我们正在努力解决这个问题。有关更多信息和临时解决方案，请[点击这里](./docs/JavaScript/about-build-tools.zh-CN.md)。
+
 ### 通过 npm 安装
 
 运行以下命令：
@@ -85,56 +87,15 @@ example();
 
 # 文件格式
 
-文件格式结构如下：
-
-1. **头部 (16 字节)**：包含字符串 `MyEncryption/1.1`，用于标识文件格式和版本。
-2. **加密主密钥 (1024 字节)**：
-   - 4 字节：加密主密钥的长度。
-   - 可变长度：加密主密钥。
-   - 填充至 1024 字节。
-3. **头部 JSON**：
-   - 4 字节：JSON 元数据的长度。
-   - 可变长度：包含参数（如 `N`、`iv` 和 `parameter`）的 JSON 元数据。
-4. **加密数据块**：
-   - 每个块包含：
-     - 8 字节：原始数据长度。
-     - 12 字节：块的 IV。
-     - 可变长度：加密数据。
-     - 16 字节：认证标签。
-5. **尾部**：
-   - 8 字节：结束标记（`0xFF, 0xFD, 0xF0, 0x10, 0x13, 0xD0, 0x12, 0x18`）。
-   - 8 字节：原始文件的总字节数。
-   - 2 字节：最终标记（`0x55, 0xAA`）。
+[文件格式规范](./docs/general/file-format-spec.zh-CN.md)
 
 # API 文档
 
 ### Python API
-
-- `encrypt_data(raw_text, password, **kwargs)`：加密字符串。
-- `decrypt_data(encrypted_text, password)`：解密字符串。
-- `encrypt_file(input_file, output_file, password, **kwargs)`：加密文件。
-- `decrypt_file(input_file, output_file, password)`：解密文件。
+[English edition](./docs/Python/api-docs.md) | [中文版本](./docs/Python/api-docs.zh-CN.md)
 
 ### JavaScript API
-
-- `encrypt_data(message, key, phrase = null, N = null)`：异步加密字符串。
-- `decrypt_data(message_encrypted, key)`：异步解密字符串。
-- `encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024)`：异步加密文件。
-- `decrypt_file(file_reader, file_writer, user_key, callback = null)`：异步解密文件。
-- `change_file_password(file_head, current_key, new_key)`：更改加密文件的密码。  
-  **参数**：  
-  - `file_head` (Blob)：文件头。建议提供 2KB，至少提供 1044 字节。  
-  - `current_key` (String)：当前文件密码。  
-  - `new_key` (String)：新密码。  
-  **返回值**：  
-  - `Blob`：新的文件头。请注意，新文件头的大小与原始文件不同。不要用它构造新文件，而是用新文件头直接写回去，覆盖原来的数据，不需要偏移文件。  
-  **异常**：  
-  - `Error`：如果文件头无效或文件大小不足。
-   * 注意: 不建议在web端更改密码。由于浏览器写入文件的工作原理（https://developer.mozilla.org/zh-CN/docs/Web/API/FileSystemFileHandle/createWritable ）
- * 任何通过写入流造成的更改在写入流被关闭前都不会反映到文件句柄所代表的文件上。这通常是将数据写入到一个临时文件来实现的，然后只有在写入文件流被关闭后才会用临时文件替换掉文件句柄所代表的文件。
- * 也就是说，旧密码将始终存在于磁盘上。这将导致敏感数据泄露。
- * 另外，由于这个特性，大文件相关操作会变得非常非常慢。
- * 所以，除非特殊情况，务必始终使用 native 应用程序来修改文件密码
+[English edition](./docs/JavaScript/api-docs.md) | [中文版本](./docs/JavaScript/api-docs.zh-CN.md)
 
 # 许可证
 

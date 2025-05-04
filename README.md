@@ -59,6 +59,8 @@ To use the JavaScript version in your project:
 
 For a demo, please [go here](https://github.com/shc7432/MyEncryptionApp-Demo/tree/main)
 
+**Notice**: Currently, due to a dynamic script load statement, the library may not works well when used in Vite or other build tools. We are trying to solve the problem. For more information and the temporary solution, please [go here](./docs/JavaScript/about-build-tools.md).
+
 ### npm usage
 
 Install by the following command:
@@ -90,25 +92,10 @@ See [File Format spec](./docs/general/file-format-spec.md) for details. Chinese 
 # API Docs
 
 ### Python API
-
-- `encrypt_data(raw_text, password, **kwargs)`: Encrypts a string.
-- `decrypt_data(encrypted_text, password)`: Decrypts a string.
-- `encrypt_file(input_file, output_file, password, **kwargs)`: Encrypts a file.
-- `decrypt_file(input_file, output_file, password)`: Decrypts a file.
+[English edition](./docs/Python/api-docs.md) | [中文版本](./docs/Python/api-docs.zh-CN.md)
 
 ### JavaScript API
-
-- `encrypt_data(message, key, phrase = null, N = null)`: Encrypts a string asynchronously.
-- `decrypt_data(message_encrypted, key)`: Decrypts a string asynchronously.
-- `encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024)`: Encrypts a file asynchronously.
-- `decrypt_file(file_reader, file_writer, user_key, callback = null)`: Decrypts a file asynchronously.
-- `change_file_password(file_head, current_key, new_key)`: Changes the password of an encrypted file.
-
-* Note: It is not recommended to change the password in a web browser. Due to the way browsers handle file writing (https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createWritable):
-* Any changes made through a writable stream will not be reflected in the file represented by the file handle until the stream is closed. This is typically implemented by writing data to a temporary file and then replacing the file handle's file with the temporary file once the stream is closed.
-* This means the old password will always remain on disk, potentially leading to sensitive data leakage.
-* Additionally, due to this behavior, operations on large files can become extremely slow.
-* Therefore, unless in special circumstances, always use a native application to modify file passwords.
+[English edition](./docs/JavaScript/api-docs.md) | [中文版本](./docs/JavaScript/api-docs.zh-CN.md)
 
 # LICENSE
 

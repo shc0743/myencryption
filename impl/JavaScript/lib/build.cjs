@@ -56,11 +56,11 @@ setTimeout(async () => {
 
     console.log("🔄 复制类型定义文件...");
     fs.copyFileSync(
-        path.join(__dirname, 'types', 'main.bundle.d.ts'),
+        path.join(__dirname, 'types', 'types.d.ts'),
         path.join(outputDir, 'main.bundle.d.ts')
     );
     fs.copyFileSync(
-        path.join(__dirname, 'types', 'main.bundle.d.ts'),
+        path.join(__dirname, 'types', 'types.d.ts'),
         path.join(outputDir, 'main.bundle.min.d.ts')
     );
     console.log('✅ 类型定义文件已复制！');

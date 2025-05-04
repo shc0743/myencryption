@@ -1052,7 +1052,7 @@ async function decrypt_stream(ctx, bytes_start, bytes_end, abort) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.6";
+var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.7";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,

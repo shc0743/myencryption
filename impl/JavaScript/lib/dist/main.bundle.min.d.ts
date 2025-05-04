@@ -130,8 +130,8 @@ declare module "simple-web-encryption" {
     export function normalize_version(major_version: string, version_marker: number | null): string;
 
     export interface CryptContext { };
-    export function crypt_context_create() : CryptContext;
-    export function crypt_context_destroy(ctx: CryptContext): true;
+    export function crypt_context_create() : Promise<CryptContext>;
+    export function crypt_context_destroy(ctx: CryptContext): Promise<true>;
 
     export interface DecryptStreamInitOptions {
         /**

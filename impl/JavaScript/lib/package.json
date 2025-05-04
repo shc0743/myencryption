@@ -1,6 +1,6 @@
 {
     "name": "simple-web-encryption",
-    "version": "1.2.46",
+    "version": "1.2.47",
     "description": "A comprehensive encryption library providing simple tools for data and file encryption/decryption with modern cryptographic standards.",
     "main": "dist/main.bundle.js",
     "type": "module",
