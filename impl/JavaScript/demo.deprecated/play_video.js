@@ -16,7 +16,7 @@ export class NotSupportError extends Error {
 /**
  * 播放MP4视频的简化封装
  * @param {HTMLVideoElement} video - 视频元素
- * @param {function(start: number, end: number): Promise<ArrayBuffer>} fileReader - 文件读取函数
+ * @param {function(start: number, end: number, abort: AbortController): Promise<ArrayBuffer>} fileReader - 文件读取函数
  * @param {Number} bs - 缓冲区大小，默认为1MB
  * @param {function(end_of_stream_func)|null} [onVideoEnd] - 视频结束时的回调函数，默认为null
  * @returns {Promise<function()>} - 清理函数
@@ -35,6 +35,7 @@ export async function PlayMp4Video(video, fileReader, bs = 1000000, onVideoEnd =
     let ms = null;
     const activeSourceBuffers = new Map(); // 跟踪活动的SourceBuffer
     let initSegs;
+    let nextLoadShouldPlay = false;
 
     const createNewMs = async function createNewMs() {
         if (createNewMs.request) return;
@@ -138,7 +139,16 @@ export async function PlayMp4Video(video, fileReader, bs = 1000000, onVideoEnd =
             var obj = this.pendingAppends.shift();
             this.sampleNum = obj.sampleNum;
             this.is_last = obj.is_last;
-            try { this.appendBuffer(obj.buffer); }
+            try {
+                this.appendBuffer(obj.buffer); 
+                if (nextLoadShouldPlay) { requestIdleCallback(function preparePlay() {
+                    video.play().then(() => {
+                        if(Logs) console.log("Video play started due to the nextLoadShouldPlay request");
+                    }).catch(e => {
+                        if (e && e.name && e.name !== 'NotAllowedError') queueMicrotask(preparePlay);
+                    })
+                }); nextLoadShouldPlay = false; }
+            }
             catch (e) {
                 if (e.name === 'QuotaExceededError') {
                     this.pendingAppends.splice(0, 0, obj);
@@ -217,15 +227,26 @@ export async function PlayMp4Video(video, fileReader, bs = 1000000, onVideoEnd =
             doSeek();
             onTimeUpdate.last_time = video.currentTime;
         }
-        // // 使得视频在结束的时候自动暂停
-        // if (ms.original_duration - video.currentTime < (0.1 * video.playbackRate)) { // 倍速缩放逻辑
-        //     video.pause();
-        //     video.currentTime = (0);
-        // }
     }
     video.addEventListener('seeked', onSeeked);
-    // video.addEventListener('waiting', doSeek);
     video.addEventListener('timeupdate', onTimeUpdate);
+
+    // 检查视频结束
+    function onWaiting() {
+        if (ms.original_duration - video.currentTime < 1) {
+            if (Logs) console.log("Video ended");
+            if (video.loop) {
+                const seek_info = mp4boxfile.seek(0, true);
+                loadSegment(seek_info.offset, seek_info.offset + bs).then(() => video.play());
+                video.currentTime = 0;
+                nextLoadShouldPlay = true;
+            } else {
+                // 使得视频在结束的时候自动暂停
+                video.pause();
+            }
+        }
+    }
+    video.addEventListener('waiting', onWaiting);
 
     // 添加清理函数
     const cleanup = () => {
@@ -233,6 +254,7 @@ export async function PlayMp4Video(video, fileReader, bs = 1000000, onVideoEnd =
         // 移除所有事件监听器
         video.removeEventListener('seeked', onSeeked);
         video.removeEventListener('timeupdate', onTimeUpdate);
+        video.removeEventListener('waiting', onWaiting);
 
         // 清理SourceBuffer
         activeSourceBuffers.forEach((sb, trackId) => {
@@ -262,11 +284,17 @@ export async function PlayMp4Video(video, fileReader, bs = 1000000, onVideoEnd =
 
         URL.revokeObjectURL(video.src);
         video.src = 'data:null/null,null';
+
+        try { loadSegment.ab?.abort?.(); } catch { }
     };
 
     async function loadSegment(start, end, id = null, depth = 0) {
         if (id == null && Logs) console.log('loadSegment start; id will be', loadSegmentId + 1);
-        if (id == null) id = (++loadSegmentId);
+        if (id == null) {
+            id = (++loadSegmentId);
+            loadSegment.ab?.abort?.();
+            loadSegment.ab = null;
+        }
         else if (id !== loadSegmentId) {
             if (Logs) console.log('loadSegment return, reason: another request has been issued, current id=', id, '/another id=', loadSegmentId);
             return true;
@@ -277,28 +305,34 @@ export async function PlayMp4Video(video, fileReader, bs = 1000000, onVideoEnd =
             return 3;
         }
 
-        const blob = new Blob([await fileReader(start, end)])
-        if (id !== loadSegmentId) {
-            if (Logs) console.log('loadSegment return, reason: since last operation (data fetched) another request has been issued, current id=', id, '/another id=', loadSegmentId);
-            return 2;
-        }
-        if (!blob.size) {
-            const ab = new ArrayBuffer(0);
-            ab.fileStart = start;
-            mp4boxfile.appendBuffer(ab, true);
+        const controller = new AbortController();
+        loadSegment.ab = controller;
+        try {
+            const blob = new Blob([await fileReader(start, end, controller)]);
+            if (id !== loadSegmentId) {
+                if (Logs) console.log('loadSegment return, reason: since last operation (data fetched) another request has been issued, current id=', id, '/another id=', loadSegmentId);
+                return 2;
+            }
+            if (!blob.size) {
+                const ab = new ArrayBuffer(0);
+                ab.fileStart = start;
+                mp4boxfile.appendBuffer(ab, true);
+                mp4boxfile.flush();
+                if (Logs) console.log('loadSegment return, reason: EOF; params=', start, end, id, depth);
+                return 1;
+            }
+            const buffer = await blob.arrayBuffer();
+            buffer.fileStart = start;
+            const mstart = mp4boxfile.appendBuffer(buffer, !!blob.eof);
             mp4boxfile.flush();
-            if (Logs) console.log('loadSegment return, reason: EOF; params=', start, end, id, depth);
-            return 1;
+
+            if (mstart) return await loadSegment(mstart, mstart + bs, id, ++depth);
+            else if (blob.eof) return false;
+
+            if (Logs) console.log('loadSegment return, reason: no next start position has specified');
+        } catch {
+            if (Logs) console.log('loadSegment aborted: id=', id);
         }
-        const buffer = await blob.arrayBuffer();
-        buffer.fileStart = start;
-        const mstart = mp4boxfile.appendBuffer(buffer, !!blob.eof);
-        mp4boxfile.flush();
-
-        if (mstart) return await loadSegment(mstart, mstart + bs, id, ++depth);
-        else if (blob.eof) return false;
-
-        if (Logs) console.log('loadSegment return, reason: no next start position has specified');
         return null;
     }
     queueMicrotask(async () => {

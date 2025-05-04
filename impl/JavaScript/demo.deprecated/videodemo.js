@@ -3,7 +3,7 @@ import {
     decrypt_stream_init,
     Stream,
     decrypt_stream
-} from '../myencryption/dist/main.bundle.js';
+} from '../lib/dist/main.bundle.js';
 
 import { PlayMp4Video, setLogEnabled } from './play_video.js';
 
@@ -46,12 +46,13 @@ strdec.onclick = async () => {
         let file_size, fileReader;
         if (onlvideo.value) {
             file_size = await getFileSize(onlvideo.value);
-            fileReader = async (start, end) => {
+            fileReader = async (start, end, signal) => {
                 const resp = await fetch(onlvideo.value, {
                     headers: {
                         'Range': `bytes=${start}-${end - 1}`
                     },
-                    method: 'GET'
+                    method: 'GET',
+                    signal: signal
                 });
                 return new Uint8Array(await resp.arrayBuffer());
             }
@@ -70,15 +71,15 @@ strdec.onclick = async () => {
 
         fep.innerText = 'Reading file.';
 
-        await decrypt_stream_init(ctx, new Stream((start, end) => {
-            return fileReader(start, end)
+        await decrypt_stream_init(ctx, new Stream((start, end, signal) => {
+            return fileReader(start, end, signal)
         }, file_size), key);
         console.log('ctx=', ctx);
 
         videoarea.innerText = 'Loading, wait...';
 
-        const video = await play_Video(async (start, end) => {
-            const buffer = await decrypt_stream(ctx, start, end);
+        const video = await play_Video(async (start, end, controller) => {
+            const buffer = await decrypt_stream(ctx, start, end, controller);
             return buffer;
         });
         video.setAttribute('style', 'width: 100%; height: 400px;')
@@ -86,6 +87,9 @@ strdec.onclick = async () => {
         videoarea.append(video);
     } catch (e) {
         console.error(e);
+        // always remember to destroy context if something went wrong
+        await crypt_context_destroy(strdec.ctx);
+        cleanup?.();cleanup = null;
         alert(e);
     }
 }

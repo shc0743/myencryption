@@ -20,6 +20,9 @@ filesToDelete.forEach(file => {
 
 // 延迟2秒后执行
 setTimeout(async () => {
+    console.log(' ');
+    console.time('编译用时');
+
     console.log("🔄 打包中...");
     // 主打包逻辑
     await build({
@@ -63,5 +66,7 @@ setTimeout(async () => {
     console.log('✅ 类型定义文件已复制！');
     
     console.log('');
+    console.timeEnd('编译用时');
+
     console.log("✅✅ 🐍build🐍: 成功! ✅✅");
 }, 2000);

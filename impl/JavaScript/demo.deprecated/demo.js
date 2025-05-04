@@ -1,6 +1,6 @@
 import {
     encrypt_data, decrypt_data, encrypt_file, decrypt_file, export_master_key,
-} from '../myencryption/dist/main.bundle.js';
+} from '../lib/dist/main.bundle.js';
 
 enc.onclick = async () => {
     try {
@@ -106,12 +106,12 @@ expkey.onclick = async () => {
     }
 }
 
-import { scrypt_hex, scrypt, str_encode } from '../myencryption/dist/main.bundle.js';
+import { scrypt_hex, scrypt, str_encode } from '../lib/dist/main.bundle.js';
 tests.onclick = async () => {
     alert(await scrypt_hex((stest.value), (`123456`), 262144, 8, 1, 32));
 }
 
-import { change_file_password } from '../myencryption/dist/main.bundle.js';
+import { change_file_password } from '../lib/dist/main.bundle.js';
 chpass.onclick = async () => {
     try {
         const [fileHandle] = await window.showOpenFilePicker({

@@ -165,17 +165,19 @@ declare module "simple-web-encryption" {
      * @param ctx Context
      * @param bytes_start The start byte to decrypt
      * @param bytes_end The end byte to decrypt
+     * @param abort If provided, the operation will be cancelable.
      * @returns The decrypted data, stored in a Blob object.
      */
     export function decrypt_stream(
         ctx: CryptContext,
         bytes_start: number,
-        bytes_end: number
+        bytes_end: number,
+        abort?: AbortController,
     ): Promise<Blob>;
         
     export class Stream {
         constructor(
-            reader: (start: number, end: number) => Promise<Uint8Array>,
+            reader: (start: number, end: number, signal: AbortSignal) => Promise<Uint8Array>,
             size: number
         );
 
@@ -184,9 +186,11 @@ declare module "simple-web-encryption" {
         read(
             start: number,
             end: number,
-            suggestion_end?: number | null
+            suggestion_end?: number | null,
+            abort?: AbortController | null
         ): Promise<Uint8Array>;
 
+        abort(): void;
         purge(): void;
         close(): void;
 

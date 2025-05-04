@@ -851,7 +851,7 @@ var Stream = class {
     return "Stream";
   }
   /**
-   * @param {function(number, number): Promise<Uint8Array>} reader The reader function
+   * @param {function(number, number, AbortSignal): Promise<Uint8Array>} reader The reader function
    * @param {number} size The size of the stream
    */
   constructor(reader, size) {
@@ -863,30 +863,39 @@ var Stream = class {
   get size() {
     return this.#size;
   }
+  /** @type {AbortController|null} */
+  #abort_controller = null;
   /**
    * Read a stream
    * @param {Number} start start pos
    * @param {Number} end end pos
    * @param {Number|null} suggestion_end The suggested end. Used for caching.
+   * @param {AbortController|null} abort The abort controller. Used for aborting the read.
    * @returns {Promise<Uint8Array>}
    */
-  async read(start, end, suggestion_end = null) {
+  async read(start, end, suggestion_end = null, abort = null) {
     if (!this.#reader) throw new Error("Stream: The stream has been closed.");
-    if (this.#cache.position && this.#cache.end && this.#cache.data && (start >= this.#cache.position && end <= this.#cache.end)) {
+    if (this.#cache.position != null && this.#cache.end && this.#cache.data && (start >= this.#cache.position && end <= this.#cache.end)) {
       return this.#cache.data.slice(start - this.#cache.position, end - this.#cache.position);
     }
     if (start < 0) throw new InvalidParameterException("Stream: Invalid start position");
     if (end > this.#size) end = this.#size;
     if (suggestion_end > this.#size) suggestion_end = this.#size;
+    this.#abort_controller = abort;
     if (suggestion_end) {
-      const data2 = await this.#reader(start, suggestion_end);
+      const data2 = await this.#reader(start, suggestion_end, abort?.signal);
+      this.#abort_controller = null;
       this.#cache.position = start;
       this.#cache.end = start + data2.length;
       this.#cache.data = data2;
       return data2.slice(0, end - start);
     }
-    const data = await this.#reader(start, end);
+    const data = await this.#reader(start, end, abort?.signal);
+    this.#abort_controller = null;
     return data;
+  }
+  abort() {
+    this.#abort_controller?.abort();
   }
   purge() {
     this.#cache.position = this.#cache.data = this.#cache.end = null;
@@ -907,7 +916,7 @@ async function decrypt_stream_init(ctx, stream, password, {
     stream,
     release: () => ctx.stream.stream.close()
   };
-  const header = await stream.read(0, 13, 4200);
+  const header = await stream.read(0, 13, 5e3);
   if (str_decode(header) !== "MyEncryption/") {
     throw new InvalidFileFormatException();
   }
@@ -957,7 +966,7 @@ async function decrypt_stream_init(ctx, stream, password, {
   ctx.cache_max_size = cache_max_size;
   return true;
 }
-async function decrypt_stream(ctx, bytes_start, bytes_end) {
+async function decrypt_stream(ctx, bytes_start, bytes_end, abort) {
   if (!ctx._inited) throw new CryptContextNotInitedException();
   if (ctx._type !== "@decrypt_stream") throw new InvalidCryptContextTypeException(ctx._type);
   if (ctx._released) throw new CryptContextReleasedException();
@@ -976,23 +985,23 @@ async function decrypt_stream(ctx, bytes_start, bytes_end) {
       return ctx.cached_chunks.get(chunk);
     }
     let pos = chunks_start + chunk * size_per_chunk;
-    const eight_bytes = await stream.read(pos, pos + 8, pos + 2 * size_per_chunk);
+    const eight_bytes = await stream.read(pos, pos + 8, pos + 2 * size_per_chunk, abort);
     let real_size = 0;
     if (eight_bytes.every((v, i) => v === END_IDENTIFIER[i])) {
-      const full_bytes = await stream.read(pos, pos + 32);
+      const full_bytes = await stream.read(pos, pos + 32, null, abort);
       pos += 32;
       if (full_bytes.every((v, i) => v === END_MARKER[i])) {
         return false;
       }
       if (full_bytes.every((v, i) => v === TAIL_BLOCK_MARKER[i])) {
-        const chunk_len_bytes = await stream.read(pos, pos + 8);
+        const chunk_len_bytes = await stream.read(pos, pos + 8, null, abort);
         pos += 8;
         real_size = Number(new DataView(chunk_len_bytes.buffer).getBigUint64(0, true));
         if (real_size === 0) return false;
       }
     }
     const ciphertext_length = real_size ? real_size : chunk_size;
-    const ciphertext = await stream.read(pos, pos + ciphertext_length + 16);
+    const ciphertext = await stream.read(pos, pos + ciphertext_length + 16, null, abort);
     const nonce_counter = nonce_counter_start + chunk;
     const iv_array = new ArrayBuffer(12);
     new DataView(iv_array).setBigUint64(4, BigInt(nonce_counter), true);
@@ -1043,7 +1052,7 @@ async function decrypt_stream(ctx, bytes_start, bytes_end) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.4";
+var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.6";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,

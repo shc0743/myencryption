@@ -21,7 +21,7 @@ export class Stream {
     }
 
     /**
-     * @param {function(number, number): Promise<Uint8Array>} reader The reader function
+     * @param {function(number, number, AbortSignal): Promise<Uint8Array>} reader The reader function
      * @param {number} size The size of the stream
      */
     constructor(reader, size) {
@@ -35,16 +35,20 @@ export class Stream {
         return this.#size;
     }
 
+    /** @type {AbortController|null} */
+    #abort_controller = null;
+
     /**
      * Read a stream
      * @param {Number} start start pos
      * @param {Number} end end pos
      * @param {Number|null} suggestion_end The suggested end. Used for caching.
+     * @param {AbortController|null} abort The abort controller. Used for aborting the read.
      * @returns {Promise<Uint8Array>}
      */
-    async read(start, end, suggestion_end = null) {
+    async read(start, end, suggestion_end = null, abort = null) {
         if (!this.#reader) throw new Error('Stream: The stream has been closed.');
-        if (this.#cache.position && this.#cache.end && this.#cache.data && (start >= this.#cache.position && end <= this.#cache.end)) {
+        if (this.#cache.position != null && this.#cache.end && this.#cache.data && (start >= this.#cache.position && end <= this.#cache.end)) {
             // cache match
             return this.#cache.data.slice(start - this.#cache.position, end - this.#cache.position);
         }
@@ -54,9 +58,11 @@ export class Stream {
         if (end > this.#size) end = this.#size;
         if (suggestion_end > this.#size) suggestion_end = this.#size;
 
+        this.#abort_controller = abort;
         if (suggestion_end) {
             // cache policy
-            const data = await this.#reader(start, suggestion_end);
+            const data = await this.#reader(start, suggestion_end, abort?.signal);
+            this.#abort_controller = null;
             // save cache
             this.#cache.position = start;
             this.#cache.end = start + data.length;
@@ -65,8 +71,13 @@ export class Stream {
             return data.slice(0, end - start);
         }
         // cache mismatch
-        const data = await this.#reader(start, end);
+        const data = await this.#reader(start, end, abort?.signal);
+        this.#abort_controller = null;
         return data;
+    }
+
+    abort() {
+        this.#abort_controller?.abort();
     }
 
     purge() {
@@ -103,7 +114,7 @@ export async function decrypt_stream_init(ctx, stream, password, {
     };
 
     // 派生密钥
-    const header = await stream.read(0, 13, 4200);
+    const header = await stream.read(0, 13, 5000);
     if (str_decode(header) !== 'MyEncryption/') {
         throw new Exceptions.InvalidFileFormatException();
     }
@@ -178,13 +189,15 @@ export async function decrypt_stream_init(ctx, stream, password, {
  * @param {CryptContext} ctx Context
  * @param {Number} bytes_start The start byte to decrypt
  * @param {Number} bytes_end The end byte to decrypt
+ * @param {AbortController|null} abort The abort controller.
  * @returns {Promise<Blob>} The decrypted data, stored in a Blob object.
  */
-export async function decrypt_stream(ctx, bytes_start, bytes_end) {
+export async function decrypt_stream(ctx, bytes_start, bytes_end, abort) {
     if (!ctx._inited) throw new Exceptions.CryptContextNotInitedException();
     if (ctx._type !== '@decrypt_stream') throw new Exceptions.InvalidCryptContextTypeException(ctx._type);
     if (ctx._released) throw new Exceptions.CryptContextReleasedException();
 
+    /** @type {Stream} */
     const stream = ctx.stream.stream;
     const chunk_size = ctx.chunk_size;
     const nonce_counter_start = ctx.nonce_counter;
@@ -211,11 +224,11 @@ export async function decrypt_stream(ctx, bytes_start, bytes_end) {
         // 定位对应chunk
         let pos = chunks_start + (chunk * size_per_chunk);
         // 读取8字节
-        const eight_bytes = await stream.read(pos, pos + 8, pos + (2 * size_per_chunk));
+        const eight_bytes = await stream.read(pos, pos + 8, pos + (2 * size_per_chunk), abort);
         // 判断是否特殊情况
         let real_size = 0;
         if ((eight_bytes).every((v, i) => v === END_IDENTIFIER[i])) {
-            const full_bytes = await stream.read(pos, pos + 32); // 读取完整标记
+            const full_bytes = await stream.read(pos, pos + 32, null, abort); // 读取完整标记
             pos += 32;
             // 判断是否结束
             if (full_bytes.every((v, i) => v === END_MARKER[i])) {
@@ -223,7 +236,7 @@ export async function decrypt_stream(ctx, bytes_start, bytes_end) {
             }
             if (full_bytes.every((v, i) => v === TAIL_BLOCK_MARKER[i])) {
                 // 读取分块长度
-                const chunk_len_bytes = await stream.read(pos, pos + 8);
+                const chunk_len_bytes = await stream.read(pos, pos + 8, null, abort);
                 pos += 8;
                 real_size = Number(new DataView(chunk_len_bytes.buffer).getBigUint64(0, true));
                 if (real_size === 0) return false // 读取到0字节，结束循环
@@ -232,7 +245,7 @@ export async function decrypt_stream(ctx, bytes_start, bytes_end) {
 
         // 读取
         const ciphertext_length = (real_size ? real_size : chunk_size)
-        const ciphertext = await stream.read(pos, pos + ciphertext_length + 16);
+        const ciphertext = await stream.read(pos, pos + ciphertext_length + 16, null, abort);
         // 获取iv
         const nonce_counter = nonce_counter_start + chunk;
         const iv_array = new ArrayBuffer(12);
