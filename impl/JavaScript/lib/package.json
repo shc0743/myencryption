@@ -15,7 +15,8 @@
     ],
     "scripts": {
         "test": "node test.js",
-        "build": "node build.cjs"
+        "build": "node build.cjs",
+        "make": "npm run build && npm run test && npm pack --dry-run"
     },
     "repository": {
         "type": "git",
