@@ -25,7 +25,7 @@ import {
     // str_decode,
     // str_encode,
     unhexlify
-} from 'simple-web-encryption';
+} from 'simple-data-crypto';
 
 console.log('Version: ', VERSION);
 

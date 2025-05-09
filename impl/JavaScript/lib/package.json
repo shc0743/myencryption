@@ -1,7 +1,7 @@
 {
-    "name": "simple-web-encryption",
+    "name": "simple-data-crypto",
     "version": "1.2.49",
-    "description": "A comprehensive encryption library providing simple tools for data and file encryption/decryption with modern cryptographic standards.",
+    "description": "A comprehensive encryption library providing simple tools for data and file encryption/decryption with modern cryptographic standards, works well with node and build tools.",
     "main": "dist/main.bundle.js",
     "type": "module",
     "files": [
@@ -15,6 +15,7 @@
     ],
     "scripts": {
         "test": "node test.js",
+        "test-debug": "node test.js debug",
         "build": "node build.cjs",
         "make": "npm run build && npm run test && npm pack --dry-run"
     },
@@ -36,5 +37,8 @@
     "homepage": "https://github.com/shc0743/myencryption#readme",
     "devDependencies": {
         "esbuild": "^0.25.3"
+    },
+    "dependencies": {
+        "scrypt-js": "^3.0.1"
     }
 }

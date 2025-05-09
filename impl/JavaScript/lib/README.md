@@ -1,0 +1,1 @@
+For the README file, please see [the GitHub link](https://github.com/shc0743/myencryption#readme)

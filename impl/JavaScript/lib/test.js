@@ -4,6 +4,59 @@ import path from 'path';
 import url from 'url';
 import { exec } from 'child_process';
 
+// node test
+
+import {
+    ENCRYPTION_FILE_VER_1_1_0,
+    ENCRYPTION_FILE_VER_1_2_10020,
+    // Exceptions,
+    Stream,
+    VERSION,
+    change_file_password,
+    crypt_context_create,
+    crypt_context_destroy,
+    decrypt_data,
+    decrypt_file,
+    decrypt_stream,
+    decrypt_stream_init,
+    derive_key,
+    encrypt_data,
+    encrypt_file,
+    export_master_key,
+    // get_random_bytes,
+    // get_random_int8_number,
+    // get_random_uint8_number,
+    hexlify,
+    // normalize_version,
+    // scrypt,
+    scrypt_hex,
+    // str_decode,
+    // str_encode,
+    unhexlify
+} from './dist/main.bundle.node.js';
+
+console.log("--NODE.JS TEST--");
+
+console.log("Version:", VERSION);
+console.log("File ver:", ENCRYPTION_FILE_VER_1_1_0, ";;", ENCRYPTION_FILE_VER_1_2_10020);
+
+console.log("Test data encryption");
+{
+    const data = "123";
+    const pass = "456;";
+    const ciphertext = await encrypt_data(data, pass);
+    console.log("ciphertext:", ciphertext);
+    const plaintext = await decrypt_data(ciphertext, pass);
+    console.log("plaintext:", plaintext);
+    if (data !== plaintext) throw "Fail!";
+}
+
+console.info('More tests required -- will be added later')
+
+console.log("--NODE.JS TEST END--\n\nBrowser test:\n");
+// web test
+
+
 let ttid = 0;
 
 const server = http.createServer((req, res) => {
@@ -15,16 +68,20 @@ const server = http.createServer((req, res) => {
         if (requestPath === '/server-stop') {
             res.writeHead(200, { 'Content-Type': 'text/plain' });
             res.end('Server is stopping...' + (req.method === 'PUT' ? " (Bad)" : ""));
-            server.close(() => {
-                if (req.method === 'PUT') {
-                    console.error("Test failed!!");
-                    console.error('Error:');
-                    console.error(req.read()?.toString() || '');
-                    process.exit(1);
-                }
-                else console.log('Test completed.');
-            });
-            server.closeAllConnections();
+            if (process.argv[2] === 'debug') {
+                console.warn('Warning:Debug mode on. Server will not stop unless Press Ctrl-C.');
+            } else {
+                server.close(() => {
+                    if (req.method === 'PUT') {
+                        console.error("Test failed!!");
+                        console.error('Error:');
+                        console.error(req.read()?.toString() || '');
+                        process.exit(1);
+                    }
+                    else console.log('Test completed.');
+                });
+                server.closeAllConnections();
+            }
             clearTimeout(ttid);
             return;
         }
