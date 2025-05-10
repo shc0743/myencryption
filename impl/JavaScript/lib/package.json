@@ -1,6 +1,6 @@
 {
     "name": "simple-data-crypto",
-    "version": "1.2.51",
+    "version": "1.2.52",
     "description": "A comprehensive encryption library providing simple tools for data and file encryption/decryption with modern cryptographic standards, works well with node and build tools.",
     "main": "src/main.js",
     "type": "module",
@@ -9,6 +9,7 @@
         "dist/main.*",
         "dist/WebScrypt/**",
         "test/**",
+        "types/**",
         "build.js",
         "hash.js",
         "test.js"

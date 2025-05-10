@@ -1,11 +1,11 @@
 
 D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\lib>npm run make
 
-> simple-data-crypto@1.2.51 make
+> simple-data-crypto@1.2.52 make
 > npm run build && npm run test && npm pack --dry-run
 
 
-> simple-data-crypto@1.2.51 build
+> simple-data-crypto@1.2.52 build
 > node build.js
 
 🗑️ 已删除文件: main.bundle.js
@@ -33,17 +33,17 @@ D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\l
 ✅ 编译完成，所有ESM特性保留！
 
 
-编译用时: 110.269ms
+编译用时: 585.072ms
 ✅✅ 🐍build🐍: 成功! ✅✅
 
-> simple-data-crypto@1.2.51 test
+> simple-data-crypto@1.2.52 test
 > node test.js
 
 --NODE.JS TEST--
-Version: Encryption/5.6 FileEncryption/1.2 Patch/5.1
+Version: Encryption/5.6 FileEncryption/1.2 Patch/5.2
 File ver: 1.1/0 ;; 1.2/10020
 Test data encryption
-ciphertext: {"data":"05681a52d0bfda4f3623e6105df6ba9ea329e1580a8725299ec64ab100c706","parameter":"Kazuha:2382e7d2de36a6559d69c0b6f000163aa6c35c9031e560f2b73a711b0a01faacab3ac88a9e472639714c250ffceac265fea3fc265d9678c63fd51513c44e72cc","N":262144,"v":5.6}
+ciphertext: {"data":"61195e5fbda0c53d163cfca39848b64302816d1cccb875091fa995d0375e72","parameter":"Furina:47a88a285dba9e7b3ab60037b467a574b3a5b1aae8047ad4daa1a39ba9dec2efa26ab9e632dc2537da5be0fb7d460ecda2c91bcc4d2db82571fdb97a2a00dfa4","N":262144,"v":5.6}
 plaintext: 123
 App Unittest Assert OK
 Test file encryption
@@ -82,12 +82,13 @@ App Unittest:  dk2= {
 App Unittest Assert OK
 App Unittest:  dk3(random)= {
   derived_key: Uint8Array(32) [
-    126,   3,  22,   5, 117,  72, 153, 247,
-    159,  73,  97, 196, 101,  52, 249, 137,
-    254, 205, 102, 177, 126, 203,  28,  42,
-    186, 160,  46, 255,  80,   6, 253, 196
+    252, 180, 146, 161, 80, 246,  38,
+    157,  84, 177, 216, 68, 164, 108,
+    215, 128, 182, 167, 53, 204, 129,
+     89, 136, 163,  53, 35, 143, 181,
+    212,  16,  22, 231
   ],
-  parameter: 'Neuvillette:b8781cadaac0317867f6ae9bf407aa30b520562d74673b8841765f1e8d69284cd497a0dc50d68df01081214fd09d3b7df194d77e88d8903ee47fe40cccf9e2ec',
+  parameter: 'Neuvillette:a6b65ef1f0bacdd5cf0834336debab1ded5e2f320c457197c69b0da99b3445a6600c7a8bc50ce304aa904a3dbbcf99b9563fdb1f13c0fc85215db661c59d712c',
   N: 262144
 }
 App Unittest:  Test context
@@ -106,7 +107,7 @@ Browser test:
 Test is running in your browser now. URL: http://127.0.0.1:36429/test/test-app.html
 Test completed.
 npm notice
-npm notice package: simple-data-crypto@1.2.51
+npm notice package: simple-data-crypto@1.2.52
 npm notice Tarball Contents
 npm notice 97B README.md
 npm notice 5.5kB build.js
@@ -157,21 +158,22 @@ npm notice 71B src/version.js
 npm notice 7.6kB test.js
 npm notice 696B test/test-app.html
 npm notice 8.1kB test/test-app.js
+npm notice 10.9kB types/types.d.ts
 npm notice Tarball Details
 npm notice name: simple-data-crypto
-npm notice version: 1.2.51
-npm notice filename: simple-data-crypto-1.2.51.tgz
-npm notice package size: 237.7 kB
-npm notice unpacked size: 1.0 MB
-npm notice shasum: 0c30ddc7fceb57e5e193291dd3c920747456ee64
-npm notice integrity: sha512-PqA7pWoA0E8+I[...]Z06idlaAbzh3Q==
-npm notice total files: 49
+npm notice version: 1.2.52
+npm notice filename: simple-data-crypto-1.2.52.tgz
+npm notice package size: 240.3 kB
+npm notice unpacked size: 1.1 MB
+npm notice shasum: 0b04032f1d7261e80703d2c6455e3ecc52892e8e
+npm notice integrity: sha512-O5ir8XmFes7SO[...]IlE6KC4S+StTg==
+npm notice total files: 50
 npm notice
-simple-data-crypto-1.2.51.tgz
+simple-data-crypto-1.2.52.tgz
 
 D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\lib>npm publish
 npm notice
-npm notice package: simple-data-crypto@1.2.51
+npm notice package: simple-data-crypto@1.2.52
 npm notice Tarball Contents
 npm notice 97B README.md
 npm notice 5.5kB build.js
@@ -222,19 +224,20 @@ npm notice 71B src/version.js
 npm notice 7.6kB test.js
 npm notice 696B test/test-app.html
 npm notice 8.1kB test/test-app.js
+npm notice 10.9kB types/types.d.ts
 npm notice Tarball Details
 npm notice name: simple-data-crypto
-npm notice version: 1.2.51
-npm notice filename: simple-data-crypto-1.2.51.tgz
-npm notice package size: 237.7 kB
-npm notice unpacked size: 1.0 MB
-npm notice shasum: 0c30ddc7fceb57e5e193291dd3c920747456ee64
-npm notice integrity: sha512-PqA7pWoA0E8+I[...]Z06idlaAbzh3Q==
-npm notice total files: 49
+npm notice version: 1.2.52
+npm notice filename: simple-data-crypto-1.2.52.tgz
+npm notice package size: 240.3 kB
+npm notice unpacked size: 1.1 MB
+npm notice shasum: 0b04032f1d7261e80703d2c6455e3ecc52892e8e
+npm notice integrity: sha512-O5ir8XmFes7SO[...]IlE6KC4S+StTg==
+npm notice total files: 50
 npm notice
 npm notice Publishing to https://registry.npmjs.org/ with tag latest and default access
 Authenticate your account at:
-https://www.npmjs.com/auth/cli/ae4aae74-0ee2-4b78-ade2-c2b95017a737
+https://www.npmjs.com/auth/cli/7bd15868-dc4a-4464-9893-96185741bad9
 Press ENTER to open in the browser...
 
-+ simple-data-crypto@1.2.51
++ simple-data-crypto@1.2.52
