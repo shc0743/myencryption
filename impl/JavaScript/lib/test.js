@@ -37,6 +37,18 @@ import {
 
 console.log("--NODE.JS TEST--");
 
+function unitLog(...args) {
+    console.log('%cApp %cUnittest: ', 'color: green; font-weight: bold;', 'color: black', ...args);
+}
+
+function unitAssert(value) {
+    if (!value) {
+        console.error('%cApp %cUnittest Failed', 'color: green; font-weight: bold;', 'color: red');
+        throw new Error('Assertion failed');
+    }
+    console.info('%cApp %cUnittest %cAssert OK', 'color: green; font-weight: bold;', 'color: black', 'color: green');
+}
+
 console.log("Version:", VERSION);
 console.log("File ver:", ENCRYPTION_FILE_VER_1_1_0, ";;", ENCRYPTION_FILE_VER_1_2_10020);
 
@@ -48,7 +60,99 @@ console.log("Test data encryption");
     console.log("ciphertext:", ciphertext);
     const plaintext = await decrypt_data(ciphertext, pass);
     console.log("plaintext:", plaintext);
-    if (data !== plaintext) throw "Fail!";
+    unitAssert(data === plaintext);
+}
+
+console.log("Test file encryption");
+{
+    const data = "Hello World!";
+    const pass = "testpass123";
+
+    // Create source data in memory
+    const sourceData = Buffer.from(data);
+
+    // Test encryption
+    let encryptedBuffer = [];
+    unitAssert(await encrypt_file(async (start, end) => {
+        return new Uint8Array(sourceData.slice(start, end));
+    }, (data) => {
+        encryptedBuffer.push(data);
+    }, pass));
+
+    // Keep encrypted data in memory
+    const encryptedData = Buffer.concat(encryptedBuffer);
+
+    // Clear buffer
+    encryptedBuffer.length = 0;
+    unitAssert(encryptedBuffer.length === 0);
+
+    // Test decryption
+    let decryptedBuffer = [];
+    unitAssert(await decrypt_file(async (start, end) => {
+        return new Uint8Array(encryptedData.slice(start, end));
+    }, (data) => {
+        decryptedBuffer.push(data);
+    }, pass));
+
+    // Verify results
+    const decryptedData = Buffer.concat(decryptedBuffer).toString();
+    unitLog('decryptedData=', decryptedData);
+    unitAssert(decryptedData === data);
+}
+
+unitLog('Test scrypt');
+const scN = 262144;
+const scr = 8;
+const scp = 1;
+const scdklen = 32;
+const scstr = 'lalala123';
+const scsalt = 'bebebe456';
+{
+    // 测试相同的输入是否能得到相同的输出
+    /*
+函数定义：
+export async function scrypt_hex(key, salt, N, r, p, dklen) {
+    return hexlify(await scrypt(str_encode(key), str_encode(salt), N, r, p, dklen));
+}
+    */
+    const scValue1 = await scrypt_hex(scstr, scsalt, scN, scr, scp, scdklen);
+    const scValue2 = await scrypt_hex(scstr, scsalt, scN, scr, scp, scdklen);
+    unitLog('scValue1=', scValue1);
+    unitLog('scValue2=', scValue2);
+    unitAssert(scValue1 === scValue2);
+}
+
+unitLog('Test derive a key');
+{
+    const key = new Uint8Array(await new Blob(['lalala12378']).arrayBuffer());
+    const iv = new Uint8Array(await new Blob(['bebebe45609']).arrayBuffer());
+    const phrase = 'Furina';
+    const dk1 = await derive_key(key, iv, phrase, scN, new Uint8Array(await new Blob([scsalt, 'exex']).arrayBuffer()), scr, scp, scdklen);
+    unitLog('dk1=', dk1);
+    const dk2 = await derive_key(key, iv, phrase, scN, new Uint8Array(await new Blob([scsalt, 'exex']).arrayBuffer()), scr, scp, scdklen);
+    unitLog('dk2=', dk2);
+    unitAssert(hexlify(dk1.derived_key) === hexlify(dk2.derived_key));
+
+    const dk3 = await derive_key(key, iv);
+    unitLog('dk3(random)=', dk3);
+}
+
+unitLog('Test context');
+{
+    const ctx = await crypt_context_create();
+    unitLog('ctx=', ctx);
+    unitAssert(ctx);
+    await crypt_context_destroy(ctx);
+    unitLog('ctx destroyed');
+    unitAssert(ctx._released);
+}
+
+unitLog("test binascii")
+{
+    const hex = '313233'
+    unitAssert(hexlify(unhexlify(hex)) === hex)
+    const str = new Uint8Array(await new Blob(['456789']).arrayBuffer())
+    unitAssert((hexlify(str)) === '343536373839');
 }
 
 console.info('More tests required -- will be added later')

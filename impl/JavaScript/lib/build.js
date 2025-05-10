@@ -1,8 +1,10 @@
-const { build } = require('esbuild');
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import { build } from 'esbuild';
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import { calculateFileHash } from './hash.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outputDir = path.resolve(__dirname, './dist');
 const filesToDelete = [
     'main.bundle.js', 'main.bundle.js.map',
@@ -26,6 +28,7 @@ async function setCompileFile(pattern) {
     const base = './src/scrypt-layer/';
     const buildPath = base + '@build-' + pattern + '.js';
     const dynFile = base + 'dynamic-compile.js';
+    const asmjsPath = base + 'WebScrypt/asset/asmjs.js';
     if (fs.existsSync(dynFile)) fs.unlinkSync(dynFile);
     // 复制模板文件
     let text = await fs.promises.readFile(buildPath, { encoding: 'utf-8' });
@@ -44,9 +47,13 @@ async function setCompileFile(pattern) {
             .replaceAll(
                 'TEXTTEXTTEXTASMJSTEXTCONTENT',
                 await fs.promises.readFile(
-                    base + 'WebScrypt/asset/asmjs.js',
+                    asmjsPath,
                     { encoding: 'utf-8' }
                 )
+            )
+            .replaceAll(
+                'SCRYPTLOADERHASHTEXTTEXTTEXT',
+                'scrypt_loader_' + await calculateFileHash(asmjsPath, 'sha256')
             )
     }
     // 写入文件
@@ -115,24 +122,24 @@ setTimeout(async () => {
     })
     console.log('✅ 编译完成，所有ESM特性保留！\n');
 
-    console.log("🔄 复制类型定义文件...");
-    fs.copyFileSync(
-        path.join(__dirname, 'types', 'types.d.ts'),
-        path.join(outputDir, 'main.bundle.d.ts')
-    );
-    fs.copyFileSync(
-        path.join(__dirname, 'types', 'types.d.ts'),
-        path.join(outputDir, 'main.bundle.min.d.ts')
-    );
-    fs.copyFileSync(
-        path.join(__dirname, 'types', 'types.d.ts'),
-        path.join(outputDir, 'main.bundle.node.d.ts')
-    );
-    fs.copyFileSync(
-        path.join(__dirname, 'types', 'types.d.ts'),
-        path.join(outputDir, 'main.bundle.builder.d.ts')
-    );
-    console.log('✅ 类型定义文件已复制！');
+    // console.log("🔄 复制类型定义文件...");
+    // fs.copyFileSync(
+    //     path.join(__dirname, 'types', 'types.d.ts'),
+    //     path.join(outputDir, 'main.bundle.d.ts')
+    // );
+    // fs.copyFileSync(
+    //     path.join(__dirname, 'types', 'types.d.ts'),
+    //     path.join(outputDir, 'main.bundle.min.d.ts')
+    // );
+    // fs.copyFileSync(
+    //     path.join(__dirname, 'types', 'types.d.ts'),
+    //     path.join(outputDir, 'main.bundle.node.d.ts')
+    // );
+    // fs.copyFileSync(
+    //     path.join(__dirname, 'types', 'types.d.ts'),
+    //     path.join(outputDir, 'main.bundle.builder.d.ts')
+    // );
+    // console.log('✅ 类型定义文件已复制！');
     
     console.log('');
     console.timeEnd('编译用时');

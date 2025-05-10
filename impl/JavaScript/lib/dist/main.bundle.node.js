@@ -808,8 +808,12 @@ async function decrypt_data(message_encrypted, key) {
 }
 
 // src/encrypt_file.js
+var timerproc = typeof process === "undefined" ? requestAnimationFrame : (
+  // browser
+  setTimeout
+);
 function nextTick() {
-  return new Promise((r) => requestAnimationFrame(r));
+  return new Promise((r) => timerproc(r));
 }
 var PADDING_SIZE = 4096;
 var END_IDENTIFIER = [
@@ -1477,7 +1481,7 @@ async function decrypt_stream(ctx, bytes_start, bytes_end, abort) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/4.9";
+var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/5.0";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,

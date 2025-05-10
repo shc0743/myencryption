@@ -35,11 +35,11 @@ await new Promise((resolve, reject) => {
 
 console.log('%cApp %cUnittest: %cStart', 'color: green; font-weight: bold;', 'color: black', 'color: blue');
 
-function unitLog(...args) {
+export function unitLog(...args) {
     console.log('%cApp %cUnittest: ', 'color: green; font-weight: bold;', 'color: black', ...args);
 }
 
-function unitAssert(value) {
+export function unitAssert(value) {
     if (!value) {
         console.error('%cApp %cUnittest Failed', 'color: green; font-weight: bold;', 'color: red');
         throw new Error('Assertion failed');

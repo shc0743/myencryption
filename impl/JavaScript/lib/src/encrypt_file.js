@@ -5,8 +5,12 @@ import { str_encode, str_decode } from "./str.js";
 import { encrypt_data, decrypt_data } from "./encrypt_data.js";
 import * as Exceptions from './exceptions.js';
 
+// @ts-ignore
+const timerproc = (typeof process === 'undefined') ?
+    requestAnimationFrame : // browser
+    setTimeout; // node.js
 function nextTick() {
-    return new Promise(r => requestAnimationFrame(r));
+    return new Promise(r => timerproc(r));
 }
 
 export const PADDING_SIZE = 4096; // 4096 bytes

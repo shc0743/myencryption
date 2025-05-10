@@ -110,3 +110,9 @@ example();
 [MIT](https://opensource.org/licenses/MIT)
 ```
 
+[scrypt-js](https://www.npmjs.com/package/scrypt-js) (MIT)
+
+[esbuild](https://www.npmjs.com/package/esbuild) (MIT)
+
+[pycryptodome](https://www.pycryptodome.org/src/license) (partially in the public domain and partially released under the BSD 2-Clause license)
+

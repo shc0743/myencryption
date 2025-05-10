@@ -79,7 +79,7 @@ const window2 = {};
                 try {
                     const text =
 `
-const window = globalThis["scrypt_loader_4cd3c4ebc5904f79bda1945c447c53cf"]
+const window = globalThis["SCRYPTLOADERHASHTEXTTEXTTEXT"]
 /// START ASM.JS
 TEXTTEXTTEXTASMJSTEXTCONTENT
 ///END ASM.JS
@@ -116,96 +116,12 @@ TEXTTEXTTEXTASMJSTEXTCONTENT
 
         function asmjsCallback(eventName, data) {
             "onload" == eventName && (scWorker = data), loader[eventName](data)
-            ; if (eventName === 'onload') delete globalThis["scrypt_loader_4cd3c4ebc5904f79bda1945c447c53cf"];
+            ; if (eventName === 'onload') delete globalThis["SCRYPTLOADERHASHTEXTTEXTTEXT"];
         }
         var scWorker;
         loader.check = n, loader.load = load, loader.hash = hashLoader, loader.config = configLoader, loader.stop = i, loader.free = c, loader.unload = f
     }(asmjsLoader || (asmjsLoader = {}));
     var flashLoader;
-    /*! function (n) {
-        function o() {
-            return v() >= 18
-        }
-
-        function e(n) {
-            console.error("Flash:: Not supported");
-            throw new Error("Flash:: Not supported");
-            // outside_t.__flash_cb = u;
-            // var o = n + "flash.swf";
-            // m = l(o), r.hideDom(m)
-        }
-
-        function a(n, o, t) {
-            var e = r.bytesToHex(n),
-                a = r.bytesToHex(o);
-            m.hash(e, a, t)
-        }
-
-        function i(r, n, o, t, e, a, i) {
-            m.config.apply(m, arguments)
-        }
-
-        function c() {
-            m.cancel()
-        }
-
-        function f() {
-            m.free(), m = null
-        }
-
-        function s() {
-            document.body.removeChild(m), m = null
-        }
-
-        function u(o, t) {
-            "oncomplete" == o && (t = r.hexToBytes(t));
-            try {
-                n[o](t)
-            } catch (e) {
-                throw e
-            }
-        }
-
-        function l(r) {
-            var n = document.createElement("div"),
-                o = "_" + (1e6 * Math.random() | 0);
-            r = encodeURI(r), n.innerHTML = p ? "<object id=" + o + " classid=clsid:D27CDB6E-AE6D-11cf-96B8-444553540000><param name=movie value=" + r + "><param name=allowScriptAccess value=always></object>" : "<embed id=" + o + " name=" + o + " src=" + r + " type=application/x-shockwave-flash allowScriptAccess=always></embed>";
-            var t = n.firstChild;
-            return document.body.appendChild(t), t
-        }
-
-        function h() {
-            var r = navigator.plugins;
-            if (r) {
-                var n = r["Shockwave Flash"];
-                if (n) {
-                    var o = n.description;
-                    if (o) return +o.match(w)
-                }
-            }
-        }
-
-        function d() {
-            var r = window.ActiveXObject;
-            if (r) {
-                var n = "";
-                try {
-                    n = new r("ShockwaveFlash.ShockwaveFlash").GetVariable("$version").replace(",", ".")
-                } catch (o) {
-                    return
-                }
-                return +n.match(w)
-            }
-        }
-
-        function v() {
-            var r = h();
-            return r > 0 ? r : (r = d(), r > 0 ? (p = !0, r) : 0)
-        }
-        var m, p;
-        n.check = o, n.load = e, n.hash = a, n.config = i, n.stop = c, n.free = f, n.unload = s;
-        var w = /\d+\.\d+/
-    }(flashLoader || (flashLoader = {}));*/
     var factory_object;
     ! function (factory) {
         function e() {
@@ -352,7 +268,7 @@ TEXTTEXTTEXTASMJSTEXTCONTENT
 }();
 
 
-globalThis["scrypt_loader_4cd3c4ebc5904f79bda1945c447c53cf"] = window2;
+globalThis["SCRYPTLOADERHASHTEXTTEXTTEXT"] = window2;
 const scryptAPI = window2.scrypt;
 scryptAPI.load();
 //#include <scrypt-browser-impl.js>

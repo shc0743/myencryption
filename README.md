@@ -1,4 +1,4 @@
-# MyEncryption
+# simple-data-crypto
 
 A cross-platform encryption library, using AES_256_GCM, with cipher details wrapped so that the user can use it easily.
 
@@ -110,4 +110,8 @@ This project: **MIT License**.
 [MIT](https://opensource.org/licenses/MIT)
 ```
 
-<!-- remember to add -->
+[scrypt-js](https://www.npmjs.com/package/scrypt-js) (MIT)
+
+[esbuild](https://www.npmjs.com/package/esbuild) (MIT)
+
+[pycryptodome](https://www.pycryptodome.org/src/license) (partially in the public domain and partially released under the BSD 2-Clause license)
