@@ -1,5 +1,9 @@
 # 关于构建工具
 
+# 这篇文章的内容已经过时了，不符合实际情况，没有必要继续阅读。保留此文档主要是为了防止出现意料之外的问题。
+
+---
+
 [直接看解决方案](#临时性解决方案)
 
 在 [derive_key.js](../../impl/JavaScript/lib/src/derive_key.js) 中, 我们使用以下代码动态导入 WebScrypt 库：
@@ -67,7 +71,7 @@ export default defineConfig({
   ➜  press h + enter to show help
 X [ERROR] Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
 
-    node_modules/simple-web-encryption/dist/main.bundle.js:229:16:
+    node_modules/simple-data-crypto/dist/main.bundle.js:229:16:
       229 │ var scryptAPI = await load_deps_es5("scrypt", import.meta.resolve("./WebScrypt/scrypt.js"));
           ╵                 ~~~~~
 
@@ -76,7 +80,7 @@ YOUR_APP_PATH/node_modules/esbuild/lib/main.js:1477
               ^
 
 Error: Build failed with 1 error:
-node_modules/simple-web-encryption/dist/main.bundle.js:229:16: ERROR: Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
+node_modules/simple-data-crypto/dist/main.bundle.js:229:16: ERROR: Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
     at failureErrorWithLog (YOUR_APP_PATH/node_modules/esbuild/lib/main.js:1477:15)   
     at YOUR_APP_PATH/node_modules/esbuild/lib/main.js:946:25
     at YOUR_APP_PATH/node_modules/esbuild/lib/main.js:1355:9
@@ -145,7 +149,7 @@ export default defineConfig({
         sourcemap: true,
         rollupOptions: {
             external: [
-                "simple-web-encryption",
+                "simple-data-crypto",
             ],
         }
     },
@@ -154,7 +158,7 @@ export default defineConfig({
             target: 'es2022' // 确保设置为支持 top-level await 的版本
         },
         exclude: [
-            "simple-web-encryption",
+            "simple-data-crypto",
         ]
     }
 })
@@ -165,12 +169,12 @@ export default defineConfig({
 ```html
 <script type="importmap">{
 "imports":{
-    "simple-web-encryption": "./lib/simple-web-encryption/dist/main.bundle.min.js"
+    "simple-data-crypto": "./lib/simple-data-crypto/dist/main.bundle.min.js"
 }
 }</script>
 ```
 
-最后，需要把 simple-web-encryption 的dist目录中`main.bundle.min.js`以及整个 `WebScrypt` 复制到固定位置。
+最后，需要把 simple-data-crypto 的dist目录中`main.bundle.min.js`以及整个 `WebScrypt` 复制到固定位置。
 
 # 我们的努力
 

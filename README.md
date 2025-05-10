@@ -59,21 +59,29 @@ To use the JavaScript version in your project:
 
 For a demo, please [go here](https://github.com/shc7432/MyEncryptionApp-Demo/tree/main)
 
-**Notice**: Currently, due to a dynamic script load statement, the library may not works well when used in Vite or other build tools. We are trying to solve the problem. For more information and the temporary solution, please [go here](./docs/JavaScript/about-build-tools.md).
+**Note**: When using this library in Vite or other build tools, special syntax is required.
 
-### npm usage
+### Install via npm
 
-Install by the following command:
+Run the following command:
 
 ```bash
-npm i simple-web-encryption
+npm i simple-data-crypto
 ```
 
-### Example usage
+### Examples
 
+**Note**: Different import methods are required in different environments.
+
+Node.js environment or native browser environment:
 ```javascript
 // yourcode.js
-import { encrypt_data, decrypt_data } from './myencryption/main.js';
+// Auto-selection generally works well
+import { encrypt_data, decrypt_data } from 'simple-data-crypto';
+// If not working in Node.js, use:
+// import { encrypt_data, decrypt_data } from 'simple-data-crypto/node';
+// If not working in browser, use:
+// import { encrypt_data, decrypt_data } from 'simple-data-crypto/browser';
 
 async function example() {
     const secure = await encrypt_data('raw_text', 'your_password');
@@ -81,6 +89,14 @@ async function example() {
     console.log(text);
 }
 example();
+```
+
+When using Vite or other build tools:
+
+```javascript
+import { encrypt_data, decrypt_data } from 'simple-data-crypto/builder'; // Must specify manually
+
+// Usage is the same as above
 ```
 
 File encryption is a little more difficult due to browser limitations. (That is not what we can improve!)

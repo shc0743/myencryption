@@ -1,7 +1,11 @@
 // @ts-nocheck
 import { str_encode, str_decode } from "./str.js";
 import { encrypt_data, decrypt_data } from "./encrypt_data.js";
-import { PADDING_SIZE, normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020 } from "./encrypt_file.js";
+import {
+    PADDING_SIZE, normalize_version,
+    ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020,
+    GetFileVersion,
+} from "./internal-util.js";
 import * as Exceptions from './exceptions.js';
 
 
@@ -16,17 +20,9 @@ export async function export_master_key(file_head, current_key, export_key) {
     if (file_head.size < (1024 + 16 + 4)) throw new Exceptions.BadDataException('Data not enough');
 
     // Verify file header
-    const headerBlob = file_head.slice(0, 13);
-    const header = await headerBlob.text();
-    if (header !== "MyEncryption/") {
-        throw new Exceptions.InvalidFileFormatException();
-    }
-    const top_header_version = await (file_head.slice(13, 16)).text();
-    if(!(['1.1', '1.2'].includes(top_header_version))) {
-        throw new Exceptions.EncryptionVersionMismatchException();
-    }
-    const version_marker = new DataView((await file_head.slice(16, 20).arrayBuffer())).getUint32(0, true);
-    const version = normalize_version(top_header_version, version_marker);
+    const version = await GetFileVersion(async (start, end) => {
+        return new Uint8Array(await file_head.slice(start, end).arrayBuffer())
+    });
 
     if (version === ENCRYPTION_FILE_VER_1_1_0) {
         // Read encrypted master key length and ciphertext
@@ -99,17 +95,9 @@ export async function change_file_password(file_head, current_key, new_key) {
     if (file_head.size < (1024 + 16 + 4)) throw new Error('Data not enough');
 
     // Verify file header
-    const headerBlob = file_head.slice(0, 13);
-    const header = await headerBlob.text();
-    if (header !== "MyEncryption/") {
-        throw new Exceptions.InvalidFileFormatException();
-    }
-    const top_header_version = await (file_head.slice(13, 16)).text();
-    if (!(['1.1', '1.2'].includes(top_header_version))) {
-        throw new Exceptions.EncryptionVersionMismatchException();
-    }
-    const version_marker = new DataView((await file_head.slice(16, 20).arrayBuffer())).getUint32(0, true);
-    const version = normalize_version(top_header_version, version_marker);
+    const version = await GetFileVersion(async (start, end) => {
+        return new Uint8Array(await file_head.slice(start, end).arrayBuffer())
+    });
 
     if (version === ENCRYPTION_FILE_VER_1_1_0) return await change_file_password_1_1_0(file_head, current_key, new_key);
 

@@ -1,7 +1,7 @@
 import {
     ENCRYPTION_FILE_VER_1_1_0,
     ENCRYPTION_FILE_VER_1_2_10020,
-    // Exceptions,
+    Exceptions,
     Stream,
     VERSION,
     change_file_password,
@@ -60,6 +60,10 @@ try {
     unitLog('data=', data);
     const ciphertext = await encrypt_data(data, password);
     unitLog('ciphertext=', ciphertext);
+    const ciphertext_with_custom_phrase = await encrypt_data(data, password, 'custom_phrase');
+    unitLog('ciphertext_with_custom_phrase=', ciphertext_with_custom_phrase);
+    const ciphertext_with_empty_phrase = await encrypt_data(data, password, '');
+    unitLog('ciphertext_with_empty_phrase=', ciphertext_with_empty_phrase);
     const plaintext = await decrypt_data(ciphertext, password);
     unitLog('plaintext=', plaintext);
 
@@ -93,6 +97,50 @@ try {
     unitLog('decryptedText=', decryptedText);
     unitAssert(decryptedText === originalText);
 
+    unitLog("Try to change the password")
+    const newpass = 'newpassword123';
+    const newhead = (await change_file_password(encryptedFile, password, newpass));
+    encryptedFile = new Blob([newhead, encryptedFile.slice(newhead.size)]);
+    try {
+        unitLog("Try to decrypt the file with the old password. Should fail.")
+        buffer.length = 0;
+        await decrypt_file(async (start, end) => {
+            return new Uint8Array(await encryptedFile.slice(start, end).arrayBuffer()); 
+        }, (data) => {
+            buffer.push(data);
+        }, password);
+        unitAssert(false);
+    } catch (e) {
+        unitAssert(e instanceof Exceptions.CannotDecryptException);
+    }
+    unitLog("Try to decrypt the file with the new password. Should success.")
+    buffer.length = 0;
+    await decrypt_file(async (start, end) => {
+        return new Uint8Array(await encryptedFile.slice(start, end).arrayBuffer());
+    }, (data) => {
+        buffer.push(data);
+    }, newpass);
+    decryptedFile = new Blob(buffer);
+    decryptedText = await decryptedFile.text();
+    unitLog('decryptedText=', decryptedText);
+    unitAssert(decryptedText === originalText);
+
+    unitLog("Test exporting the master key")
+    try {
+        unitLog("Try to export the master key with the old password. Should fail.")
+        const masterKey = await export_master_key(encryptedFile, password, '111');
+        unitAssert(false);
+    } catch (e) {
+        unitAssert(e instanceof Exceptions.CannotDecryptException);
+    }
+    unitLog("Try to export the master key with the new password. Should success.")
+    const masterKey = await export_master_key(encryptedFile, newpass, '111');
+    unitLog('masterKey=', await decrypt_data(masterKey, '111'));
+    unitAssert(masterKey);
+
+    // empty the buffer
+    buffer.length = 0;
+    unitAssert(buffer.length === 0);
 
     unitLog('Test scrypt');
     const scstr = 'lalala123';

@@ -20,6 +20,7 @@ The file format is structured as follows:
      - `N`: Iteration count
      - `v`: Version number (5.5)
      - `iv`: Initialization vector for key derivation (hex encoded)
+     - `a`: Algorithm used for encryption (`AES-GCM`). This field may not exist.
     - Header JSON is **not** variable.
     - To change the primary key, the user has to decrypt and re-encrypt.
 

@@ -13,7 +13,7 @@ function safeparse(json) {
 }
 
 /**
- * @param {string | Uint8Array} message
+ * @param {string} message
  * @param {string} key
  * @param {?string} [phrase] phrase
  * @param {number} [N] N
@@ -29,8 +29,8 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
     // (4) 加密消息
     const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
 
-    if (typeof message === "string") {
-        message = str_encode(message);
+    if (typeof message !== "string") {
+        throw new Exceptions.OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
     }
 
     const ciphertext = await crypto.subtle.encrypt(
@@ -39,7 +39,7 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
             iv: iv
         },
         cipher,
-        message
+        str_encode(message)
     );
 
     // 组合IV + 密文 + 认证标签
@@ -52,14 +52,14 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
         data: message_encrypted,
         parameter: parameter,
         N: N,
-        v: 5.5
+        v: 5.6
     });
 }
 
 
 /**
  * @param {string} message_encrypted
- * @param {string} key
+ * @param {string|Uint8Array} key
  */
 export async function decrypt_data(message_encrypted, key) {
     const jsoned = safeparse(message_encrypted);
@@ -79,7 +79,10 @@ export async function decrypt_data(message_encrypted, key) {
     const ciphertext = encrypted_data.slice(12, -16);
     const tag = encrypted_data.slice(-16);
 
-    const { derived_key } = await derive_key(key, iv, phrase, N, salt);
+    // const { derived_key } = await derive_key(key, iv, phrase, N, salt);
+    const derived_key = (typeof key === "string") ?
+        ((await derive_key(key, iv, phrase, N, salt)).derived_key) :
+        (key);
 
     const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
 
@@ -96,7 +99,7 @@ export async function decrypt_data(message_encrypted, key) {
         try {
             return str_decode(decrypted_data);
         } catch {
-            return decrypted_data;
+            throw new Exceptions.OperationNotPermittedException("The ability to directly decrypt binary data has been removed in the new version. If you have encrypted binary data, please recover it using the old version.");
         }
     }
     catch (e) {

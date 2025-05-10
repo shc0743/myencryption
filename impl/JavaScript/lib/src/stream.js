@@ -5,7 +5,8 @@ import { str_decode } from "./str.js";
 import { derive_key } from "./derive_key.js";
 import { unhexlify } from "./binascii.js";
 import { decrypt_data } from "./encrypt_data.js";
-import { normalize_version, PADDING_SIZE, END_IDENTIFIER, END_MARKER, TAIL_BLOCK_MARKER, ENCRYPTION_FILE_VER_1_2_10020, FILE_END_MARKER } from "./encrypt_file.js";
+import { normalize_version, ENCRYPTION_FILE_VER_1_2_10020 } from "./encrypt_file.js";
+import { PADDING_SIZE, END_IDENTIFIER, END_MARKER, TAIL_BLOCK_MARKER, FILE_END_MARKER } from './internal-util.js';
 
 
 export class Stream {

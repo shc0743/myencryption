@@ -7,6 +7,7 @@ import { Stream, decrypt_stream_init, decrypt_stream } from "./stream.js";
 import { hexlify, unhexlify } from "./binascii.js";
 import { get_random_bytes, get_random_int8_number, get_random_uint8_number } from "./random.js";
 import { str_encode, str_decode } from "./str.js";
+import { Internals } from "./internal-expose.js";
 import * as Exceptions from './exceptions.js';
 import { VERSION } from "./version.js";
 
@@ -37,4 +38,5 @@ export {
     VERSION,
     ENCRYPTION_FILE_VER_1_1_0,
     ENCRYPTION_FILE_VER_1_2_10020,
+    Internals,
 };

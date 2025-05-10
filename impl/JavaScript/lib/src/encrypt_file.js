@@ -5,46 +5,14 @@ import { str_encode, str_decode } from "./str.js";
 import { encrypt_data, decrypt_data } from "./encrypt_data.js";
 import * as Exceptions from './exceptions.js';
 
-// @ts-ignore
-const timerproc = (typeof process === 'undefined') ?
-    requestAnimationFrame : // browser
-    setTimeout; // node.js
-function nextTick() {
-    return new Promise(r => timerproc(r));
-}
-
-export const PADDING_SIZE = 4096; // 4096 bytes
-export const END_IDENTIFIER = [
-    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
-];
-export const TAIL_BLOCK_MARKER = [
-    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
-    0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55,
-    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
-    0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55,
-];
-export const END_MARKER = [
-    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
-    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
-    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
-    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
-];
-export const FILE_END_MARKER = [0xFF, 0xFD, 0xF0, 0x10, 0x13, 0xD0, 0x12, 0x18, 0x55, 0xAA];
-
-/**
- * @param {string} major_version
- * @param {number} [version_marker]
- */
-export function normalize_version(major_version, version_marker) {
-    if (!major_version) return `Unknown Version`;
-    if (String(major_version) === '1.1') version_marker = null;
-    if (!version_marker) return `${major_version}/0`;
-    return `${major_version}/${version_marker}`;
-}
-
-// versions
-export const ENCRYPTION_FILE_VER_1_1_0 = normalize_version('1.1');
-export const ENCRYPTION_FILE_VER_1_2_10020 = normalize_version('1.2', 10020);
+import {
+    normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020,
+    PADDING_SIZE,
+    END_IDENTIFIER, TAIL_BLOCK_MARKER, END_MARKER, FILE_END_MARKER,
+    nextTick,
+    GetFileVersion,
+} from "./internal-util.js";
+export { normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020 };
 
 /**
  * 加密文件
@@ -100,6 +68,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
         "parameter": parameter,
         "N": N,
         "v": 5.5,
+        "a": "AES-GCM",
         "iv": hexlify(iv_for_key)
     };
     const header_json = str_encode(JSON.stringify(header_data));
@@ -295,25 +264,16 @@ export async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, c
  * 解密文件
  * @param {Function} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
  * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
- * @param {string} user_key - 用户提供的解密密钥
+ * @param {string|Uint8Array} user_key - 用户提供的解密密钥（字符串）或者派生后的密钥（Uint8Array）
  * @param {Function} [callback=null] - 进度回调函数
  * @returns {Promise<boolean>} 返回解密是否成功
  */
 export async function decrypt_file(file_reader, file_writer, user_key, callback = null) {
-    // 读取文件头并验证
-    const header = await file_reader(0, 13);
-    if (str_decode(header) !== 'MyEncryption/') {
-        throw new Exceptions.InvalidFileFormatException();
-    }
-    const top_header_version = (str_decode(await file_reader(13, 16)));
-    if(!(['1.1', '1.2'].includes(top_header_version))) {
-        throw new Exceptions.EncryptionVersionMismatchException();
-    }
-    const version_marker = new DataView((await file_reader(16, 20)).buffer).getUint32(0, true);
-    const version = normalize_version(top_header_version, version_marker);
     let read_pos = 16 + 4;
+    const version = await GetFileVersion(file_reader);
 
     if (version === ENCRYPTION_FILE_VER_1_1_0) {
+        if (typeof user_key !== 'string') throw new Exceptions.NotSupportedException("operation not supported");
         return await decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback);
     }
 
@@ -327,7 +287,7 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
     }
         
     // 解密主密钥
-    const key = await decrypt_data(ekey, user_key);
+    const key = (typeof user_key === 'string') ? await decrypt_data(ekey, user_key) : null;
 
     // 读取头部JSON长度
     const json_len_bytes = await file_reader(read_pos, read_pos + 4);
@@ -347,6 +307,24 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
     const salt = unhexlify(salt_hex);
     const iv4key = unhexlify(header_json.iv);
     const N = header_json.N;
+    const algorithm = header_json.a;
+
+    // 判断是否支持的加密算法
+    // 默认是AES-GCM
+    if ((!!algorithm) && (algorithm !== "AES-GCM")) {
+        if (algorithm === 'ChaCha20' || algorithm === 'ChaCha20-Poly1305') {
+            throw new Exceptions.ChaCha20NotSupportedException();
+        }
+        if (algorithm === 'DES' || algorithm === 'RC4') {
+            throw new Exceptions.DangerousEncryptionAlgorithmException();
+        }
+        if (algorithm === 'XTS-AES') {
+            throw new Exceptions.EncryptionAlgorithmNotSupportedException("XTS-AES Not supported yet");
+        }
+        throw new Exceptions.EncryptionAlgorithmNotSupportedException(undefined, {
+            cause: new Error(String(algorithm))
+        });
+    }
 
     // 获取chunk size和iv参数
     const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
@@ -356,7 +334,9 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
     // 对应加密时，需要提供一个iv，我们把iv取回来，重新生成密钥（所有数据块的密钥是相同的）
     callback?.(0);
     await nextTick();
-    const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
+    const derived_key = (typeof user_key === 'string') ?
+        ((await derive_key(key, iv4key, phrase, N, salt)).derived_key) :
+        user_key;
 
     let total_bytes = 0, is_final_chunk = false;
     // 分块解密循环

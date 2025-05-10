@@ -5,6 +5,18 @@ import * as Exceptions from './exceptions.js';
 import { scrypt } from './scrypt-layer/entrance.js';
 
 export const deriveKey__phrases = ['Furina', 'Neuvillette', 'Venti', 'Nahida', 'Kinich', 'Kazuha'];
+/**
+ * Derive a key from a phrase and a key.
+ * @param {string} key 
+ * @param {Uint8Array} iv 
+ * @param {?string} phrase 
+ * @param {?number} N 
+ * @param {?Uint8Array} salt 
+ * @param {?number} r 
+ * @param {?number} p 
+ * @param {?number} dklen 
+ * @returns 
+ */
 export async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
     if (N === null) N = 262144;
     if (typeof N !== "number" || N > 2097152) {
@@ -31,6 +43,9 @@ export async function derive_key(key, iv, phrase = null, N = null, salt = null, 
 
     // 使用Scrypt进行密钥派生(pycryptodome没有PBKDF2HMAC，使用Scrypt作为替代)
     // AES-256需要32字节密钥
+    /**
+     * @type {Uint8Array}
+     */
     const derived_key = await scrypt(str_encode(keyInput), salt, N, r, p, dklen)
 
     return ({ derived_key, parameter, N });

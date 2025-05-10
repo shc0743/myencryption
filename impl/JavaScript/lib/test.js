@@ -233,6 +233,6 @@ server.listen(36429, '127.0.0.1', () => {
             console.error('Test timed out.');
         });
         server.closeAllConnections();
-    }, 30000);
+    }, 60000);
 });
 

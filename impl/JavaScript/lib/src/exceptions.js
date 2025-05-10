@@ -12,10 +12,6 @@ export class InternalError extends EncryptionError {
     }
 }
 
-export function raise(message, additional) {
-    throw new InternalError(message, additional);
-}
-
 export class InvalidParameterException extends EncryptionError {
     constructor(message = 'The parameter provided is invalid.', additional = undefined) {
         super(message, additional);
@@ -118,5 +114,33 @@ export class CryptContextReleasedException extends EncryptionError {
     constructor(message = 'Crypt context has been released.', additional = undefined) {
         super(message, additional);
         this.name = 'CryptContextReleasedException';
+    }
+}
+
+export class OperationNotPermittedException extends EncryptionError {
+    constructor(message = 'Operation not permitted.', additional = undefined) {
+        super(message, additional);
+        this.name = 'OperationNotPermittedException';
+    }
+}
+
+export class EncryptionAlgorithmNotSupportedException extends EncryptionError {
+    constructor(message = 'The specified encryption algorithm is not supported.', additional = undefined) {
+        super(message, additional);
+        this.name = 'EncryptionAlgorithmNotSupportedException';
+    }
+}
+
+export class ChaCha20NotSupportedException extends EncryptionAlgorithmNotSupportedException {
+    constructor(message = 'ChaCha20 is not supported yet.', additional = undefined) {
+        super(message, additional);
+        this.name = 'ChaCha20NotSupportedException';
+    }
+}
+
+export class DangerousEncryptionAlgorithmException extends EncryptionAlgorithmNotSupportedException {
+    constructor(message = 'The specified encryption algorithm is DANGEROUS.', additional = undefined) {
+        super(message, additional);
+        this.name = 'DangerousEncryptionAlgorithmException';
     }
 }

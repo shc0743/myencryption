@@ -1,8 +1,8 @@
 import * as Exceptions from '../src/exceptions.js';
 
-declare module "simple-web-encryption" {
+declare module "simple-data-crypto" {
     export function derive_key(
-        key: string | Uint8Array,
+        key: string,
         iv: Uint8Array,
         phrase?: string | null,
         N?: number | null,
@@ -45,16 +45,30 @@ declare module "simple-web-encryption" {
     export function get_random_int8_number(): number;
     export function get_random_uint8_number(): number;
         
+    /**
+     * Encrypt data.
+     * @param message The plaintext.
+     * @param key The key to encrypt the message. Must be a string.
+     * @param phrase The `phrase` in `parameter`. Can be an empty string. 
+     * @param N The scrypt parameter N. Defaults to 262144.
+     * @returns The encrypted message.
+     */
     export function encrypt_data(
-        message: string | Uint8Array, key: string, phrase?: string, N?: number
+        message: string, key: string, phrase?: string, N?: number
     ): Promise<string> & {
         throws:
         | Exceptions.InvalidScryptParameterException
         | Exceptions.InvalidParameterException
     };
+    /**
+     * Decrypt data.
+     * @param message_encrypted The ciphertext.
+     * @param key The key to decrypt the message. If provided as string, it will be automatically derived. If as Uint8Array, it will *not* be derived.
+     * @returns The decrypted message.
+     */
     export function decrypt_data(
-        message_encrypted: string, key: string
-    ): Promise<string | ArrayBuffer> & {
+        message_encrypted: string, key: string | Uint8Array
+    ): Promise<string> & {
         throws:
         | Exceptions.InvalidParameterException
         | Exceptions.BadDataException
@@ -75,7 +89,7 @@ declare module "simple-web-encryption" {
      * @param phrase - Optional phrase for key derivation
      * @param N - scrypt parameter N
      * @param chunk_size - Chunk size, defaults to 32MiB
-     * @returns Returns whether encryption was successful
+     * @returns Returns whether encryption was successful or not
      */
     export function encrypt_file(
         file_reader: FileReader,
@@ -97,14 +111,14 @@ declare module "simple-web-encryption" {
      * Decrypt file
      * @param file_reader - File reader object, should implement (start, end) => Promise<Uint8Array>
      * @param file_writer - File writer object, should implement write(Uint8Array) method
-     * @param user_key - User decryption key
+     * @param user_key - User decryption key. If provided as string, it will be automatically derived. If as Uint8Array, it will *not* be derived.
      * @param callback - Progress callback function
-     * @returns Returns whether decryption was successful
+     * @returns Returns whether decryption was successful or not
      */
     export function decrypt_file(
         file_reader: FileReader,
         file_writer: FileWriter,
-        user_key: string,
+        user_key: string | Uint8Array,
         callback?: ProgressCallback | null
     ): Promise<boolean> & {
         throws:
@@ -257,4 +271,15 @@ declare module "simple-web-encryption" {
     export const VERSION: string;
     export const ENCRYPTION_FILE_VER_1_1_0: string;
     export const ENCRYPTION_FILE_VER_1_2_10020: string;
+
+    export declare const Internals: {
+        PADDING_SIZE: number;
+        END_IDENTIFIER: number[];
+        TAIL_BLOCK_MARKER: number[];
+        END_MARKER: number[];
+        FILE_END_MARKER: number[];
+        nextTick: () => Promise<void>;
+        GetFileVersion: (file_reader: (start: number, end: number) => Promise<Uint8Array>) => Promise<string>;
+        GetFileChunkSize: (file_reader: (start: number, end: number) => Promise<Uint8Array>) => Promise<number>;
+    };
 }

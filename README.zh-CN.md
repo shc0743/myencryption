@@ -59,21 +59,28 @@ decrypt_file('secure.bin', 'new_raw_file.png', 'your_password')
 
 For a demo, please [go here](https://github.com/shc7432/MyEncryptionApp-Demo/tree/main)
 
-**注意**：当前由于动态脚本加载语句的原因，在 Vite 或其他构建工具中使用此库可能会出现问题。我们正在努力解决这个问题。有关更多信息和临时解决方案，请[点击这里](./docs/JavaScript/about-build-tools.zh-CN.md)。
+**注意**：在 Vite 或其他构建工具中使用此库需要使用特殊的语法。
 
 ### 通过 npm 安装
 
 运行以下命令：
 
 ```bash
-npm i simple-web-encryption
+npm i simple-data-crypto
 ```
 
 ### 示例
 
+**注意**: 在不同的环境中需要使用不同的导入方式。
+
+Node.js 环境 或者 原生浏览器环境：
 ```javascript
 // yourcode.js
-import { encrypt_data, decrypt_data } from './myencryption/main.js';
+import { encrypt_data, decrypt_data } from 'simple-data-crypto'; // npm的自动选择一般不会出现问题
+// 如果在Node中这段代码无法正常工作，改为：
+// import { encrypt_data, decrypt_data } from 'simple-data-crypto/node';
+// 如果在浏览器中这段代码无法正常工作，改为：
+// import { encrypt_data, decrypt_data } from 'simple-data-crypto/browser';
 
 async function example() {
     const secure = await encrypt_data('raw_text', 'your_password');
@@ -81,6 +88,14 @@ async function example() {
     console.log(text);
 }
 example();
+```
+
+使用 Vite 或其他构建工具的环境：
+
+```javascript
+import { encrypt_data, decrypt_data } from'simple-data-crypto/builder'; // 必须手动指定
+
+// 使用方式与上面相同
 ```
 
 由于浏览器限制，文件加密稍显复杂。（这不是我们可以改变的！）

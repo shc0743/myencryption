@@ -1,5 +1,9 @@
 # About Build Tools
 
+# This article is outdated and does not reflect the current situation. There is no need to continue reading. This document is kept mainly to prevent unexpected issues.
+
+---
+
 [Chinese edition](./about-build-tools.zh-CN.md)
 
 [Directly show me the solution](#temporary-solution)
@@ -69,7 +73,7 @@ export default defineConfig({
   ➜  press h + enter to show help
 X [ERROR] Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
 
-    node_modules/simple-web-encryption/dist/main.bundle.js:229:16:
+    node_modules/simple-data-crypto/dist/main.bundle.js:229:16:
       229 │ var scryptAPI = await load_deps_es5("scrypt", import.meta.resolve("./WebScrypt/scrypt.js"));
           ╵                 ~~~~~
 
@@ -78,7 +82,7 @@ YOUR_APP_PATH/node_modules/esbuild/lib/main.js:1477
               ^
 
 Error: Build failed with 1 error:
-node_modules/simple-web-encryption/dist/main.bundle.js:229:16: ERROR: Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
+node_modules/simple-data-crypto/dist/main.bundle.js:229:16: ERROR: Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
     at failureErrorWithLog (YOUR_APP_PATH/node_modules/esbuild/lib/main.js:1477:15)   
     at YOUR_APP_PATH/node_modules/esbuild/lib/main.js:946:25
     at YOUR_APP_PATH/node_modules/esbuild/lib/main.js:1355:9
@@ -147,7 +151,7 @@ export default defineConfig({
         sourcemap: true,
         rollupOptions: {
             external: [
-                "simple-web-encryption",
+                "simple-data-crypto",
             ],
         }
     },
@@ -156,7 +160,7 @@ export default defineConfig({
             target: 'es2022' // Ensure the version supports top-level await
         },
         exclude: [
-            "simple-web-encryption",
+            "simple-data-crypto",
         ]
     }
 })
@@ -167,12 +171,12 @@ Then, in `index.html`, add an import map:
 ```html
 <script type="importmap">{
 "imports":{
-    "simple-web-encryption": "./lib/simple-web-encryption/dist/main.bundle.min.js"
+    "simple-data-crypto": "./lib/simple-data-crypto/dist/main.bundle.min.js"
 }
 }</script>
 ```
 
-Finally, copy the `main.bundle.min.js` file and the entire `WebScrypt` directory from the `simple-web-encryption` dist folder to a fixed location.
+Finally, copy the `main.bundle.min.js` file and the entire `WebScrypt` directory from the `simple-data-crypto` dist folder to a fixed location.
 
 ## Our Efforts
 

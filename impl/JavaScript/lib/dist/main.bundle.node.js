@@ -579,9 +579,12 @@ var exceptions_exports = {};
 __export(exceptions_exports, {
   BadDataException: () => BadDataException,
   CannotDecryptException: () => CannotDecryptException,
+  ChaCha20NotSupportedException: () => ChaCha20NotSupportedException,
   CryptContextNotInitedException: () => CryptContextNotInitedException,
   CryptContextReleasedException: () => CryptContextReleasedException,
   CryptContextReusedException: () => CryptContextReusedException,
+  DangerousEncryptionAlgorithmException: () => DangerousEncryptionAlgorithmException,
+  EncryptionAlgorithmNotSupportedException: () => EncryptionAlgorithmNotSupportedException,
   EncryptionError: () => EncryptionError,
   EncryptionVersionMismatchException: () => EncryptionVersionMismatchException,
   EndOfFileException: () => EndOfFileException,
@@ -594,7 +597,7 @@ __export(exceptions_exports, {
   InvalidParameterException: () => InvalidParameterException,
   InvalidScryptParameterException: () => InvalidScryptParameterException,
   NotSupportedException: () => NotSupportedException,
-  raise: () => raise
+  OperationNotPermittedException: () => OperationNotPermittedException
 });
 var EncryptionError = class extends Error {
   constructor(message = "Encryption Error", additional = void 0) {
@@ -608,9 +611,6 @@ var InternalError = class extends EncryptionError {
     this.name = "InternalError";
   }
 };
-function raise(message, additional) {
-  throw new InternalError(message, additional);
-}
 var InvalidParameterException = class extends EncryptionError {
   constructor(message = "The parameter provided is invalid.", additional = void 0) {
     super(message, additional);
@@ -701,6 +701,30 @@ var CryptContextReleasedException = class extends EncryptionError {
     this.name = "CryptContextReleasedException";
   }
 };
+var OperationNotPermittedException = class extends EncryptionError {
+  constructor(message = "Operation not permitted.", additional = void 0) {
+    super(message, additional);
+    this.name = "OperationNotPermittedException";
+  }
+};
+var EncryptionAlgorithmNotSupportedException = class extends EncryptionError {
+  constructor(message = "The specified encryption algorithm is not supported.", additional = void 0) {
+    super(message, additional);
+    this.name = "EncryptionAlgorithmNotSupportedException";
+  }
+};
+var ChaCha20NotSupportedException = class extends EncryptionAlgorithmNotSupportedException {
+  constructor(message = "ChaCha20 is not supported yet.", additional = void 0) {
+    super(message, additional);
+    this.name = "ChaCha20NotSupportedException";
+  }
+};
+var DangerousEncryptionAlgorithmException = class extends EncryptionAlgorithmNotSupportedException {
+  constructor(message = "The specified encryption algorithm is DANGEROUS.", additional = void 0) {
+    super(message, additional);
+    this.name = "DangerousEncryptionAlgorithmException";
+  }
+};
 
 // src/scrypt-layer/scrypt-node.js
 var import_scrypt_js = __toESM(require_scrypt(), 1);
@@ -748,8 +772,8 @@ async function encrypt_data(message, key, phrase = null, N = null) {
   const { derived_key, parameter, N: N2 } = await derive_key(key, iv, phrase, N);
   N = N2;
   const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
-  if (typeof message === "string") {
-    message = str_encode(message);
+  if (typeof message !== "string") {
+    throw new OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
   }
   const ciphertext = await crypto.subtle.encrypt(
     {
@@ -757,7 +781,7 @@ async function encrypt_data(message, key, phrase = null, N = null) {
       iv
     },
     cipher,
-    message
+    str_encode(message)
   );
   const encrypted_message = new Uint8Array(iv.length + ciphertext.byteLength);
   encrypted_message.set(iv, 0);
@@ -767,7 +791,7 @@ async function encrypt_data(message, key, phrase = null, N = null) {
     data: message_encrypted,
     parameter,
     N,
-    v: 5.5
+    v: 5.6
   });
 }
 async function decrypt_data(message_encrypted, key) {
@@ -782,7 +806,7 @@ async function decrypt_data(message_encrypted, key) {
   const iv = encrypted_data.slice(0, 12);
   const ciphertext = encrypted_data.slice(12, -16);
   const tag = encrypted_data.slice(-16);
-  const { derived_key } = await derive_key(key, iv, phrase, N, salt);
+  const derived_key = typeof key === "string" ? (await derive_key(key, iv, phrase, N, salt)).derived_key : key;
   const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
   try {
     const decrypted_data = await crypto.subtle.decrypt(
@@ -796,7 +820,7 @@ async function decrypt_data(message_encrypted, key) {
     try {
       return str_decode(decrypted_data);
     } catch {
-      return decrypted_data;
+      throw new OperationNotPermittedException("The ability to directly decrypt binary data has been removed in the new version. If you have encrypted binary data, please recover it using the old version.");
     }
   } catch (e) {
     if (!e) throw new InternalError(`Internal error.`, { cause: e });
@@ -807,14 +831,7 @@ async function decrypt_data(message_encrypted, key) {
   }
 }
 
-// src/encrypt_file.js
-var timerproc = typeof process === "undefined" ? requestAnimationFrame : (
-  // browser
-  setTimeout
-);
-function nextTick() {
-  return new Promise((r) => timerproc(r));
-}
+// src/internal-util.js
 var PADDING_SIZE = 4096;
 var END_IDENTIFIER = [
   85,
@@ -895,6 +912,13 @@ var END_MARKER = [
   170
 ];
 var FILE_END_MARKER = [255, 253, 240, 16, 19, 208, 18, 24, 85, 170];
+var timerproc = typeof process === "undefined" ? requestAnimationFrame : (
+  // browser
+  setTimeout
+);
+function nextTick() {
+  return new Promise((r) => timerproc(r));
+}
 function normalize_version(major_version, version_marker) {
   if (!major_version) return `Unknown Version`;
   if (String(major_version) === "1.1") version_marker = null;
@@ -903,6 +927,42 @@ function normalize_version(major_version, version_marker) {
 }
 var ENCRYPTION_FILE_VER_1_1_0 = normalize_version("1.1");
 var ENCRYPTION_FILE_VER_1_2_10020 = normalize_version("1.2", 10020);
+async function GetFileVersion(file_reader) {
+  const header = await file_reader(0, 13);
+  if (str_decode(header) !== "MyEncryption/") {
+    throw new InvalidFileFormatException();
+  }
+  const top_header_version = str_decode(await file_reader(13, 16));
+  if (!["1.1", "1.2"].includes(top_header_version)) {
+    throw new EncryptionVersionMismatchException();
+  }
+  const version_marker = new DataView((await file_reader(16, 20)).buffer).getUint32(0, true);
+  const version = normalize_version(top_header_version, version_marker);
+  return version;
+}
+async function GetFileInfo(file_reader) {
+  const version = await GetFileVersion(file_reader);
+  if (version === ENCRYPTION_FILE_VER_1_1_0) {
+    throw new OperationNotPermittedException("The chunk size is volatile and we cannot get a fixed value.");
+  }
+  if (version === ENCRYPTION_FILE_VER_1_2_10020) {
+    let read_pos = 16 + 4;
+    read_pos += PADDING_SIZE;
+    const json_len_bytes = await file_reader(read_pos, read_pos + 4);
+    const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
+    read_pos += 4;
+    read_pos += json_len;
+    const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
+    let nonce_counter = Number(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
+    return { version, chunk_size, nonce_counter };
+  }
+  throw new EncryptionVersionMismatchException();
+}
+async function GetFileChunkSize(file_reader) {
+  return (await GetFileInfo(file_reader)).chunk_size;
+}
+
+// src/encrypt_file.js
 async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024) {
   if (!chunk_size) throw new InvalidParameterException("chunk_size must be greater than 0.");
   await file_writer(str_encode("MyEncryption/1.2"));
@@ -931,6 +991,7 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
     "parameter": parameter,
     "N": N,
     "v": 5.5,
+    "a": "AES-GCM",
     "iv": hexlify(iv_for_key)
   };
   const header_json = str_encode(JSON.stringify(header_data));
@@ -1053,18 +1114,10 @@ async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback
   return true;
 }
 async function decrypt_file(file_reader, file_writer, user_key, callback = null) {
-  const header = await file_reader(0, 13);
-  if (str_decode(header) !== "MyEncryption/") {
-    throw new InvalidFileFormatException();
-  }
-  const top_header_version = str_decode(await file_reader(13, 16));
-  if (!["1.1", "1.2"].includes(top_header_version)) {
-    throw new EncryptionVersionMismatchException();
-  }
-  const version_marker = new DataView((await file_reader(16, 20)).buffer).getUint32(0, true);
-  const version = normalize_version(top_header_version, version_marker);
   let read_pos = 16 + 4;
+  const version = await GetFileVersion(file_reader);
   if (version === ENCRYPTION_FILE_VER_1_1_0) {
+    if (typeof user_key !== "string") throw new NotSupportedException("operation not supported");
     return await decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback);
   }
   const ekey_len = new DataView((await file_reader(read_pos, read_pos + 4)).buffer).getUint32(0, true);
@@ -1073,7 +1126,7 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   if (ekey_len > PADDING_SIZE) {
     throw new InternalError("(Internal Error) This should not happen. Contact the application developer.");
   }
-  const key = await decrypt_data(ekey, user_key);
+  const key = typeof user_key === "string" ? await decrypt_data(ekey, user_key) : null;
   const json_len_bytes = await file_reader(read_pos, read_pos + 4);
   const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
   read_pos += 4;
@@ -1087,12 +1140,27 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   const salt = unhexlify(salt_hex);
   const iv4key = unhexlify(header_json.iv);
   const N = header_json.N;
+  const algorithm = header_json.a;
+  if (!!algorithm && algorithm !== "AES-GCM") {
+    if (algorithm === "ChaCha20" || algorithm === "ChaCha20-Poly1305") {
+      throw new ChaCha20NotSupportedException();
+    }
+    if (algorithm === "DES" || algorithm === "RC4") {
+      throw new DangerousEncryptionAlgorithmException();
+    }
+    if (algorithm === "XTS-AES") {
+      throw new EncryptionAlgorithmNotSupportedException("XTS-AES Not supported yet");
+    }
+    throw new EncryptionAlgorithmNotSupportedException(void 0, {
+      cause: new Error(String(algorithm))
+    });
+  }
   const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
   let nonce_counter = Number(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
   read_pos += 16;
   callback?.(0);
   await nextTick();
-  const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
+  const derived_key = typeof user_key === "string" ? (await derive_key(key, iv4key, phrase, N, salt)).derived_key : user_key;
   let total_bytes = 0, is_final_chunk = false;
   const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
   while (true) {
@@ -1154,17 +1222,9 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
 // src/key_management.js
 async function export_master_key(file_head, current_key, export_key) {
   if (file_head.size < 1024 + 16 + 4) throw new BadDataException("Data not enough");
-  const headerBlob = file_head.slice(0, 13);
-  const header = await headerBlob.text();
-  if (header !== "MyEncryption/") {
-    throw new InvalidFileFormatException();
-  }
-  const top_header_version = await file_head.slice(13, 16).text();
-  if (!["1.1", "1.2"].includes(top_header_version)) {
-    throw new EncryptionVersionMismatchException();
-  }
-  const version_marker = new DataView(await file_head.slice(16, 20).arrayBuffer()).getUint32(0, true);
-  const version = normalize_version(top_header_version, version_marker);
+  const version = await GetFileVersion(async (start, end) => {
+    return new Uint8Array(await file_head.slice(start, end).arrayBuffer());
+  });
   if (version === ENCRYPTION_FILE_VER_1_1_0) {
     const ekey_len = new DataView(await file_head.slice(16, 20).arrayBuffer()).getUint32(0, true);
     const buffer = await file_head.slice(20, 20 + ekey_len).arrayBuffer();
@@ -1204,17 +1264,9 @@ async function change_file_password_1_1_0(file_head, current_key, new_key) {
 }
 async function change_file_password(file_head, current_key, new_key) {
   if (file_head.size < 1024 + 16 + 4) throw new Error("Data not enough");
-  const headerBlob = file_head.slice(0, 13);
-  const header = await headerBlob.text();
-  if (header !== "MyEncryption/") {
-    throw new InvalidFileFormatException();
-  }
-  const top_header_version = await file_head.slice(13, 16).text();
-  if (!["1.1", "1.2"].includes(top_header_version)) {
-    throw new EncryptionVersionMismatchException();
-  }
-  const version_marker = new DataView(await file_head.slice(16, 20).arrayBuffer()).getUint32(0, true);
-  const version = normalize_version(top_header_version, version_marker);
+  const version = await GetFileVersion(async (start, end) => {
+    return new Uint8Array(await file_head.slice(start, end).arrayBuffer());
+  });
   if (version === ENCRYPTION_FILE_VER_1_1_0) return await change_file_password_1_1_0(file_head, current_key, new_key);
   const ekey_len = new DataView(await file_head.slice(20, 24).arrayBuffer()).getUint32(0, true);
   const ekey_ciphertext = str_decode(await file_head.slice(24, 24 + ekey_len).arrayBuffer());
@@ -1480,12 +1532,26 @@ async function decrypt_stream(ctx, bytes_start, bytes_end, abort) {
   return blob;
 }
 
+// src/internal-expose.js
+var Internals = {
+  PADDING_SIZE,
+  END_IDENTIFIER,
+  TAIL_BLOCK_MARKER,
+  END_MARKER,
+  FILE_END_MARKER,
+  nextTick,
+  GetFileVersion,
+  GetFileInfo,
+  GetFileChunkSize
+};
+
 // src/version.js
-var VERSION = "Encryption/5.5 FileEncryption/1.2 Patch/5.0";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/5.1";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,
   exceptions_exports as Exceptions,
+  Internals,
   Stream,
   VERSION,
   change_file_password,
