@@ -1,11 +1,10 @@
-
 D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\lib>npm run make
 
-> simple-data-crypto@1.2.52 make
+> simple-data-crypto@1.2.53 make
 > npm run build && npm run test && npm pack --dry-run
 
 
-> simple-data-crypto@1.2.52 build
+> simple-data-crypto@1.2.53 build
 > node build.js
 
 🗑️ 已删除文件: main.bundle.js
@@ -33,17 +32,17 @@ D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\l
 ✅ 编译完成，所有ESM特性保留！
 
 
-编译用时: 585.072ms
+编译用时: 757.952ms
 ✅✅ 🐍build🐍: 成功! ✅✅
 
-> simple-data-crypto@1.2.52 test
+> simple-data-crypto@1.2.53 test
 > node test.js
 
 --NODE.JS TEST--
-Version: Encryption/5.6 FileEncryption/1.2 Patch/5.2
+Version: Encryption/5.6 FileEncryption/1.2 Patch/5.3
 File ver: 1.1/0 ;; 1.2/10020
 Test data encryption
-ciphertext: {"data":"61195e5fbda0c53d163cfca39848b64302816d1cccb875091fa995d0375e72","parameter":"Furina:47a88a285dba9e7b3ab60037b467a574b3a5b1aae8047ad4daa1a39ba9dec2efa26ab9e632dc2537da5be0fb7d460ecda2c91bcc4d2db82571fdb97a2a00dfa4","N":262144,"v":5.6}
+ciphertext: {"data":"fc44dcbc734fb0bcd9cca140dc18b133cb7b6adfd2c0bc063ac22002777b7a","parameter":"Neuvillette:3b559b1031bac6aed7663d6b961a7a042e408b825f7892d5fe0c9de90d376409b60f1e50b6f9795f8b01b65d9d02e140006f3f9aea0cc2cf202dc1c992543879","N":262144,"v":5.6}
 plaintext: 123
 App Unittest Assert OK
 Test file encryption
@@ -82,13 +81,12 @@ App Unittest:  dk2= {
 App Unittest Assert OK
 App Unittest:  dk3(random)= {
   derived_key: Uint8Array(32) [
-    252, 180, 146, 161, 80, 246,  38,
-    157,  84, 177, 216, 68, 164, 108,
-    215, 128, 182, 167, 53, 204, 129,
-     89, 136, 163,  53, 35, 143, 181,
-    212,  16,  22, 231
+     76,  12,  41, 136, 149, 113, 166,  92,
+    134, 231, 120,  16, 145,  36, 174,  22,
+    151, 207,  77, 128, 232,  99, 162, 250,
+    130,   2,  97, 181, 200,  58, 162, 228
   ],
-  parameter: 'Neuvillette:a6b65ef1f0bacdd5cf0834336debab1ded5e2f320c457197c69b0da99b3445a6600c7a8bc50ce304aa904a3dbbcf99b9563fdb1f13c0fc85215db661c59d712c',
+  parameter: 'Venti:153e51580385f28e4952a41c2af59e37e157486431c1882472f1695a83c414a6bc0656df175523bf18ff1d5f448b057058d24b3f8eaae037a9589c068e7a81f8',
   N: 262144
 }
 App Unittest:  Test context
@@ -107,7 +105,7 @@ Browser test:
 Test is running in your browser now. URL: http://127.0.0.1:36429/test/test-app.html
 Test completed.
 npm notice
-npm notice package: simple-data-crypto@1.2.52
+npm notice package: simple-data-crypto@1.2.53
 npm notice Tarball Contents
 npm notice 97B README.md
 npm notice 5.5kB build.js
@@ -161,19 +159,19 @@ npm notice 8.1kB test/test-app.js
 npm notice 10.9kB types/types.d.ts
 npm notice Tarball Details
 npm notice name: simple-data-crypto
-npm notice version: 1.2.52
-npm notice filename: simple-data-crypto-1.2.52.tgz
+npm notice version: 1.2.53
+npm notice filename: simple-data-crypto-1.2.53.tgz
 npm notice package size: 240.3 kB
 npm notice unpacked size: 1.1 MB
-npm notice shasum: 0b04032f1d7261e80703d2c6455e3ecc52892e8e
-npm notice integrity: sha512-O5ir8XmFes7SO[...]IlE6KC4S+StTg==
+npm notice shasum: e94ea549191df156ef84a6d3e972bb3ed22b1ab9
+npm notice integrity: sha512-QKsKg6r0LZHSD[...]ullaGeJdguOtA==
 npm notice total files: 50
 npm notice
-simple-data-crypto-1.2.52.tgz
+simple-data-crypto-1.2.53.tgz
 
 D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\lib>npm publish
 npm notice
-npm notice package: simple-data-crypto@1.2.52
+npm notice package: simple-data-crypto@1.2.53
 npm notice Tarball Contents
 npm notice 97B README.md
 npm notice 5.5kB build.js
@@ -227,17 +225,17 @@ npm notice 8.1kB test/test-app.js
 npm notice 10.9kB types/types.d.ts
 npm notice Tarball Details
 npm notice name: simple-data-crypto
-npm notice version: 1.2.52
-npm notice filename: simple-data-crypto-1.2.52.tgz
+npm notice version: 1.2.53
+npm notice filename: simple-data-crypto-1.2.53.tgz
 npm notice package size: 240.3 kB
 npm notice unpacked size: 1.1 MB
-npm notice shasum: 0b04032f1d7261e80703d2c6455e3ecc52892e8e
-npm notice integrity: sha512-O5ir8XmFes7SO[...]IlE6KC4S+StTg==
+npm notice shasum: e94ea549191df156ef84a6d3e972bb3ed22b1ab9
+npm notice integrity: sha512-QKsKg6r0LZHSD[...]ullaGeJdguOtA==
 npm notice total files: 50
 npm notice
 npm notice Publishing to https://registry.npmjs.org/ with tag latest and default access
 Authenticate your account at:
-https://www.npmjs.com/auth/cli/7bd15868-dc4a-4464-9893-96185741bad9
+https://www.npmjs.com/auth/cli/f3347e8b-be77-4d06-8e0c-49188747f1ea
 Press ENTER to open in the browser...
 
-+ simple-data-crypto@1.2.52
++ simple-data-crypto@1.2.53
