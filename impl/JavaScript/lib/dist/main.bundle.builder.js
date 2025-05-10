@@ -535,78 +535,6 @@ async function scrypt_hex(key, salt, N, r, p, dklen) {
   return hexlify(await scrypt(str_encode(key), str_encode(salt), N, r, p, dklen));
 }
 
-// src/encrypt_data.js
-function safeparse(json) {
-  try {
-    return JSON.parse(json);
-  } catch {
-    throw new InvalidParameterException("The JSON is not valid.");
-  }
-}
-async function encrypt_data(message, key, phrase = null, N = null) {
-  const iv = get_random_bytes(12);
-  const { derived_key, parameter, N: N2 } = await derive_key(key, iv, phrase, N);
-  N = N2;
-  const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
-  if (typeof message !== "string") {
-    throw new OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
-  }
-  const ciphertext = await crypto.subtle.encrypt(
-    {
-      name: "AES-GCM",
-      iv
-    },
-    cipher,
-    str_encode(message)
-  );
-  const encrypted_message = new Uint8Array(iv.length + ciphertext.byteLength);
-  encrypted_message.set(iv, 0);
-  encrypted_message.set(new Uint8Array(ciphertext), iv.length);
-  const message_encrypted = hexlify(encrypted_message);
-  return JSON.stringify({
-    data: message_encrypted,
-    parameter,
-    N,
-    v: 5.6
-  });
-}
-async function decrypt_data(message_encrypted, key) {
-  const jsoned = safeparse(message_encrypted);
-  const parameter = jsoned.parameter;
-  const N = parseInt(jsoned.N);
-  const encrypted_data = unhexlify(jsoned.data);
-  const [phrase, salt_b64] = parameter.split(":");
-  const salt = unhexlify(salt_b64);
-  if (isNaN(N) || !parameter || !encrypted_data || !salt) throw new BadDataException("The message or parameters are bad.");
-  if (encrypted_data.length < 28) throw new BadDataException("The message was too short.");
-  const iv = encrypted_data.slice(0, 12);
-  const ciphertext = encrypted_data.slice(12, -16);
-  const tag = encrypted_data.slice(-16);
-  const derived_key = typeof key === "string" ? (await derive_key(key, iv, phrase, N, salt)).derived_key : key;
-  const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
-  try {
-    const decrypted_data = await crypto.subtle.decrypt(
-      {
-        name: "AES-GCM",
-        iv
-      },
-      cipher,
-      new Uint8Array([...ciphertext, ...tag])
-    );
-    try {
-      return str_decode(decrypted_data);
-    } catch {
-      throw new OperationNotPermittedException("The ability to directly decrypt binary data has been removed in the new version. If you have encrypted binary data, please recover it using the old version.");
-    }
-  } catch (e) {
-    if (!e) throw new InternalError(`Internal error.`, { cause: e });
-    const name = e.name;
-    if (name === "InvalidAccessError") throw new InvalidParameterException("InvalidAccessError.", { cause: e });
-    if (name === "OperationError") throw new CannotDecryptException("Cannot decrypt. Did you provide the correct password?", { cause: e });
-    if (!e) throw new InternalError(`Unexpected error.`, { cause: e });
-  }
-}
-
 // src/internal-util.js
 var PADDING_SIZE = 4096;
 var END_IDENTIFIER = [
@@ -736,6 +664,97 @@ async function GetFileInfo(file_reader) {
 }
 async function GetFileChunkSize(file_reader) {
   return (await GetFileInfo(file_reader)).chunk_size;
+}
+function CheckAlgorithm(algorithm) {
+  if (!!algorithm && algorithm !== "AES-GCM") {
+    if (algorithm === "ChaCha20" || algorithm === "ChaCha20-Poly1305") {
+      throw new ChaCha20NotSupportedException();
+    }
+    if (algorithm === "DES" || algorithm === "RC4") {
+      throw new DangerousEncryptionAlgorithmException();
+    }
+    if (algorithm === "XTS-AES") {
+      throw new EncryptionAlgorithmNotSupportedException("XTS-AES Not supported yet");
+    }
+    throw new EncryptionAlgorithmNotSupportedException(void 0, {
+      cause: new Error(String(algorithm))
+    });
+  }
+}
+
+// src/encrypt_data.js
+function safeparse(json) {
+  try {
+    return JSON.parse(json);
+  } catch {
+    throw new InvalidParameterException("The JSON is not valid.");
+  }
+}
+async function encrypt_data(message, key, phrase = null, N = null) {
+  const iv = get_random_bytes(12);
+  const { derived_key, parameter, N: N2 } = await derive_key(key, iv, phrase, N);
+  N = N2;
+  const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
+  if (typeof message !== "string") {
+    throw new OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
+  }
+  const ciphertext = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv
+    },
+    cipher,
+    str_encode(message)
+  );
+  const encrypted_message = new Uint8Array(iv.length + ciphertext.byteLength);
+  encrypted_message.set(iv, 0);
+  encrypted_message.set(new Uint8Array(ciphertext), iv.length);
+  const message_encrypted = hexlify(encrypted_message);
+  return JSON.stringify({
+    data: message_encrypted,
+    parameter,
+    N,
+    v: 5.6,
+    "a": "AES-GCM"
+  });
+}
+async function decrypt_data(message_encrypted, key) {
+  const jsoned = safeparse(message_encrypted);
+  const parameter = jsoned.parameter;
+  const N = parseInt(jsoned.N);
+  const alg = jsoned.a;
+  CheckAlgorithm(alg);
+  const encrypted_data = unhexlify(jsoned.data);
+  const [phrase, salt_b64] = parameter.split(":");
+  const salt = unhexlify(salt_b64);
+  if (isNaN(N) || !parameter || !encrypted_data || !salt) throw new BadDataException("The message or parameters are bad.");
+  if (encrypted_data.length < 28) throw new BadDataException("The message was too short.");
+  const iv = encrypted_data.slice(0, 12);
+  const ciphertext = encrypted_data.slice(12, -16);
+  const tag = encrypted_data.slice(-16);
+  const derived_key = typeof key === "string" ? (await derive_key(key, iv, phrase, N, salt)).derived_key : key;
+  const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
+  try {
+    const decrypted_data = await crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv
+      },
+      cipher,
+      new Uint8Array([...ciphertext, ...tag])
+    );
+    try {
+      return str_decode(decrypted_data);
+    } catch {
+      throw new OperationNotPermittedException("The ability to directly decrypt binary data has been removed in the new version. If you have encrypted binary data, please recover it using the old version.");
+    }
+  } catch (e) {
+    if (!e) throw new InternalError(`Internal error.`, { cause: e });
+    const name = e.name;
+    if (name === "InvalidAccessError") throw new InvalidParameterException("InvalidAccessError.", { cause: e });
+    if (name === "OperationError") throw new CannotDecryptException("Cannot decrypt. Did you provide the correct password?", { cause: e });
+    if (!e) throw new InternalError(`Unexpected error.`, { cause: e });
+  }
 }
 
 // src/encrypt_file.js
@@ -917,20 +936,7 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   const iv4key = unhexlify(header_json.iv);
   const N = header_json.N;
   const algorithm = header_json.a;
-  if (!!algorithm && algorithm !== "AES-GCM") {
-    if (algorithm === "ChaCha20" || algorithm === "ChaCha20-Poly1305") {
-      throw new ChaCha20NotSupportedException();
-    }
-    if (algorithm === "DES" || algorithm === "RC4") {
-      throw new DangerousEncryptionAlgorithmException();
-    }
-    if (algorithm === "XTS-AES") {
-      throw new EncryptionAlgorithmNotSupportedException("XTS-AES Not supported yet");
-    }
-    throw new EncryptionAlgorithmNotSupportedException(void 0, {
-      cause: new Error(String(algorithm))
-    });
-  }
+  CheckAlgorithm(algorithm);
   const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
   let nonce_counter = Number(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
   read_pos += 16;
@@ -1322,7 +1328,7 @@ var Internals = {
 };
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/5.5";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/5.6";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,

@@ -3,6 +3,7 @@ import { derive_key } from "./derive_key.js";
 import { hexlify, unhexlify } from "./binascii.js";
 import { str_decode, str_encode } from "./str.js";
 import * as Exceptions from './exceptions.js';
+import { CheckAlgorithm } from "./internal-util.js";
 
 function safeparse(json) {
     try {
@@ -52,7 +53,8 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
         data: message_encrypted,
         parameter: parameter,
         N: N,
-        v: 5.6
+        v: 5.6,
+        "a": "AES-GCM",
     });
 }
 
@@ -65,6 +67,8 @@ export async function decrypt_data(message_encrypted, key) {
     const jsoned = safeparse(message_encrypted);
     const parameter = jsoned.parameter;
     const N = parseInt(jsoned.N);
+    const alg = jsoned.a;
+    CheckAlgorithm(alg);
 
     // 将十六进制字符串转换回字节
     const encrypted_data = unhexlify(jsoned.data);

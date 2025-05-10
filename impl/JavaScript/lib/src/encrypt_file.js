@@ -11,6 +11,7 @@ import {
     END_IDENTIFIER, TAIL_BLOCK_MARKER, END_MARKER, FILE_END_MARKER,
     nextTick,
     GetFileVersion,
+    CheckAlgorithm,
 } from "./internal-util.js";
 export { normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020 };
 
@@ -310,21 +311,7 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
     const algorithm = header_json.a;
 
     // 判断是否支持的加密算法
-    // 默认是AES-GCM
-    if ((!!algorithm) && (algorithm !== "AES-GCM")) {
-        if (algorithm === 'ChaCha20' || algorithm === 'ChaCha20-Poly1305') {
-            throw new Exceptions.ChaCha20NotSupportedException();
-        }
-        if (algorithm === 'DES' || algorithm === 'RC4') {
-            throw new Exceptions.DangerousEncryptionAlgorithmException();
-        }
-        if (algorithm === 'XTS-AES') {
-            throw new Exceptions.EncryptionAlgorithmNotSupportedException("XTS-AES Not supported yet");
-        }
-        throw new Exceptions.EncryptionAlgorithmNotSupportedException(undefined, {
-            cause: new Error(String(algorithm))
-        });
-    }
+    CheckAlgorithm(algorithm);
 
     // 获取chunk size和iv参数
     const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));

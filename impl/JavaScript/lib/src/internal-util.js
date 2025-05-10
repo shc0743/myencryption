@@ -86,3 +86,25 @@ export async function GetFileInfo(file_reader) {
 export async function GetFileChunkSize(file_reader) {
     return (await GetFileInfo(file_reader)).chunk_size;
 }
+
+/**
+ * @param {string} algorithm
+ */
+export function CheckAlgorithm(algorithm) {
+    // 判断是否支持的加密算法
+    // 默认是AES-GCM
+    if ((!!algorithm) && (algorithm !== "AES-GCM")) {
+        if (algorithm === 'ChaCha20' || algorithm === 'ChaCha20-Poly1305') {
+            throw new Exceptions.ChaCha20NotSupportedException();
+        }
+        if (algorithm === 'DES' || algorithm === 'RC4') {
+            throw new Exceptions.DangerousEncryptionAlgorithmException();
+        }
+        if (algorithm === 'XTS-AES') {
+            throw new Exceptions.EncryptionAlgorithmNotSupportedException("XTS-AES Not supported yet");
+        }
+        throw new Exceptions.EncryptionAlgorithmNotSupportedException(undefined, {
+            cause: new Error(String(algorithm))
+        });
+    }
+}
