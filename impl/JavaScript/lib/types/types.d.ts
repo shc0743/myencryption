@@ -283,3 +283,4 @@ declare module "simple-data-crypto" {
         GetFileChunkSize: (file_reader: (start: number, end: number) => Promise<Uint8Array>) => Promise<number>;
     };
 }
+

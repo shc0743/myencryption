@@ -155,7 +155,7 @@ unitLog("test binascii")
     unitAssert((hexlify(str)) === '343536373839');
 }
 
-console.info('More tests required -- will be added later')
+// console.info('More tests required -- will be added later')
 
 console.log("--NODE.JS TEST END--\n\nBrowser test:\n");
 // web test

@@ -263,3 +263,256 @@ https://www.npmjs.com/auth/cli/b5ee4e60-ebb7-48d7-bb57-8c1bb3132ac9
 Press ENTER to open in the browser...
 
 + simple-data-crypto@1.2.54
+D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\lib>npm unpublish simple-data-crypto@1.2.54
+Authenticate your account at:
+https://www.npmjs.com/auth/cli/a468a97e-2bc3-425f-a260-a27175301e2a
+Press ENTER to open in the browser...
+
+- simple-data-crypto@1.2.54
+
+D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\lib>npm run make
+
+> simple-data-crypto@1.2.55 make
+> npm run build && npm run test && npm pack --dry-run
+
+
+> simple-data-crypto@1.2.55 build
+> node build.js
+
+🗑️ 已删除文件: main.bundle.js
+🗑️ 已删除文件: main.bundle.js.map
+🗑️ 已删除文件: main.bundle.min.js
+🗑️ 已删除文件: main.bundle.min.js.map
+🗑️ 已删除文件: main.bundle.node.js
+🗑️ 已删除文件: main.bundle.node.js.map
+🗑️ 已删除文件: main.bundle.builder.js
+🗑️ 已删除文件: main.bundle.builder.js.map
+
+🔄 编译中... (Node.JS)
+🔄 将模式设置为 node...
+✅ 编译完成，所有ESM特性保留！
+
+🔄 编译中... (构建工具优化版)
+🔄 将模式设置为 browser-mixed...
+✅ 编译完成，所有ESM特性保留！
+
+🔄 打包中...
+🔄 将模式设置为 browser-raw...
+✅ 打包完成，所有ESM特性保留！
+
+🔄 编译中...
+✅ 编译完成，所有ESM特性保留！
+
+
+编译用时: 743.54ms
+✅✅ 🐍build🐍: 成功! ✅✅
+
+> simple-data-crypto@1.2.55 test
+> node test.js
+
+--NODE.JS TEST--
+Version: Encryption/5.6 FileEncryption/1.2 Patch/5.5
+File ver: 1.1/0 ;; 1.2/10020
+Test data encryption
+ciphertext: {"data":"3478eafd97d476fe075d1c6f4f0cf219084400096bd87f3706458ebb1d0633","parameter":"Neuvillette:dee5f87b1505f3ff70cc91780bc384dfd59dadc39bf121409d161de5b435b5db9efb9bd9979b385cb54adf6880aef6b06e5bd8790056843e2e2e4e0cad2a89fe","N":262144,"v":5.6}
+plaintext: 123
+App Unittest Assert OK
+Test file encryption
+App Unittest Assert OK
+App Unittest Assert OK
+App Unittest Assert OK
+App Unittest:  decryptedData= Hello World!
+App Unittest Assert OK
+App Unittest:  Test scrypt
+App Unittest:  scValue1= 19f4853c23b8ce10fe7bdd8d734498ca195d242aeef54f66fa4fc4897fcdd9bb
+App Unittest:  scValue2= 19f4853c23b8ce10fe7bdd8d734498ca195d242aeef54f66fa4fc4897fcdd9bb
+App Unittest Assert OK
+App Unittest:  Test derive a key
+App Unittest:  dk1= {
+  derived_key: Uint8Array(32) [
+    185, 213, 251,  47, 129, 198, 214,
+    194, 112,  98, 154,  20, 164,  26,
+    111,  64,  12, 108, 223, 117, 162,
+     21, 251, 209,  34, 201, 254, 132,
+     94, 251,  35, 210
+  ],
+  parameter: 'Furina:62656265626534353665786578',
+  N: 262144
+}
+App Unittest:  dk2= {
+  derived_key: Uint8Array(32) [
+    185, 213, 251,  47, 129, 198, 214,
+    194, 112,  98, 154,  20, 164,  26,
+    111,  64,  12, 108, 223, 117, 162,
+     21, 251, 209,  34, 201, 254, 132,
+     94, 251,  35, 210
+  ],
+  parameter: 'Furina:62656265626534353665786578',
+  N: 262144
+}
+App Unittest Assert OK
+App Unittest:  dk3(random)= {
+  derived_key: Uint8Array(32) [
+    201,  82, 219, 160, 218, 235, 207,   6,
+     12,  75, 196,  49,  17, 218,  72,  99,
+     42, 113,  14, 240,  62, 169, 190, 204,
+     97, 253, 185, 204, 121, 108, 214,  82
+  ],
+  parameter: 'Nahida:733236bcdcd30f21b452cee80c5d3f26629fbd9db6b2ff4516be39af078fde0f0bc9e0e8942989beb33e6e7d59bc9298c5b4de858f970c705cbd8a83c0899520',
+  N: 262144
+}
+App Unittest:  Test context
+App Unittest:  ctx= CryptContext <[CryptContext: null prototype]> [CryptContext] {}
+App Unittest Assert OK
+App Unittest:  ctx destroyed
+App Unittest Assert OK
+App Unittest:  test binascii
+App Unittest Assert OK
+App Unittest Assert OK
+--NODE.JS TEST END--
+
+Browser test:
+
+Test is running in your browser now. URL: http://127.0.0.1:36429/test/test-app.html
+Test completed.
+npm notice
+npm notice package: simple-data-crypto@1.2.55
+npm notice Tarball Contents
+npm notice 97B README.md
+npm notice 5.5kB build.js
+npm notice 71.8kB dist/main.bundle.builder.js
+npm notice 130.6kB dist/main.bundle.builder.js.map
+npm notice 43.5kB dist/main.bundle.js
+npm notice 94.1kB dist/main.bundle.js.map
+npm notice 21.7kB dist/main.bundle.min.js
+npm notice 99.0kB dist/main.bundle.min.js.map
+npm notice 58.1kB dist/main.bundle.node.js
+npm notice 120.2kB dist/main.bundle.node.js.map
+npm notice 21.7kB dist/WebScrypt/asset/asmjs.js
+npm notice 1.1kB dist/WebScrypt/LICENSE.txt
+npm notice 154B dist/WebScrypt/README.md
+npm notice 5.4kB dist/WebScrypt/scrypt.js
+npm notice 102.3kB dist/WebScrypt/sourcemap/asmjs.js.map
+npm notice 24.6kB dist/WebScrypt/sourcemap/scrypt.js.map
+npm notice 723B hash.js
+npm notice 2.0kB package.json
+npm notice 1.6kB src/binascii.js
+npm notice 1.4kB src/context.js
+npm notice 2.0kB src/derive_key.js
+npm notice 4.2kB src/encrypt_data.js
+npm notice 17.5kB src/encrypt_file.js
+npm notice 5.3kB src/exceptions.js
+npm notice 441B src/internal-expose.js
+npm notice 3.6kB src/internal-util.js
+npm notice 6.5kB src/key_management.js
+npm notice 663B src/loader.js
+npm notice 1.4kB src/main.js
+npm notice 469B src/random.js
+npm notice 9.3kB src/scrypt-layer/@build-browser-mixed.js
+npm notice 265B src/scrypt-layer/@build-browser-raw.js
+npm notice 62B src/scrypt-layer/@build-node.js
+npm notice 1.9kB src/scrypt-layer/dynamic-compile.js
+npm notice 66B src/scrypt-layer/entrance.js
+npm notice 1.6kB src/scrypt-layer/scrypt-browser-impl.js
+npm notice 258B src/scrypt-layer/scrypt-node.js
+npm notice 21.7kB src/scrypt-layer/WebScrypt/asset/asmjs.js
+npm notice 1.1kB src/scrypt-layer/WebScrypt/LICENSE.txt
+npm notice 154B src/scrypt-layer/WebScrypt/README.md
+npm notice 5.4kB src/scrypt-layer/WebScrypt/scrypt.js
+npm notice 102.3kB src/scrypt-layer/WebScrypt/sourcemap/asmjs.js.map
+npm notice 24.6kB src/scrypt-layer/WebScrypt/sourcemap/scrypt.js.map
+npm notice 723B src/str.js
+npm notice 12.5kB src/stream.js
+npm notice 71B src/version.js
+npm notice 7.6kB test.js
+npm notice 696B test/test-app.html
+npm notice 8.1kB test/test-app.js
+npm notice 88B types/browser.d.ts
+npm notice 88B types/builder.d.ts
+npm notice 85B types/node.d.ts
+npm notice 10.9kB types/types.d.ts
+npm notice Tarball Details
+npm notice name: simple-data-crypto
+npm notice version: 1.2.55
+npm notice filename: simple-data-crypto-1.2.55.tgz
+npm notice package size: 240.4 kB
+npm notice unpacked size: 1.1 MB
+npm notice shasum: 92982e68f649c39ae3bcf434b9f42fbb6c031c92
+npm notice integrity: sha512-OYF7uKCPeg4tV[...]tnhj+DzECTPdw==
+npm notice total files: 53
+npm notice
+simple-data-crypto-1.2.55.tgz
+
+D:\software\Program\source\git\github.com\shc0743\myencryption\impl\JavaScript\lib>npm publish
+npm notice
+npm notice package: simple-data-crypto@1.2.55
+npm notice Tarball Contents
+npm notice 97B README.md
+npm notice 5.5kB build.js
+npm notice 71.8kB dist/main.bundle.builder.js
+npm notice 130.6kB dist/main.bundle.builder.js.map
+npm notice 43.5kB dist/main.bundle.js
+npm notice 94.1kB dist/main.bundle.js.map
+npm notice 21.7kB dist/main.bundle.min.js
+npm notice 99.0kB dist/main.bundle.min.js.map
+npm notice 58.1kB dist/main.bundle.node.js
+npm notice 120.2kB dist/main.bundle.node.js.map
+npm notice 21.7kB dist/WebScrypt/asset/asmjs.js
+npm notice 1.1kB dist/WebScrypt/LICENSE.txt
+npm notice 154B dist/WebScrypt/README.md
+npm notice 5.4kB dist/WebScrypt/scrypt.js
+npm notice 102.3kB dist/WebScrypt/sourcemap/asmjs.js.map
+npm notice 24.6kB dist/WebScrypt/sourcemap/scrypt.js.map
+npm notice 723B hash.js
+npm notice 2.0kB package.json
+npm notice 1.6kB src/binascii.js
+npm notice 1.4kB src/context.js
+npm notice 2.0kB src/derive_key.js
+npm notice 4.2kB src/encrypt_data.js
+npm notice 17.5kB src/encrypt_file.js
+npm notice 5.3kB src/exceptions.js
+npm notice 441B src/internal-expose.js
+npm notice 3.6kB src/internal-util.js
+npm notice 6.5kB src/key_management.js
+npm notice 663B src/loader.js
+npm notice 1.4kB src/main.js
+npm notice 469B src/random.js
+npm notice 9.3kB src/scrypt-layer/@build-browser-mixed.js
+npm notice 265B src/scrypt-layer/@build-browser-raw.js
+npm notice 62B src/scrypt-layer/@build-node.js
+npm notice 1.9kB src/scrypt-layer/dynamic-compile.js
+npm notice 66B src/scrypt-layer/entrance.js
+npm notice 1.6kB src/scrypt-layer/scrypt-browser-impl.js
+npm notice 258B src/scrypt-layer/scrypt-node.js
+npm notice 21.7kB src/scrypt-layer/WebScrypt/asset/asmjs.js
+npm notice 1.1kB src/scrypt-layer/WebScrypt/LICENSE.txt
+npm notice 154B src/scrypt-layer/WebScrypt/README.md
+npm notice 5.4kB src/scrypt-layer/WebScrypt/scrypt.js
+npm notice 102.3kB src/scrypt-layer/WebScrypt/sourcemap/asmjs.js.map
+npm notice 24.6kB src/scrypt-layer/WebScrypt/sourcemap/scrypt.js.map
+npm notice 723B src/str.js
+npm notice 12.5kB src/stream.js
+npm notice 71B src/version.js
+npm notice 7.6kB test.js
+npm notice 696B test/test-app.html
+npm notice 8.1kB test/test-app.js
+npm notice 88B types/browser.d.ts
+npm notice 88B types/builder.d.ts
+npm notice 85B types/node.d.ts
+npm notice 10.9kB types/types.d.ts
+npm notice Tarball Details
+npm notice name: simple-data-crypto
+npm notice version: 1.2.55
+npm notice filename: simple-data-crypto-1.2.55.tgz
+npm notice package size: 240.4 kB
+npm notice unpacked size: 1.1 MB
+npm notice shasum: 92982e68f649c39ae3bcf434b9f42fbb6c031c92
+npm notice integrity: sha512-OYF7uKCPeg4tV[...]tnhj+DzECTPdw==
+npm notice total files: 53
+npm notice
+npm notice Publishing to https://registry.npmjs.org/ with tag latest and default access
+Authenticate your account at:
+https://www.npmjs.com/auth/cli/c4af15d3-22d5-465f-9b16-59bbf04afc77
+Press ENTER to open in the browser...
+
++ simple-data-crypto@1.2.55
