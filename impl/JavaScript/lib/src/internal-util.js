@@ -1,5 +1,5 @@
-import * as Exceptions from "./exceptions";
-import { str_decode } from "./str";
+import * as Exceptions from "./exceptions.js";
+import { str_decode } from "./str.js";
 
 export const PADDING_SIZE = 4096; // 4096 bytes
 export const END_IDENTIFIER = [
