@@ -134,9 +134,9 @@ declare module "simple-data-crypto" {
 
     /**
      * Export the file's master key.
-     * @param {Blob} file_head File header. Recommended to provide 5KB.
-     * @param {String} current_key current file password
-     * @param {String} export_key The password to protect the master key
+     * @param file_head File header. Recommended to provide 5KB.
+     * @param current_key current file password
+     * @param export_key The password to protect the master key
      * @returns String exported key
      */
     export function export_master_key(
@@ -160,9 +160,9 @@ declare module "simple-data-crypto" {
      * This means the old password will always exist on disk, potentially leading to sensitive data leaks.
      * Additionally, due to this behavior, operations on large files become extremely slow.
      * Therefore, unless under special circumstances, always use native applications to modify file passwords.
-     * @param {Blob} file_head File header. Recommended to provide 5KB.
-     * @param {String} current_key current file password
-     * @param {String} new_key The new password
+     * @param file_head File header. Recommended to provide 5KB.
+     * @param current_key current file password
+     * @param new_key The new password
      * @returns The new file header. Note that the size of the new header differs from the original file. Do not use it to construct a new file. Instead, overwrite the original file header directly with the new header without offsetting the file.  
      */
     export function change_file_password(
@@ -272,6 +272,12 @@ declare module "simple-data-crypto" {
     export const ENCRYPTION_FILE_VER_1_1_0: string;
     export const ENCRYPTION_FILE_VER_1_2_10020: string;
 
+    interface FileInfoClass {
+        version: string;
+        chunk_size: number;
+        nonce_counter: number;
+    }
+
     export declare const Internals: {
         PADDING_SIZE: number;
         END_IDENTIFIER: number[];
@@ -281,6 +287,10 @@ declare module "simple-data-crypto" {
         nextTick: () => Promise<void>;
         GetFileVersion: (file_reader: (start: number, end: number) => Promise<Uint8Array>) => Promise<string>;
         GetFileChunkSize: (file_reader: (start: number, end: number) => Promise<Uint8Array>) => Promise<number>;
+        GetFileInfo: (file_reader: (start: number, end: number) => Promise<Uint8Array>) => Promise<FileInfoClass>;
     };
+
+    export async function is_encrypted_message(message: string): Promise<boolean>;
+    export async function is_encrypted_file(file_reader: (start: number, end: number) => Promise<Uint8Array>): Promise<boolean>;
 }
 

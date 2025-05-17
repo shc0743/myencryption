@@ -1,5 +1,8 @@
-import { END_IDENTIFIER, END_MARKER, FILE_END_MARKER, nextTick, PADDING_SIZE, TAIL_BLOCK_MARKER } from "./internal-util.js";
-import { GetFileVersion, GetFileInfo, GetFileChunkSize } from "./internal-util.js";
+import {
+    END_IDENTIFIER, END_MARKER, FILE_END_MARKER,
+    nextTick, PADDING_SIZE, TAIL_BLOCK_MARKER,
+    GetFileVersion, GetFileInfo, GetFileChunkSize,
+} from "./internal-util.js";
 
 const Internals = {
     PADDING_SIZE,

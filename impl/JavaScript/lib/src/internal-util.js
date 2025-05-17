@@ -44,7 +44,7 @@ export const ENCRYPTION_FILE_VER_1_2_10020 = normalize_version('1.2', 10020);
 
 
 /**
- * @param {Function} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
  */
 export async function GetFileVersion(file_reader) {
     // 读取文件头并验证
@@ -106,5 +106,44 @@ export function CheckAlgorithm(algorithm) {
         throw new Exceptions.EncryptionAlgorithmNotSupportedException(undefined, {
             cause: new Error(String(algorithm))
         });
+    }
+}
+
+/**
+ * @param {string} message
+ */
+export async function IsEncryptedMessage(message) {
+    if (typeof message !== 'string') return false;
+    
+    if (message.charAt(0) === ':') {
+        const arr = message.split(':');
+        if (arr.length === 8) {
+            const [, data, phrase, salt, N, v, a,] = arr;
+            return !!(data && phrase && salt && N && v && a);
+        }
+        return false;
+    }
+
+    if (message.charAt(0) !== '{') return false;
+
+    try {
+        const json = JSON.parse(message);
+        return (json.data && json.parameter && json.N && json.v); 
+    }
+    catch {
+        return false; 
+    }
+}
+
+/**
+ * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ */
+export async function IsEncryptedFile(file_reader) {
+    try {
+        const info = await GetFileInfo(file_reader);
+        return !!info.version;
+    }
+    catch {
+        return false; 
     }
 }

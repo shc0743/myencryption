@@ -63,6 +63,26 @@
 
 ---
 
+### `is_encrypted_file(file_reader)`
+
+检查文件是否已加密。
+
+- **参数**：
+  - `file_reader`: `(start: number, end: number) => Promise<Uint8Array>` - 文件读取函数。
+- **返回值**：`Promise<boolean>` - 文件是否已加密。
+
+---
+
+### `is_encrypted_message(message)`
+
+检查消息是否已加密。
+
+- **参数**：
+  - `message`: `string` - 要检查的消息。
+- **返回值**：`boolean` - 消息是否已加密。
+
+---
+
 ### `export_master_key(file_head, current_key, export_key)`
 
 导出文件的主密钥。
@@ -212,6 +232,12 @@
   - `dklen`: `number` - 所需密钥长度。
   - `onprogress`: `(progress: number) => void` (可选) - 进度回调。
 - **返回值**：一个 Promise，解析为包含派生密钥的十六进制字符串。
+
+---
+
+### `Internals` 对象
+
+提供一系列获取内部实现相关信息的导出函数。高级用户可以通过查看 [实现](../../impl/JavaScript/lib/src/internal-util.js) 来了解更多细节。这些部分不提供文档。
 
 ---
 

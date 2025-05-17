@@ -34,9 +34,11 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
         throw new Exceptions.OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
     }
 
+    const alg = "AES-GCM";
+
     const ciphertext = await crypto.subtle.encrypt(
         {
-            name: "AES-GCM",
+            name: alg,
             iv: iv
         },
         cipher,
@@ -49,13 +51,10 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
     encrypted_message.set(new Uint8Array(ciphertext), iv.length);
     const message_encrypted = hexlify(encrypted_message);
 
-    return JSON.stringify({
-        data: message_encrypted,
-        parameter: parameter,
-        N: N,
-        v: 5.6,
-        "a": "AES-GCM",
-    });
+    const v = 5.6;
+
+    // 返回数据
+    return `:${message_encrypted}:${parameter}:${N}:${v}:${alg}:`;
 }
 
 
@@ -64,18 +63,29 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
  * @param {string|Uint8Array} key
  */
 export async function decrypt_data(message_encrypted, key) {
-    const jsoned = safeparse(message_encrypted);
-    const parameter = jsoned.parameter;
+    let jsoned;
+    if (message_encrypted.charAt(0) === ':') {
+        const arr = message_encrypted.split(':');
+        if (arr.length !== 8) throw new Exceptions.BadDataException('The message is bad.');
+        const [, data, phrase, salt, N, v, a,] = arr;
+        jsoned = { data, phrase, salt, N: +N, v: +v, a };
+    } else {
+        jsoned = safeparse(message_encrypted);
+    }
     const N = parseInt(jsoned.N);
     const alg = jsoned.a;
     CheckAlgorithm(alg);
 
     // 将十六进制字符串转换回字节
     const encrypted_data = unhexlify(jsoned.data);
-    const [phrase, salt_b64] = parameter.split(':');
+    let phrase, salt_b64;
+    if (jsoned.parameter) [phrase, salt_b64] = jsoned.parameter.split(':');
+    else {
+        phrase = jsoned.phrase; salt_b64 = jsoned.salt;
+    }
     const salt = unhexlify(salt_b64);
 
-    if (isNaN(N) || !parameter || !encrypted_data || !salt) throw new Exceptions.BadDataException('The message or parameters are bad.')
+    if (isNaN(N) || !phrase || !encrypted_data || !salt) throw new Exceptions.BadDataException('The message or parameters are bad.')
     if (encrypted_data.length < 28) throw new Exceptions.BadDataException("The message was too short.");
 
     // 提取 IV (前12字节)、密文和认证标签(最后16字节)

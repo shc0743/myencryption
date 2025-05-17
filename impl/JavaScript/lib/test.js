@@ -27,12 +27,14 @@ import {
     // get_random_int8_number,
     // get_random_uint8_number,
     hexlify,
+    is_encrypted_file,
+    is_encrypted_message,
     // normalize_version,
     // scrypt,
     scrypt_hex,
     // str_decode,
     // str_encode,
-    unhexlify
+    unhexlify,
 } from './dist/main.bundle.node.js';
 
 console.log("--NODE.JS TEST--");
@@ -61,6 +63,10 @@ console.log("Test data encryption");
     const plaintext = await decrypt_data(ciphertext, pass);
     console.log("plaintext:", plaintext);
     unitAssert(data === plaintext);
+
+    console.log("Test IsEncryptedMessage");
+    unitAssert((await is_encrypted_message(ciphertext)) === true);
+    unitAssert((await is_encrypted_message(':this::is:a:messy:message::::')) === false);
 }
 
 console.log("Test file encryption");
@@ -98,6 +104,21 @@ console.log("Test file encryption");
     const decryptedData = Buffer.concat(decryptedBuffer).toString();
     unitLog('decryptedData=', decryptedData);
     unitAssert(decryptedData === data);
+
+    unitLog("test IsEncryptedFile");
+    unitAssert(true === await is_encrypted_file(async (start, end) => {
+        return new Uint8Array(encryptedData.slice(start, end));
+    }));
+    unitAssert(false === await is_encrypted_file(async (start, end) => {
+        return new Uint8Array(10);
+    }));
+
+    unitLog("test export master key");
+    const masterKey = await export_master_key(new Blob([encryptedData]), pass, 'export123');
+    unitLog('masterKey=', masterKey);
+    const raw_masterKey = await decrypt_data(masterKey, 'export123');
+    unitLog('raw_masterKey=', raw_masterKey);
+    unitAssert(typeof raw_masterKey === 'string');
 }
 
 unitLog('Test scrypt');

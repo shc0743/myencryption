@@ -63,6 +63,26 @@ Decrypts a file asynchronously.
 
 ---
 
+### `is_encrypted_file(file_reader)`
+
+Checks if a file is encrypted.
+
+- **Parameters**:
+  - `file_reader`: `(start: number, end: number) => Promise<Uint8Array>` - File reader function.
+- **Returns**: `Promise<boolean>` - Whether the file is encrypted.
+
+---
+
+### `is_encrypted_message(message)`
+
+Checks if a message is encrypted.
+
+- **Parameters**:
+  - `message`: `string` - The message to check.
+- **Returns**: `boolean` - Whether the message is encrypted.
+
+---
+
 ### `export_master_key(file_head, current_key, export_key)`
 
 Exports the file's master key.
@@ -206,6 +226,14 @@ Performs the scrypt key derivation function.
   - `dklen`: `number` - Desired key length.
   - `onprogress`: `(progress: number) => void` (optional) - Progress callback.
 - **Returns**: A promise resolving to a hex string containing the derived key.
+
+---
+
+### `Internals` object
+
+Provides a series of exported functions for accessing internal implementation information. Advanced users can refer to the [implementation](../../impl/JavaScript/lib/src/internal-util.js) for more details. These sections are not documented.
+
+---
 
 ## Undocumented APIs
 

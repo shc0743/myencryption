@@ -75,6 +75,13 @@ export class CannotDecryptException extends EncryptionError {
     }
 }
 
+export class UnexpectedFailureInChunkDecryptionException extends EncryptionError {
+    constructor(message = 'An unexpected failure occurred while decrypting the chunk. The file may be corrupted.', additional = undefined) {
+        super(message, additional);
+        this.name = 'UnexpectedFailureInChunkDecryptionException';
+    }
+}
+
 export class CryptContextReusedException extends EncryptionError {
     constructor(message = 'Not allowed to reuse a crypt context.', additional = undefined) {
         super(message, additional);

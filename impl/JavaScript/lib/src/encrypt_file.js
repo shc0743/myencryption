@@ -158,7 +158,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
 /**
  * 解密文件（1.1）
  * @deprecated 仅供兼容1.1版本使用。
- * @param {Function} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
  * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {string} user_key - 用户提供的解密密钥
  * @param {Function} [callback=null] - 进度回调函数
@@ -263,7 +263,7 @@ export async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, c
 }
 /**
  * 解密文件
- * @param {Function} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
  * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {string|Uint8Array} user_key - 用户提供的解密密钥（字符串）或者派生后的密钥（Uint8Array）
  * @param {Function} [callback=null] - 进度回调函数
@@ -383,7 +383,7 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
             if (!e) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
             const name = e.name;
             if (name === 'InvalidAccessError') throw new Exceptions.InvalidParameterException('InvalidAccessError.', { cause: e });
-            if (name === 'OperationError') throw new Exceptions.CannotDecryptException('Cannot decrypt. Did you provide the correct password?', { cause: e });
+            if (name === 'OperationError') throw new Exceptions.UnexpectedFailureInChunkDecryptionException(undefined, { cause: e });
             if (!e) throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
         }
         if (callback) callback(total_bytes);

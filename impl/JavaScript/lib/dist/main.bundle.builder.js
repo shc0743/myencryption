@@ -103,7 +103,8 @@ __export(exceptions_exports, {
   InvalidParameterException: () => InvalidParameterException,
   InvalidScryptParameterException: () => InvalidScryptParameterException,
   NotSupportedException: () => NotSupportedException,
-  OperationNotPermittedException: () => OperationNotPermittedException
+  OperationNotPermittedException: () => OperationNotPermittedException,
+  UnexpectedFailureInChunkDecryptionException: () => UnexpectedFailureInChunkDecryptionException
 });
 var EncryptionError = class extends Error {
   constructor(message = "Encryption Error", additional = void 0) {
@@ -169,6 +170,12 @@ var CannotDecryptException = class extends EncryptionError {
   constructor(message = "Cannot decrypt", additional = void 0) {
     super(message, additional);
     this.name = "CannotDecryptException";
+  }
+};
+var UnexpectedFailureInChunkDecryptionException = class extends EncryptionError {
+  constructor(message = "An unexpected failure occurred while decrypting the chunk. The file may be corrupted.", additional = void 0) {
+    super(message, additional);
+    this.name = "UnexpectedFailureInChunkDecryptionException";
   }
 };
 var CryptContextReusedException = class extends EncryptionError {
@@ -681,6 +688,32 @@ function CheckAlgorithm(algorithm) {
     });
   }
 }
+async function IsEncryptedMessage(message) {
+  if (typeof message !== "string") return false;
+  if (message.charAt(0) === ":") {
+    const arr = message.split(":");
+    if (arr.length === 8) {
+      const [, data, phrase, salt, N, v, a] = arr;
+      return !!(data && phrase && salt && N && v && a);
+    }
+    return false;
+  }
+  if (message.charAt(0) !== "{") return false;
+  try {
+    const json = JSON.parse(message);
+    return json.data && json.parameter && json.N && json.v;
+  } catch {
+    return false;
+  }
+}
+async function IsEncryptedFile(file_reader) {
+  try {
+    const info = await GetFileInfo(file_reader);
+    return !!info.version;
+  } catch {
+    return false;
+  }
+}
 
 // src/encrypt_data.js
 function safeparse(json) {
@@ -698,9 +731,10 @@ async function encrypt_data(message, key, phrase = null, N = null) {
   if (typeof message !== "string") {
     throw new OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
   }
+  const alg = "AES-GCM";
   const ciphertext = await crypto.subtle.encrypt(
     {
-      name: "AES-GCM",
+      name: alg,
       iv
     },
     cipher,
@@ -710,24 +744,31 @@ async function encrypt_data(message, key, phrase = null, N = null) {
   encrypted_message.set(iv, 0);
   encrypted_message.set(new Uint8Array(ciphertext), iv.length);
   const message_encrypted = hexlify(encrypted_message);
-  return JSON.stringify({
-    data: message_encrypted,
-    parameter,
-    N,
-    v: 5.6,
-    "a": "AES-GCM"
-  });
+  const v = 5.6;
+  return `:${message_encrypted}:${parameter}:${N}:${v}:${alg}:`;
 }
 async function decrypt_data(message_encrypted, key) {
-  const jsoned = safeparse(message_encrypted);
-  const parameter = jsoned.parameter;
+  let jsoned;
+  if (message_encrypted.charAt(0) === ":") {
+    const arr = message_encrypted.split(":");
+    if (arr.length !== 8) throw new BadDataException("The message is bad.");
+    const [, data, phrase2, salt2, N2, v, a] = arr;
+    jsoned = { data, phrase: phrase2, salt: salt2, N: +N2, v: +v, a };
+  } else {
+    jsoned = safeparse(message_encrypted);
+  }
   const N = parseInt(jsoned.N);
   const alg = jsoned.a;
   CheckAlgorithm(alg);
   const encrypted_data = unhexlify(jsoned.data);
-  const [phrase, salt_b64] = parameter.split(":");
+  let phrase, salt_b64;
+  if (jsoned.parameter) [phrase, salt_b64] = jsoned.parameter.split(":");
+  else {
+    phrase = jsoned.phrase;
+    salt_b64 = jsoned.salt;
+  }
   const salt = unhexlify(salt_b64);
-  if (isNaN(N) || !parameter || !encrypted_data || !salt) throw new BadDataException("The message or parameters are bad.");
+  if (isNaN(N) || !phrase || !encrypted_data || !salt) throw new BadDataException("The message or parameters are bad.");
   if (encrypted_data.length < 28) throw new BadDataException("The message was too short.");
   const iv = encrypted_data.slice(0, 12);
   const ciphertext = encrypted_data.slice(12, -16);
@@ -985,7 +1026,7 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
       if (!e) throw new InternalError(`Internal error.`, { cause: e });
       const name = e.name;
       if (name === "InvalidAccessError") throw new InvalidParameterException("InvalidAccessError.", { cause: e });
-      if (name === "OperationError") throw new CannotDecryptException("Cannot decrypt. Did you provide the correct password?", { cause: e });
+      if (name === "OperationError") throw new UnexpectedFailureInChunkDecryptionException(void 0, { cause: e });
       if (!e) throw new InternalError(`Unexpected error.`, { cause: e });
     }
     if (callback) callback(total_bytes);
@@ -1328,7 +1369,7 @@ var Internals = {
 };
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/5.6 Package/1.3.56";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/5.6 Package/1.4.56";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,
@@ -1351,6 +1392,8 @@ export {
   get_random_int8_number,
   get_random_uint8_number,
   hexlify,
+  IsEncryptedFile as is_encrypted_file,
+  IsEncryptedMessage as is_encrypted_message,
   normalize_version,
   scrypt,
   scrypt_hex,
