@@ -10,7 +10,7 @@ import {
     ENCRYPTION_FILE_VER_1_1_0,
     ENCRYPTION_FILE_VER_1_2_10020,
     // Exceptions,
-    Stream,
+    InputStream,
     VERSION,
     change_file_password,
     crypt_context_create,

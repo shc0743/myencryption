@@ -584,137 +584,207 @@ __export(exceptions_exports, {
   CryptContextReleasedException: () => CryptContextReleasedException,
   CryptContextReusedException: () => CryptContextReusedException,
   DangerousEncryptionAlgorithmException: () => DangerousEncryptionAlgorithmException,
+  DataError: () => DataError,
   EncryptionAlgorithmNotSupportedException: () => EncryptionAlgorithmNotSupportedException,
   EncryptionError: () => EncryptionError,
   EncryptionVersionMismatchException: () => EncryptionVersionMismatchException,
   EndOfFileException: () => EndOfFileException,
+  ExpectedError: () => ExpectedError,
   FileCorruptedException: () => FileCorruptedException,
   IVException: () => IVException,
+  InputError: () => InputError,
   InternalError: () => InternalError,
   InvalidCryptContextTypeException: () => InvalidCryptContextTypeException,
   InvalidEndMarkerException: () => InvalidEndMarkerException,
   InvalidFileFormatException: () => InvalidFileFormatException,
   InvalidParameterException: () => InvalidParameterException,
   InvalidScryptParameterException: () => InvalidScryptParameterException,
+  LibraryError: () => LibraryError,
+  NetworkError: () => NetworkError,
   NotSupportedException: () => NotSupportedException,
   OperationNotPermittedException: () => OperationNotPermittedException,
-  UnexpectedFailureInChunkDecryptionException: () => UnexpectedFailureInChunkDecryptionException
+  ParameterError: () => ParameterError,
+  RuntimeException: () => RuntimeException,
+  UnexpectedError: () => UnexpectedError,
+  UnexpectedFailureInChunkDecryptionException: () => UnexpectedFailureInChunkDecryptionException,
+  UserException: () => UserException,
+  VersionSystemError: () => VersionSystemError
 });
-var EncryptionError = class extends Error {
+var LibraryError = class extends Error {
+  constructor(message = "Library Error", additional = void 0) {
+    super(message, additional);
+    this.name = "LibraryError";
+  }
+};
+var EncryptionError = class extends LibraryError {
   constructor(message = "Encryption Error", additional = void 0) {
     super(message, additional);
     this.name = "EncryptionError";
   }
 };
-var InternalError = class extends EncryptionError {
+var NetworkError = class extends LibraryError {
+  constructor(message = "(Network Error)", additional = void 0) {
+    super(message, additional);
+    this.name = "NetworkError";
+  }
+};
+var ExpectedError = class extends EncryptionError {
+  constructor(message = "(Expected Error)", additional = void 0) {
+    super(message, additional);
+    this.name = "ExpectedError";
+  }
+};
+var RuntimeException = class extends EncryptionError {
+  constructor(message = "(Runtime Error)", additional = void 0) {
+    super(message, additional);
+    this.name = "RuntimeException";
+  }
+};
+var UnexpectedError = class extends RuntimeException {
+  constructor(message = "(Unexpected Error)", additional = void 0) {
+    super(message, additional);
+    this.name = "UnexpectedError";
+  }
+};
+var InternalError = class extends UnexpectedError {
   constructor(message = "(Internal Error)", additional = void 0) {
     super(message, additional);
     this.name = "InternalError";
   }
 };
-var InvalidParameterException = class extends EncryptionError {
+var InputError = class extends RuntimeException {
+  constructor(message = "(Input Error)", additional = void 0) {
+    super(message, additional);
+    this.name = "InputError";
+  }
+};
+var ParameterError = class extends InputError {
+  constructor(message = "(Data Error)", additional = void 0) {
+    super(message, additional);
+    this.name = "ParameterError";
+  }
+};
+var DataError = class extends InputError {
+  constructor(message = "(Data Error)", additional = void 0) {
+    super(message, additional);
+    this.name = "DataError";
+  }
+};
+var UserException = class extends RuntimeException {
+  constructor(message = "(The end user has a fault that caused the exception. This is not code bug.)", additional = void 0) {
+    super(message, additional);
+    this.name = "UserException";
+  }
+};
+var VersionSystemError = class extends DataError {
+  constructor(message = "(Version System Error)", additional = void 0) {
+    super(message, additional);
+    this.name = "VersionSystemError";
+  }
+};
+var InvalidParameterException = class extends ParameterError {
   constructor(message = "The parameter provided is invalid.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidParameterException";
   }
 };
-var BadDataException = class extends EncryptionError {
+var BadDataException = class extends DataError {
   constructor(message = "The data is bad.", additional = void 0) {
     super(message, additional);
     this.name = "BadDataException";
   }
 };
-var InvalidScryptParameterException = class extends EncryptionError {
+var InvalidScryptParameterException = class extends ParameterError {
   constructor(message = "The N, r, or p is not valid or out of range.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidScryptParameterException";
   }
 };
-var EncryptionVersionMismatchException = class extends EncryptionError {
+var EncryptionVersionMismatchException = class extends VersionSystemError {
   constructor(message = "The version of the encryption library doesn't match.", additional = void 0) {
     super(message, additional);
     this.name = "EncryptionVersionMismatchException";
   }
 };
-var InvalidFileFormatException = class extends EncryptionError {
+var InvalidFileFormatException = class extends DataError {
   constructor(message = "The file format is invalid.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidFileFormatException";
   }
 };
-var IVException = class extends EncryptionError {
+var IVException = class extends InternalError {
   constructor(message = "IV Exception.", additional = void 0) {
     super(message, additional);
     this.name = "IVException";
   }
 };
-var FileCorruptedException = class extends EncryptionError {
+var FileCorruptedException = class extends DataError {
   constructor(message = "File is corrupted.", additional = void 0) {
     super(message, additional);
     this.name = "FileCorruptedException";
   }
 };
-var InvalidEndMarkerException = class extends EncryptionError {
+var InvalidEndMarkerException = class extends DataError {
   constructor(message = "The end marker is invalid.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidEndMarkerException";
   }
 };
-var CannotDecryptException = class extends EncryptionError {
+var CannotDecryptException = class extends UserException {
   constructor(message = "Cannot decrypt", additional = void 0) {
     super(message, additional);
     this.name = "CannotDecryptException";
   }
 };
-var UnexpectedFailureInChunkDecryptionException = class extends EncryptionError {
+var UnexpectedFailureInChunkDecryptionException = class extends UnexpectedError {
   constructor(message = "An unexpected failure occurred while decrypting the chunk. The file may be corrupted.", additional = void 0) {
     super(message, additional);
     this.name = "UnexpectedFailureInChunkDecryptionException";
   }
 };
-var CryptContextReusedException = class extends EncryptionError {
+var CryptContextReusedException = class extends ParameterError {
   constructor(message = "Not allowed to reuse a crypt context.", additional = void 0) {
     super(message, additional);
     this.name = "CryptContextReusedException";
   }
 };
-var NotSupportedException = class extends EncryptionError {
+var NotSupportedException = class extends InputError {
   constructor(message = "Operation not supported", additional = void 0) {
     super(message, additional);
     this.name = "NotSupportedException";
   }
 };
-var EndOfFileException = class extends EncryptionError {
+var EndOfFileException = class extends ExpectedError {
   constructor(message = "End of File", additional = void 0) {
     super(message, additional);
     this.name = "EndOfFileException";
   }
 };
-var CryptContextNotInitedException = class extends EncryptionError {
+var CryptContextNotInitedException = class extends ParameterError {
   constructor(message = "Crypt context is not initialized.", additional = void 0) {
     super(message, additional);
     this.name = "CryptContextNotInitedException";
   }
 };
-var InvalidCryptContextTypeException = class extends EncryptionError {
+var InvalidCryptContextTypeException = class extends ParameterError {
   constructor(message = "Invalid crypt context type.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidCryptContextTypeException";
   }
 };
-var CryptContextReleasedException = class extends EncryptionError {
+var CryptContextReleasedException = class extends ParameterError {
   constructor(message = "Crypt context has been released.", additional = void 0) {
     super(message, additional);
     this.name = "CryptContextReleasedException";
   }
 };
-var OperationNotPermittedException = class extends EncryptionError {
+var OperationNotPermittedException = class extends ParameterError {
   constructor(message = "Operation not permitted.", additional = void 0) {
     super(message, additional);
     this.name = "OperationNotPermittedException";
   }
 };
-var EncryptionAlgorithmNotSupportedException = class extends EncryptionError {
+var EncryptionAlgorithmNotSupportedException = class extends DataError {
   constructor(message = "The specified encryption algorithm is not supported.", additional = void 0) {
     super(message, additional);
     this.name = "EncryptionAlgorithmNotSupportedException";
@@ -1367,7 +1437,7 @@ async function crypt_context_destroy(ctx) {
 }
 
 // src/stream.js
-var Stream = class {
+var InputStream = class {
   #reader = null;
   #cache = {
     position: null,
@@ -1592,15 +1662,57 @@ var Internals = {
   GetFileChunkSize
 };
 
+// src/util-wrappers.js
+var util_wrappers_exports = {};
+__export(util_wrappers_exports, {
+  createReaderForFileSystemHandle: () => createReaderForFileSystemHandle,
+  createReaderForLocalFile: () => createReaderForLocalFile,
+  createReaderForRemoteObject: () => createReaderForRemoteObject,
+  createWriterForFileSystemHandle: () => createWriterForFileSystemHandle,
+  createWriterForMemoryBuffer: () => createWriterForMemoryBuffer
+});
+async function createReaderForLocalFile(file) {
+  return async (start, end) => {
+    return new Uint8Array(await file.slice(start, end).arrayBuffer());
+  };
+}
+async function createReaderForFileSystemHandle(fileSystemHandle) {
+  const file = await fileSystemHandle.getFile();
+  return await createReaderForLocalFile(file);
+}
+async function createReaderForRemoteObject(url) {
+  return async (start, end) => {
+    const resp = await fetch(url, {
+      headers: { Range: `bytes=${start}-${end - 1}` }
+    });
+    if (!resp.ok) throw new NetworkError(`Network Error: HTTP ${resp.status} : ${resp.statusText}`, {
+      response: resp
+    });
+    return new Uint8Array(await resp.arrayBuffer());
+  };
+}
+async function createWriterForFileSystemHandle(fileSystemHandle) {
+  const writable = await fileSystemHandle.createWritable();
+  return async (data) => {
+    await writable.write(data);
+  };
+}
+async function createWriterForMemoryBuffer(bufferOutput) {
+  return async (data) => {
+    bufferOutput.push(data);
+  };
+}
+
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/5.6 Package/1.4.56";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/5.0 Package/1.5.50";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,
   exceptions_exports as Exceptions,
+  InputStream,
   Internals,
-  Stream,
   VERSION,
+  util_wrappers_exports as Wrappers,
   change_file_password,
   crypt_context_create,
   crypt_context_destroy,
