@@ -15,7 +15,6 @@ export const deriveKey__phrases = ['Furina', 'Neuvillette', 'Venti', 'Nahida', '
  * @param {?number} r 
  * @param {?number} p 
  * @param {?number} dklen 
- * @returns 
  */
 export async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
     if (N === null) N = 262144;

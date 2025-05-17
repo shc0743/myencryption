@@ -9,7 +9,7 @@ import { normalize_version, ENCRYPTION_FILE_VER_1_2_10020 } from "./encrypt_file
 import { PADDING_SIZE, END_IDENTIFIER, END_MARKER, TAIL_BLOCK_MARKER, FILE_END_MARKER } from './internal-util.js';
 
 
-export class Stream {
+export class InputStream {
     #reader = null;
     #cache = {
         position: null,
@@ -95,7 +95,7 @@ export class Stream {
 /**
  * Prepare for a stream decryption.
  * @param {CryptContext} ctx Context
- * @param {Stream} stream The stream to decrypt.
+ * @param {InputStream} stream The stream to decrypt.
  * @param {String} password The password.
  * @param {Object} [param3={}] Options.
  * @param {boolean} [param3.cache=true] Set if the cache is enabled.
@@ -198,7 +198,7 @@ export async function decrypt_stream(ctx, bytes_start, bytes_end, abort) {
     if (ctx._type !== '@decrypt_stream') throw new Exceptions.InvalidCryptContextTypeException(ctx._type);
     if (ctx._released) throw new Exceptions.CryptContextReleasedException();
 
-    /** @type {Stream} */
+    /** @type {InputStream} */
     const stream = ctx.stream.stream;
     const chunk_size = ctx.chunk_size;
     const nonce_counter_start = ctx.nonce_counter;

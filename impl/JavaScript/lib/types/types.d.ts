@@ -1,4 +1,5 @@
 import * as Exceptions from '../src/exceptions.js';
+import * as Wrappers from './util-wrappers';
 
 declare module "simple-data-crypto" {
     export function derive_key(
@@ -271,6 +272,8 @@ declare module "simple-data-crypto" {
     export const VERSION: string;
     export const ENCRYPTION_FILE_VER_1_1_0: string;
     export const ENCRYPTION_FILE_VER_1_2_10020: string;
+
+    export { Wrappers };
 
     interface FileInfoClass {
         version: string;
