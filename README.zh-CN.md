@@ -112,6 +112,10 @@ import { encrypt_data, decrypt_data } from'simple-data-crypto/builder'; // 必�
 ### JavaScript API
 [English edition](./docs/JavaScript/api-docs.md) | [中文版本](./docs/JavaScript/api-docs.zh-CN.md)
 
+### 最近的破坏性变更
+
+[>=1.5.0] `Stream` 被重命名为 `InputStream`。没有实际上的 API 更改，但（如果用到）需要重命名。
+
 # 许可证
 
 本项目：**MIT License**。

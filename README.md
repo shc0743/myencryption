@@ -113,6 +113,10 @@ See [File Format spec](./docs/general/file-format-spec.md) for details. Chinese 
 ### JavaScript API
 [English edition](./docs/JavaScript/api-docs.md) | [中文版本](./docs/JavaScript/api-docs.zh-CN.md)
 
+### Recent Breaking Changes
+
+[>=1.5.0] The `Stream` was renamed to `InputStream`. There is no API change, just a re-naming.
+
 # LICENSE
 
 This project: **MIT License**.

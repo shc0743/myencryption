@@ -6,6 +6,10 @@
 
 有关更多详细信息，请参阅 [d.ts 文件](../../impl/JavaScript/lib/dist/main.bundle.d.ts)。
 
+## 最近的破坏性变更
+
+[>=1.5.0] `Stream` 被重命名为 `InputStream`。没有实际上的 API 更改，但（如果用到）需要重命名。
+
 ## 核心功能
 
 大多数情况下您仅会使用以下功能：
@@ -143,7 +147,7 @@
 
 - **参数**：
   - `ctx`: `CryptContext` - 解密上下文。
-  - `stream`: `Stream` - 要解密的流。
+  - `stream`: `InputStream` - 要解密的流。
   - `password`: `string` - 解密密码。
   - `options`: `DecryptStreamInitOptions` (可选) - 初始化选项。
 - **返回值**：`Promise<void>`。
@@ -163,12 +167,12 @@
 
 ---
 
-### `Stream`
+### `InputStream`
 
 表示数据流。
 
 - **构造函数**：
-  - `Stream(reader, size)`
+  - `InputStream(reader, size)`
     - `reader`: `(start: number, end: number, signal: AbortSignal) => Promise<Uint8Array>` - 读取函数。
     - `size`: `number` - 流的大小。
 - **方法**：

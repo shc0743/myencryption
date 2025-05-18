@@ -6,6 +6,10 @@
 
 See [the d.ts file](../../impl/JavaScript/lib/dist/main.bundle.d.ts) for more details.
 
+## Recent Breaking Changes
+
+[>=1.5.0] The `Stream` was renamed to `InputStream`. There is no API change, just a re-naming.
+
 ## Core Functions
 
 Most of situations you just use these functions
@@ -139,7 +143,7 @@ Prepares for stream decryption.
 
 - **Parameters**:
   - `ctx`: `CryptContext` - Decryption context.
-  - `stream`: `Stream` - The stream to decrypt.
+  - `stream`: `InputStream` - The stream to decrypt.
   - `password`: `string` - Decryption password.
   - `options`: `DecryptStreamInitOptions` (optional) - Initialization options.
 - **Returns**: `Promise<void>`.
@@ -159,14 +163,14 @@ Decrypts a portion of a stream.
 
 ---
 
-### `Stream`
+### `InputStream`
 
 Represents a data stream.
 
 - **Constructor**:
-  - `Stream(reader, size)`
+  - `InputStream(reader, size)`
     - `reader`: `(start: number, end: number, signal: AbortSignal) => Promise<Uint8Array>` - Reader function.
-    - `size`: `number` - Stream size.
+    - `size`: `number` - InputStream size.
 - **Methods**:
   - `read(start, end, suggestion_end = null, abort = null)`: Reads a portion of the stream.
   - `abort()`: Aborts the stream.
