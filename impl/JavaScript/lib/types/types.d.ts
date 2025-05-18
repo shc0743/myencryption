@@ -180,7 +180,7 @@ declare module "simple-data-crypto" {
     
     export function normalize_version(major_version: string, version_marker: number | null): string;
 
-    export interface CryptContext { };
+    export interface CryptContext { }
     export function crypt_context_create() : Promise<CryptContext>;
     export function crypt_context_destroy(ctx: CryptContext): Promise<true> & {
         throws:
@@ -268,12 +268,9 @@ declare module "simple-data-crypto" {
 
         [Symbol.toStringTag]: 'InputStream';
     }
-    export * as Exceptions from '../src/exceptions.js';
     export const VERSION: string;
     export const ENCRYPTION_FILE_VER_1_1_0: string;
     export const ENCRYPTION_FILE_VER_1_2_10020: string;
-
-    export { Wrappers };
 
     interface FileInfoClass {
         version: string;
@@ -281,7 +278,7 @@ declare module "simple-data-crypto" {
         nonce_counter: number;
     }
 
-    export declare const Internals: {
+    interface Internals {
         PADDING_SIZE: number;
         END_IDENTIFIER: number[];
         TAIL_BLOCK_MARKER: number[];
@@ -291,9 +288,12 @@ declare module "simple-data-crypto" {
         GetFileVersion: (file_reader: (start: number, end: number) => Promise<Uint8Array>) => Promise<string>;
         GetFileChunkSize: (file_reader: (start: number, end: number) => Promise<Uint8Array>) => Promise<number>;
         GetFileInfo: (file_reader: (start: number, end: number) => Promise<Uint8Array>) => Promise<FileInfoClass>;
-    };
+    }
 
-    export async function is_encrypted_message(message: string): Promise<boolean>;
-    export async function is_encrypted_file(file_reader: (start: number, end: number) => Promise<Uint8Array>): Promise<boolean>;
+    export const Internals: Internals;
+
+    export function is_encrypted_message(message: string): Promise<boolean>;
+    export function is_encrypted_file(file_reader: (start: number, end: number) => Promise<Uint8Array>): Promise<boolean>;
 }
 
+export { Exceptions, Wrappers };
