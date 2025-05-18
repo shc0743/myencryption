@@ -209,7 +209,7 @@ declare module "simple-data-crypto" {
      */
     export function decrypt_stream_init(
         ctx: CryptContext,
-        stream: Stream,
+        stream: InputStream,
         password: string,
         options?: DecryptStreamInitOptions
     ): Promise<true> & {
@@ -247,7 +247,7 @@ declare module "simple-data-crypto" {
         | Exceptions.InternalError
     };
         
-    export class Stream {
+    export class InputStream {
         constructor(
             reader: (start: number, end: number, signal: AbortSignal) => Promise<Uint8Array>,
             size: number
@@ -266,7 +266,7 @@ declare module "simple-data-crypto" {
         purge(): void;
         close(): void;
 
-        [Symbol.toStringTag]: 'Stream';
+        [Symbol.toStringTag]: 'InputStream';
     }
     export * as Exceptions from '../src/exceptions.js';
     export const VERSION: string;
