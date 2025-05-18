@@ -1,7 +1,10 @@
 import {
     encrypt_data, decrypt_data, encrypt_file, decrypt_file, export_master_key,
-    change_file_password, scrypt_hex, scrypt, str_encode
+    change_file_password, scrypt_hex, scrypt, str_encode,
+    VERSION,
 } from '../lib/src/main.js';
+
+ver.innerText = 'Version: ' + VERSION;
 
 enc.onclick = async () => {
     try {

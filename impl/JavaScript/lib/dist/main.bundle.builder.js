@@ -587,31 +587,6 @@ function nextTick() {
   return new Promise((r) => setTimeout(r));
 }
 
-// src/derive_key.js
-var deriveKey__phrases = ["Furina", "Neuvillette", "Venti", "Nahida", "Kinich", "Kazuha"];
-async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
-  if (N === null) N = 262144;
-  if (typeof N !== "number" || N > 2097152) {
-    throw new InvalidScryptParameterException();
-  }
-  if (!salt) {
-    salt = get_random_bytes(64);
-  }
-  if (!phrase) {
-    phrase = deriveKey__phrases[get_random_uint8_number() % deriveKey__phrases.length];
-  }
-  if (phrase.includes(":")) {
-    throw new InvalidParameterException('phrase MUST NOT contain ":"');
-  }
-  const parameter = `${phrase}:${hexlify(salt)}`;
-  const keyInput = `MyEncryption/1.1 Fontaine/4.2 Iv/${hexlify(iv)} user_parameter=${parameter} user_key=${key}`;
-  const derived_key = await scrypt(str_encode(keyInput), salt, N, r, p, dklen);
-  return { derived_key, parameter, N };
-}
-async function scrypt_hex(key, salt, N, r, p, dklen) {
-  return hexlify(await scrypt(str_encode(key), str_encode(salt), N, r, p, dklen));
-}
-
 // src/internal-util.js
 var PADDING_SIZE = 4096;
 var END_IDENTIFIER = [
@@ -868,6 +843,64 @@ async function decrypt_data(message_encrypted, key) {
   }
 }
 
+// src/derive_key.js
+var deriveKey__phrases = ["Furina", "Neuvillette", "Venti", "Nahida", "Kinich", "Kazuha"];
+async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
+  if (N === null) N = 262144;
+  if (typeof N !== "number" || N > 2097152) {
+    throw new InvalidScryptParameterException();
+  }
+  if (!salt) {
+    salt = get_random_bytes(64);
+  }
+  if (!phrase) {
+    phrase = deriveKey__phrases[get_random_uint8_number() % deriveKey__phrases.length];
+  }
+  if (phrase.includes(":")) {
+    throw new InvalidParameterException('phrase MUST NOT contain ":"');
+  }
+  const parameter = `${phrase}:${hexlify(salt)}`;
+  const keyInput = `MyEncryption/1.1 Fontaine/4.2 Iv/${hexlify(iv)} user_parameter=${parameter} user_key=${key}`;
+  const derived_key = await scrypt(str_encode(keyInput), salt, N, r, p, dklen);
+  return { derived_key, parameter, N };
+}
+async function derive_key_for_file(file_reader, user_key) {
+  let read_pos = 16 + 4;
+  const version = await GetFileVersion(file_reader);
+  if (version === ENCRYPTION_FILE_VER_1_1_0) {
+    throw new NotSupportedException("Deriving a key for V1.1 files is not supported");
+  }
+  if (version !== ENCRYPTION_FILE_VER_1_2_10020) {
+    throw new EncryptionVersionMismatchException();
+  }
+  const ekey_len = new DataView((await file_reader(read_pos, read_pos + 4)).buffer).getUint32(0, true);
+  const ekey = str_decode(await file_reader(read_pos + 4, read_pos + 4 + ekey_len));
+  read_pos += PADDING_SIZE;
+  if (ekey_len > PADDING_SIZE) {
+    throw new InternalError("(Internal Error) This should not happen. Contact the application developer.");
+  }
+  const key = await decrypt_data(ekey, user_key);
+  const json_len_bytes = await file_reader(read_pos, read_pos + 4);
+  const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
+  read_pos += 4;
+  const header_json = JSON.parse(
+    str_decode(await file_reader(read_pos, read_pos + json_len))
+  );
+  read_pos += json_len;
+  const header_version = header_json.v;
+  if (![5.5].includes(header_version)) throw new EncryptionVersionMismatchException();
+  const [phrase, salt_hex] = header_json.parameter.split(":");
+  const salt = unhexlify(salt_hex);
+  const iv4key = unhexlify(header_json.iv);
+  const N = header_json.N;
+  const algorithm = header_json.a;
+  CheckAlgorithm(algorithm);
+  return (await derive_key(key, iv4key, phrase, N, salt)).derived_key;
+}
+async function scrypt_hex(key, salt, N, r, p, dklen) {
+  return hexlify(await scrypt(str_encode(key), str_encode(salt), N, r, p, dklen));
+}
+
 // src/encrypt_file.js
 async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024) {
   if (!chunk_size) throw new InvalidParameterException("chunk_size must be greater than 0.");
@@ -1110,6 +1143,20 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   if (total_bytes !== total_bytes_decrypted) throw new FileCorruptedException("total bytes mismatch");
   if (!end_marker.every((v, i) => v === FILE_END_MARKER[i])) throw new InvalidEndMarkerException();
   return true;
+}
+async function encrypt_blob(blob, password) {
+  const buffer = [];
+  const file_reader = async (start, end) => new Uint8Array(await blob.slice(start, end).arrayBuffer());
+  const file_writer = (data) => buffer.push(data);
+  if (!await encrypt_file(file_reader, file_writer, password)) throw new UnexpectedError();
+  return new Blob(buffer);
+}
+async function decrypt_blob(blob, password) {
+  const buffer = [];
+  const file_reader = async (start, end) => new Uint8Array(await blob.slice(start, end).arrayBuffer());
+  const file_writer = (data) => buffer.push(data);
+  if (!await decrypt_file(file_reader, file_writer, password)) throw new UnexpectedError();
+  return new Blob(buffer);
 }
 
 // src/key_management.js
@@ -1435,7 +1482,8 @@ var Internals = {
   nextTick: nextTick2,
   GetFileVersion,
   GetFileInfo,
-  GetFileChunkSize
+  GetFileChunkSize,
+  derive_key_default_phrases_list: deriveKey__phrases
 };
 
 // src/util-wrappers.js
@@ -1480,7 +1528,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/5.0 Package/1.5.50";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/5.6 Package/1.5.56";
 export {
   ENCRYPTION_FILE_VER_1_1_0,
   ENCRYPTION_FILE_VER_1_2_10020,
@@ -1492,11 +1540,14 @@ export {
   change_file_password,
   crypt_context_create,
   crypt_context_destroy,
+  decrypt_blob,
   decrypt_data,
   decrypt_file,
   decrypt_stream,
   decrypt_stream_init,
   derive_key,
+  derive_key_for_file,
+  encrypt_blob,
   encrypt_data,
   encrypt_file,
   export_master_key,

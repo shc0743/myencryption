@@ -12,8 +12,11 @@ import {
     decrypt_stream,
     decrypt_stream_init,
     derive_key,
+    derive_key_for_file,
     encrypt_data,
     encrypt_file,
+    encrypt_blob,
+    decrypt_blob,
     export_master_key,
     // get_random_bytes,
     // get_random_int8_number,
@@ -97,6 +100,21 @@ try {
     unitLog('decryptedText=', decryptedText);
     unitAssert(decryptedText === originalText);
 
+    unitLog("Using a pre-derived key?");
+    const derivedKey = await derive_key_for_file(async (start, end) => {
+        return new Uint8Array(await encryptedFile.slice(start, end).arrayBuffer());
+    }, password);
+    buffer.length = 0;
+    unitAssert(await decrypt_file(async (start, end) => {
+        return new Uint8Array(await encryptedFile.slice(start, end).arrayBuffer());
+    }, (data) => {
+        buffer.push(data);
+    }, derivedKey));
+    decryptedFile = new Blob(buffer);
+    decryptedText = await decryptedFile.text();
+    unitLog('decryptedText=', decryptedText);
+    unitAssert(decryptedText === originalText);
+
     unitLog("Try to change the password")
     const newpass = 'newpassword123';
     const newhead = (await change_file_password(encryptedFile, password, newpass));
@@ -141,6 +159,14 @@ try {
     // empty the buffer
     buffer.length = 0;
     unitAssert(buffer.length === 0);
+
+    unitLog("Test encrypt blob");
+    const blob = new Blob([data, 'lalala']);
+    const encryptedBlob = await encrypt_blob(blob, password);
+    unitAssert(encryptedBlob);
+    const decryptedBlob = await decrypt_blob(encryptedBlob, password);
+    unitAssert(decryptedBlob);
+    unitAssert((await decryptedBlob.text()) === (await blob.text()));
 
     unitLog('Test scrypt');
     const scstr = 'lalala123';

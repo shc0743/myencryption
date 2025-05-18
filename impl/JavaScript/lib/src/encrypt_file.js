@@ -402,3 +402,27 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
 
     return true;
 }
+
+
+/**
+ * @param {Blob} blob
+ * @param {string} password
+ */
+export async function encrypt_blob(blob, password) {
+    const buffer = [];
+    const file_reader = async (start, end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
+    const file_writer = (data) => buffer.push(data);
+    if (!await encrypt_file(file_reader, file_writer, password)) throw new Exceptions.UnexpectedError();
+    return new Blob(buffer);
+}
+/**
+ * @param {Blob} blob
+ * @param {string | Uint8Array} password
+ */
+export async function decrypt_blob(blob, password) {
+    const buffer = [];
+    const file_reader = async (start, end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
+    const file_writer = (data) => buffer.push(data);
+    if (!await decrypt_file(file_reader, file_writer, password)) throw new Exceptions.UnexpectedError();
+    return new Blob(buffer);
+}

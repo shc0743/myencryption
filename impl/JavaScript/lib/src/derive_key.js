@@ -1,8 +1,10 @@
-import { hexlify } from "./binascii.js";
+import { hexlify, unhexlify } from "./binascii.js";
 import { get_random_bytes, get_random_uint8_number } from "./random.js";
-import { str_encode } from "./str.js";
+import { str_decode, str_encode } from "./str.js";
 import * as Exceptions from './exceptions.js';
 import { scrypt } from './scrypt-layer/entrance.js';
+import { decrypt_data } from "./encrypt_data.js";
+import { GetFileVersion, ENCRYPTION_FILE_VER_1_1_0, PADDING_SIZE, CheckAlgorithm, ENCRYPTION_FILE_VER_1_2_10020 } from "./internal-util.js";
 
 export const deriveKey__phrases = ['Furina', 'Neuvillette', 'Venti', 'Nahida', 'Kinich', 'Kazuha'];
 /**
@@ -48,6 +50,61 @@ export async function derive_key(key, iv, phrase = null, N = null, salt = null, 
     const derived_key = await scrypt(str_encode(keyInput), salt, N, r, p, dklen)
 
     return ({ derived_key, parameter, N });
+}
+
+
+/**
+ * Derive a key for a file.
+ * @param {(start, end) => Promise<Uint8Array>} file_reader 
+ * @param {string} user_key 
+ */
+export async function derive_key_for_file(file_reader, user_key) {
+    let read_pos = 16 + 4;
+    const version = await GetFileVersion(file_reader);
+
+    if (version === ENCRYPTION_FILE_VER_1_1_0) {
+        throw new Exceptions.NotSupportedException("Deriving a key for V1.1 files is not supported");
+    }
+    if (version !== ENCRYPTION_FILE_VER_1_2_10020) {
+        throw new Exceptions.EncryptionVersionMismatchException();
+    }
+
+    const ekey_len = new DataView((await file_reader(read_pos, read_pos + 4)).buffer).getUint32(0, true);
+    const ekey = str_decode(await file_reader(read_pos + 4, read_pos + 4 + ekey_len));
+
+    read_pos += PADDING_SIZE;
+    
+    if (ekey_len > PADDING_SIZE) {
+        throw new Exceptions.InternalError("(Internal Error) This should not happen. Contact the application developer.");
+    }
+        
+    // 解密主密钥
+    const key = await decrypt_data(ekey, user_key);
+
+    // 读取头部JSON长度
+    const json_len_bytes = await file_reader(read_pos, read_pos + 4);
+    const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
+    read_pos += 4;
+
+    // 解析头部JSON
+    const header_json = JSON.parse(
+        str_decode(await file_reader(read_pos, read_pos + json_len))
+    );
+    read_pos += json_len;
+
+    // 提取派生参数
+    const header_version = header_json.v;
+    if (!([5.5].includes(header_version))) throw new Exceptions.EncryptionVersionMismatchException();
+    const [phrase, salt_hex] = header_json.parameter.split(':');
+    const salt = unhexlify(salt_hex);
+    const iv4key = unhexlify(header_json.iv);
+    const N = header_json.N;
+    const algorithm = header_json.a;
+
+    // 判断是否支持的加密算法
+    CheckAlgorithm(algorithm);
+
+    return ((await derive_key(key, iv4key, phrase, N, salt)).derived_key);
 }
 
 
