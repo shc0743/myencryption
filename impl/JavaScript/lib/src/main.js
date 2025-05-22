@@ -2,7 +2,7 @@ import { derive_key, scrypt, scrypt_hex, derive_key_for_file } from "./derive_ke
 import { encrypt_data, decrypt_data } from "./encrypt_data.js";
 import { encrypt_file, decrypt_file, encrypt_blob, decrypt_blob } from "./encrypt_file.js";
 import { export_master_key, change_file_password } from "./key_management.js";
-import { crypt_context_create, crypt_context_destroy } from "./context.js";
+import { crypt_context_create, crypt_context_destroy, CryptContext } from "./context.js";
 import { InputStream, decrypt_stream_init, decrypt_stream } from "./stream.js";
 import { hexlify, unhexlify } from "./binascii.js";
 import { get_random_bytes, get_random_int8_number, get_random_uint8_number } from "./random.js";
@@ -43,6 +43,7 @@ export {
     InputStream,
     Exceptions,
     Wrappers,
+    CryptContext,
     VERSION,
     ENCRYPTION_FILE_VER_1_1_0,
     ENCRYPTION_FILE_VER_1_2_10020,

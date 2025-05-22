@@ -45,6 +45,13 @@ declare module "simple-data-crypto" {
     export function get_random_bytes(count: number): Uint8Array;
     export function get_random_int8_number(): number;
     export function get_random_uint8_number(): number;
+
+    /**
+     * Derive a key for a file.
+     */
+    export async function derive_key_for_file(
+        file_reader: (start : number, end : number) => Promise<Uint8Array>,
+        user_key: string) : Promise<Uint8Array>;
         
     /**
      * Encrypt data.
@@ -76,6 +83,8 @@ declare module "simple-data-crypto" {
         | Exceptions.InternalError
         | Exceptions.CannotDecryptException
     }
+    export async function encrypt_blob(blob: Blob, password: string): Promise<Blob>;
+    export async function decrypt_blob(blob: Blob, password: string): Promise<Blob>;
     
     type FileReader = (start: number, end: number) => Promise<Uint8Array>;
     type FileWriter = (data: Uint8Array) => Promise<void> | void;
@@ -187,7 +196,7 @@ declare module "simple-data-crypto" {
         | Error | Exceptions.InvalidParameterException
     };
 
-    export interface DecryptStreamInitOptions {
+    interface DecryptStreamInitOptions {
         /**
          * Set if the cache is enabled.
          * @default true

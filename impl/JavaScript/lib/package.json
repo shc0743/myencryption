@@ -1,6 +1,6 @@
 {
     "name": "simple-data-crypto",
-    "version": "1.56.0",
+    "version": "1.56.1",
     "description": "A comprehensive encryption library providing simple tools for data and file encryption/decryption with modern cryptographic standards, works well with node and build tools.",
     "main": "src/main.js",
     "type": "module",
@@ -63,7 +63,9 @@
     },
     "homepage": "https://github.com/shc0743/simple-data-crypto#readme",
     "devDependencies": {
-        "esbuild": "^0.25.3"
+        "acorn": "^8.14.1",
+        "esbuild": "^0.25.3",
+        "typescript": "^5.8.3"
     },
     "dependencies": {
         "scrypt-js": "^3.0.1"
