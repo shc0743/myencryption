@@ -1528,7 +1528,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.0 Package/1.56.0";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.2 Package/1.56.2";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,
