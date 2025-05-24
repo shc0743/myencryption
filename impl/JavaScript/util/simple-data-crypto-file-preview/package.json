@@ -1,0 +1,17 @@
+{
+  "name": "simple-data-crypto-file-preview",
+  "version": "1.0.0",
+  "description": "**Warning**: This package is *not* in `registry.npmjs.org`",
+  "license": "MIT",
+  "author": "chcs1013",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "common-file-preview": "^5.6.5",
+    "play-video-streamed": "^5.6.2",
+    "simple-data-crypto": "^1.56.2"
+  }
+}
