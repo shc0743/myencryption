@@ -10,19 +10,20 @@ import { PADDING_SIZE, END_IDENTIFIER, END_MARKER, TAIL_BLOCK_MARKER, FILE_END_M
 
 
 export class InputStream {
-    #reader = null;
+    /** @type {((start: number, end: number, signal?: AbortSignal) => Promise<Uint8Array>) | null} */
+    #reader;
     #cache = {
-        position: null,
-        end: null,
-        data: null,
+        position: 0,
+        end: 0,
+        /** @type {?Uint8Array} */ data: null,
     };
-    #size = null;
+    #size;
     get [Symbol.toStringTag]() {
         return 'Stream';
     }
 
     /**
-     * @param {function(number, number, AbortSignal): Promise<Uint8Array>} reader The reader function
+     * @param {(start: number, end: number, signal?: AbortSignal) => Promise<Uint8Array>} reader The reader function
      * @param {number} size The size of the stream
      */
     constructor(reader, size) {
@@ -57,10 +58,10 @@ export class InputStream {
         // normalize parameters
         if (start < 0) throw new Exceptions.InvalidParameterException('Stream: Invalid start position');
         if (end > this.#size) end = this.#size;
-        if (suggestion_end > this.#size) suggestion_end = this.#size;
+        if (suggestion_end != null && suggestion_end > this.#size) suggestion_end = this.#size;
 
         this.#abort_controller = abort;
-        if (suggestion_end) {
+        if (suggestion_end != null && suggestion_end !== 0) {
             // cache policy
             const data = await this.#reader(start, suggestion_end, abort?.signal);
             this.#abort_controller = null;
@@ -82,7 +83,8 @@ export class InputStream {
     }
 
     purge() {
-        this.#cache.position = this.#cache.data = this.#cache.end = null;
+        this.#cache.position = this.#cache.end = 0;
+        this.#cache.data = null;
     }
 
     close() {
@@ -280,11 +282,11 @@ export async function decrypt_stream(ctx, bytes_start, bytes_end, abort) {
             return data;
         }
         catch (e) {
-            if (!e) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
+            if (!e || !(e instanceof DOMException)) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
             const name = e.name;
             if (name === 'InvalidAccessError') throw new Exceptions.InvalidParameterException('InvalidAccessError.', { cause: e });
             if (name === 'OperationError') throw new Exceptions.CannotDecryptException('Cannot decrypt. Did you provide the correct password?', { cause: e });
-            if (!e) throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
+            throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
         }
     };
 

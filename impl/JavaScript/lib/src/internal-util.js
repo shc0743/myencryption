@@ -33,13 +33,14 @@ export function nextTick() {
 
 /**
  * @param {string} major_version
- * @param {number} [version_marker]
+ * @param {number|null} version_marker
  */
-export function normalize_version(major_version, version_marker) {
+export function normalize_version(major_version, version_marker = null) {
     if (!major_version) return `Unknown Version`;
-    if (String(major_version) === '1.1') version_marker = null;
+    let vm = String(version_marker);
+    if (String(major_version) === '1.1') vm = 'null';
     if (!version_marker) return `${major_version}/0`;
-    return `${major_version}/${version_marker}`;
+    return `${major_version}/${vm}`;
 }
 
 // versions

@@ -88,7 +88,7 @@ declare module "simple-data-crypto" {
     
     type FileReader = (start: number, end: number) => Promise<Uint8Array>;
     type FileWriter = (data: Uint8Array) => Promise<void> | void;
-    type ProgressCallback = (progress: number, total: number) => void;
+    type ProgressCallback = (progress: number) => void;
 
     /**
      * Encrypt file
@@ -258,7 +258,7 @@ declare module "simple-data-crypto" {
         
     export class InputStream {
         constructor(
-            reader: (start: number, end: number, signal: AbortSignal) => Promise<Uint8Array>,
+            reader: (start: number, end: number, signal?: AbortSignal) => Promise<Uint8Array>,
             size: number
         );
 

@@ -17,6 +17,8 @@ import * as Exceptions from './exceptions.js';
  * @returns String exported key
  */
 export async function export_master_key(file_head, current_key, export_key) {
+    if (!(file_head instanceof Blob)) throw new Exceptions.InvalidParameterException();
+    if (typeof current_key !== 'string' || typeof export_key !== 'string') throw new Exceptions.InvalidParameterException();
     if (file_head.size < (1024 + 16 + 4)) throw new Exceptions.BadDataException('Data not enough');
 
     // Verify file header
@@ -48,7 +50,9 @@ export async function export_master_key(file_head, current_key, export_key) {
 
 
 async function change_file_password_1_1_0(file_head, current_key, new_key) {
-    if (file_head.size < (1024 + 16 + 4)) throw new Error('Data not enough');
+    if (!(file_head instanceof Blob)) throw new Exceptions.InvalidParameterException();
+    if (typeof current_key !== 'string' || typeof new_key !== 'string') throw new Exceptions.InvalidParameterException();
+    if (file_head.size < (1024 + 16 + 4)) throw new Exceptions.BadDataException('Data not enough');
 
     // Verify file header
     const headerBlob = file_head.slice(0, 16);
@@ -92,7 +96,9 @@ async function change_file_password_1_1_0(file_head, current_key, new_key) {
  * @throws {Error} If the file header is invalid or the file size is not enough.
  */
 export async function change_file_password(file_head, current_key, new_key) {
-    if (file_head.size < (1024 + 16 + 4)) throw new Error('Data not enough');
+    if (!(file_head instanceof Blob)) throw new Exceptions.InvalidParameterException();
+    if (typeof current_key !== 'string' || typeof new_key !== 'string') throw new Exceptions.InvalidParameterException();
+    if (file_head.size < (1024 + 16 + 4)) throw new Exceptions.BadDataException('Data not enough');
 
     // Verify file header
     const version = await GetFileVersion(async (start, end) => {

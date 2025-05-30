@@ -91,6 +91,7 @@ __export(exceptions_exports, {
   CryptContextReusedException: () => CryptContextReusedException,
   DangerousEncryptionAlgorithmException: () => DangerousEncryptionAlgorithmException,
   DataError: () => DataError,
+  DeprecationException: () => DeprecationException,
   EncryptionAlgorithmNotSupportedException: () => EncryptionAlgorithmNotSupportedException,
   EncryptionError: () => EncryptionError,
   EncryptionVersionMismatchException: () => EncryptionVersionMismatchException,
@@ -114,195 +115,351 @@ __export(exceptions_exports, {
   UnexpectedError: () => UnexpectedError,
   UnexpectedFailureInChunkDecryptionException: () => UnexpectedFailureInChunkDecryptionException,
   UserException: () => UserException,
-  VersionSystemError: () => VersionSystemError
+  VersionSystemError: () => VersionSystemError,
+  raise: () => raise
 });
 var LibraryError = class extends Error {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "Library Error", additional = void 0) {
     super(message, additional);
     this.name = "LibraryError";
   }
 };
+function raise(error) {
+  throw error;
+}
 var EncryptionError = class extends LibraryError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "Encryption Error", additional = void 0) {
     super(message, additional);
     this.name = "EncryptionError";
   }
 };
 var NetworkError = class extends LibraryError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(Network Error)", additional = void 0) {
     super(message, additional);
     this.name = "NetworkError";
   }
 };
 var ExpectedError = class extends EncryptionError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(Expected Error)", additional = void 0) {
     super(message, additional);
     this.name = "ExpectedError";
   }
 };
 var RuntimeException = class extends EncryptionError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(Runtime Error)", additional = void 0) {
     super(message, additional);
     this.name = "RuntimeException";
   }
 };
 var UnexpectedError = class extends RuntimeException {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(Unexpected Error)", additional = void 0) {
     super(message, additional);
     this.name = "UnexpectedError";
   }
 };
 var InternalError = class extends UnexpectedError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(Internal Error)", additional = void 0) {
     super(message, additional);
     this.name = "InternalError";
   }
 };
 var InputError = class extends RuntimeException {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(Input Error)", additional = void 0) {
     super(message, additional);
     this.name = "InputError";
   }
 };
 var ParameterError = class extends InputError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(Data Error)", additional = void 0) {
     super(message, additional);
     this.name = "ParameterError";
   }
 };
 var DataError = class extends InputError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(Data Error)", additional = void 0) {
     super(message, additional);
     this.name = "DataError";
   }
 };
 var UserException = class extends RuntimeException {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(The end user has a fault that caused the exception. This is not code bug.)", additional = void 0) {
     super(message, additional);
     this.name = "UserException";
   }
 };
 var VersionSystemError = class extends DataError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "(Version System Error)", additional = void 0) {
     super(message, additional);
     this.name = "VersionSystemError";
   }
 };
 var InvalidParameterException = class extends ParameterError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "The parameter provided is invalid.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidParameterException";
   }
 };
 var BadDataException = class extends DataError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "The data is bad.", additional = void 0) {
     super(message, additional);
     this.name = "BadDataException";
   }
 };
 var InvalidScryptParameterException = class extends ParameterError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "The N, r, or p is not valid or out of range.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidScryptParameterException";
   }
 };
 var EncryptionVersionMismatchException = class extends VersionSystemError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "The version of the encryption library doesn't match.", additional = void 0) {
     super(message, additional);
     this.name = "EncryptionVersionMismatchException";
   }
 };
 var InvalidFileFormatException = class extends DataError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "The file format is invalid.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidFileFormatException";
   }
 };
 var IVException = class extends InternalError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "IV Exception.", additional = void 0) {
     super(message, additional);
     this.name = "IVException";
   }
 };
 var FileCorruptedException = class extends DataError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "File is corrupted.", additional = void 0) {
     super(message, additional);
     this.name = "FileCorruptedException";
   }
 };
 var InvalidEndMarkerException = class extends DataError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "The end marker is invalid.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidEndMarkerException";
   }
 };
 var CannotDecryptException = class extends UserException {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "Cannot decrypt", additional = void 0) {
     super(message, additional);
     this.name = "CannotDecryptException";
   }
 };
 var UnexpectedFailureInChunkDecryptionException = class extends UnexpectedError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "An unexpected failure occurred while decrypting the chunk. The file may be corrupted.", additional = void 0) {
     super(message, additional);
     this.name = "UnexpectedFailureInChunkDecryptionException";
   }
 };
 var CryptContextReusedException = class extends ParameterError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "Not allowed to reuse a crypt context.", additional = void 0) {
     super(message, additional);
     this.name = "CryptContextReusedException";
   }
 };
 var NotSupportedException = class extends InputError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "Operation not supported", additional = void 0) {
     super(message, additional);
     this.name = "NotSupportedException";
+  }
+};
+var DeprecationException = class extends InputError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
+  constructor(message = "Trying to use a deprecated feature.", additional = void 0) {
+    super(message, additional);
+    this.name = "DeprecationException";
   }
 };
 var EndOfFileException = class extends ExpectedError {
   constructor(message = "End of File", additional = void 0) {
     super(message, additional);
     this.name = "EndOfFileException";
+    if (typeof process !== "undefined" && false) return;
+    globalThis.console.warn(
+      "%c[npm::simple-data-crypto] %c[EndOfFileException] %cDEPRECATED!! %cDeprecated and will be removed in the next MAJOR version. See %csrc/exceptions.js%c for more information.\n%cNote: %cThis %cdoes not%c indicate the package is deprecated. Instead, it indicates that your code uses the %cdeprecated%c class %cEndOfFileException%c. Fix your code to suppress this warning.",
+      "color: #007700",
+      "color: #570263",
+      "color: red; font-weight: bold;",
+      "",
+      "font-weight: bold;",
+      "",
+      "font-weight: bold; color: #0000ff",
+      "",
+      "color: red; font-weight: bold;",
+      "",
+      "font-style: italic",
+      "",
+      "color: #570263",
+      ""
+    );
   }
 };
 var CryptContextNotInitedException = class extends ParameterError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "Crypt context is not initialized.", additional = void 0) {
     super(message, additional);
     this.name = "CryptContextNotInitedException";
   }
 };
 var InvalidCryptContextTypeException = class extends ParameterError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "Invalid crypt context type.", additional = void 0) {
     super(message, additional);
     this.name = "InvalidCryptContextTypeException";
   }
 };
 var CryptContextReleasedException = class extends ParameterError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "Crypt context has been released.", additional = void 0) {
     super(message, additional);
     this.name = "CryptContextReleasedException";
   }
 };
 var OperationNotPermittedException = class extends ParameterError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "Operation not permitted.", additional = void 0) {
     super(message, additional);
     this.name = "OperationNotPermittedException";
   }
 };
 var EncryptionAlgorithmNotSupportedException = class extends DataError {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "The specified encryption algorithm is not supported.", additional = void 0) {
     super(message, additional);
     this.name = "EncryptionAlgorithmNotSupportedException";
   }
 };
 var ChaCha20NotSupportedException = class extends EncryptionAlgorithmNotSupportedException {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "ChaCha20 is not supported yet.", additional = void 0) {
     super(message, additional);
     this.name = "ChaCha20NotSupportedException";
   }
 };
 var DangerousEncryptionAlgorithmException = class extends EncryptionAlgorithmNotSupportedException {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
   constructor(message = "The specified encryption algorithm is DANGEROUS.", additional = void 0) {
     super(message, additional);
     this.name = "DangerousEncryptionAlgorithmException";
@@ -469,6 +626,10 @@ var END_MARKER = [
   170
 ];
 var FILE_END_MARKER = [255, 253, 240, 16, 19, 208, 18, 24, 85, 170];
+var POWER_2_64 = 2n ** 64n;
+if (POWER_2_64 !== BigInt("18446744073709551616")) {
+  throw new UnexpectedError("POWER_2_64 is not 2^64");
+}
 var timerproc = typeof process === "undefined" ? requestAnimationFrame : (
   // browser
   setTimeout
@@ -476,11 +637,12 @@ var timerproc = typeof process === "undefined" ? requestAnimationFrame : (
 function nextTick2() {
   return new Promise((r) => timerproc(r));
 }
-function normalize_version(major_version, version_marker) {
+function normalize_version(major_version, version_marker = null) {
   if (!major_version) return `Unknown Version`;
-  if (String(major_version) === "1.1") version_marker = null;
+  let vm = String(version_marker);
+  if (String(major_version) === "1.1") vm = "null";
   if (!version_marker) return `${major_version}/0`;
-  return `${major_version}/${version_marker}`;
+  return `${major_version}/${vm}`;
 }
 var ENCRYPTION_FILE_VER_1_1_0 = normalize_version("1.1");
 var ENCRYPTION_FILE_VER_1_2_10020 = normalize_version("1.2", 10020);
@@ -620,6 +782,7 @@ async function decrypt_data(message_encrypted, key) {
   const ciphertext = encrypted_data.slice(12, -16);
   const tag = encrypted_data.slice(-16);
   const derived_key = typeof key === "string" ? (await derive_key(key, iv, phrase, N, salt)).derived_key : key;
+  if (!(derived_key instanceof Uint8Array)) throw new InvalidParameterException("The key is not valid.");
   const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
   try {
     const decrypted_data = await crypto.subtle.decrypt(
@@ -636,11 +799,11 @@ async function decrypt_data(message_encrypted, key) {
       throw new OperationNotPermittedException("The ability to directly decrypt binary data has been removed in the new version. If you have encrypted binary data, please recover it using the old version.");
     }
   } catch (e) {
-    if (!e) throw new InternalError(`Internal error.`, { cause: e });
+    if (!e || !(e instanceof DOMException)) throw new InternalError(`Internal error.`, { cause: e });
     const name = e.name;
     if (name === "InvalidAccessError") throw new InvalidParameterException("InvalidAccessError.", { cause: e });
     if (name === "OperationError") throw new CannotDecryptException("Cannot decrypt. Did you provide the correct password?", { cause: e });
-    if (!e) throw new InternalError(`Unexpected error.`, { cause: e });
+    throw new InternalError(`Unexpected error.`, { cause: e });
   }
 }
 
@@ -648,9 +811,12 @@ async function decrypt_data(message_encrypted, key) {
 var deriveKey__phrases = ["Furina", "Neuvillette", "Venti", "Nahida", "Kinich", "Kazuha"];
 async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
   if (N === null) N = 262144;
-  if (typeof N !== "number" || N > 2097152) {
+  if (typeof N !== "number" || N > 2097152 || r < 1 || p < 1 || typeof r !== "number" || typeof p !== "number" || typeof dklen !== "number") {
     throw new InvalidScryptParameterException();
   }
+  if (typeof key !== "string") throw new InvalidParameterException("key must be a string");
+  if (!(iv instanceof Uint8Array)) throw new InvalidParameterException("iv must be a Uint8Array");
+  if (phrase !== null && typeof phrase !== "string") throw new InvalidParameterException("phrase must be a string");
   if (!salt) {
     salt = get_random_bytes(64);
   }
@@ -743,10 +909,10 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
   new DataView(chunkSizeBuffer).setBigUint64(0, BigInt(chunk_size), true);
   await file_writer(new Uint8Array(chunkSizeBuffer));
   let total_bytes = 0;
-  let nonce_counter = 1;
+  let nonce_counter = BigInt(1);
   let position = 0;
   const nonce_counter_start = new ArrayBuffer(8);
-  new DataView(nonce_counter_start).setBigUint64(0, BigInt(nonce_counter), true);
+  new DataView(nonce_counter_start).setBigUint64(0, nonce_counter, true);
   await file_writer(new Uint8Array(nonce_counter_start));
   callback?.(0);
   const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["encrypt"]);
@@ -756,10 +922,10 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
     if (chunk.length === 0) break;
     const isFinalChunk = chunk.length < chunk_size;
     const iv = new ArrayBuffer(12);
-    if (nonce_counter >= 2 ** 64 || nonce_counter >= Number.MAX_SAFE_INTEGER) {
+    if (nonce_counter >= POWER_2_64) {
       throw new IVException("nonce_counter exceeded the maximum value.");
     }
-    new DataView(iv).setBigUint64(4, BigInt(nonce_counter), true);
+    new DataView(iv).setBigUint64(4, nonce_counter, true);
     nonce_counter++;
     if (isFinalChunk) {
       await file_writer(new Uint8Array(TAIL_BLOCK_MARKER));
@@ -883,11 +1049,11 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   const algorithm = header_json.a;
   CheckAlgorithm(algorithm);
   const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
-  let nonce_counter = Number(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
+  let nonce_counter = BigInt(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
   read_pos += 16;
   callback?.(0);
   await nextTick2();
-  const derived_key = typeof user_key === "string" ? (await derive_key(key, iv4key, phrase, N, salt)).derived_key : user_key;
+  const derived_key = typeof user_key === "string" ? key ? (await derive_key(key, iv4key, phrase, N, salt)).derived_key : raise(new InternalError()) : user_key;
   let total_bytes = 0, is_final_chunk = false;
   const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
   while (true) {
@@ -927,11 +1093,11 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
       await file_writer(new Uint8Array(decrypted));
       total_bytes += decrypted.byteLength;
     } catch (e) {
-      if (!e) throw new InternalError(`Internal error.`, { cause: e });
+      if (!e || !(e instanceof DOMException)) throw new InternalError(`Internal error.`, { cause: e });
       const name = e.name;
       if (name === "InvalidAccessError") throw new InvalidParameterException("InvalidAccessError.", { cause: e });
       if (name === "OperationError") throw new UnexpectedFailureInChunkDecryptionException(void 0, { cause: e });
-      if (!e) throw new InternalError(`Unexpected error.`, { cause: e });
+      throw new InternalError(`Unexpected error.`, { cause: e });
     }
     if (callback) callback(total_bytes);
   }
@@ -948,20 +1114,26 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
 async function encrypt_blob(blob, password) {
   const buffer = [];
   const file_reader = async (start, end) => new Uint8Array(await blob.slice(start, end).arrayBuffer());
-  const file_writer = (data) => buffer.push(data);
+  const file_writer = async (data) => {
+    buffer.push(data);
+  };
   if (!await encrypt_file(file_reader, file_writer, password)) throw new UnexpectedError();
   return new Blob(buffer);
 }
 async function decrypt_blob(blob, password) {
   const buffer = [];
   const file_reader = async (start, end) => new Uint8Array(await blob.slice(start, end).arrayBuffer());
-  const file_writer = (data) => buffer.push(data);
+  const file_writer = async (data) => {
+    buffer.push(data);
+  };
   if (!await decrypt_file(file_reader, file_writer, password)) throw new UnexpectedError();
   return new Blob(buffer);
 }
 
 // src/key_management.js
 async function export_master_key(file_head, current_key, export_key) {
+  if (!(file_head instanceof Blob)) throw new InvalidParameterException();
+  if (typeof current_key !== "string" || typeof export_key !== "string") throw new InvalidParameterException();
   if (file_head.size < 1024 + 16 + 4) throw new BadDataException("Data not enough");
   const version = await GetFileVersion(async (start, end) => {
     return new Uint8Array(await file_head.slice(start, end).arrayBuffer());
@@ -982,7 +1154,9 @@ async function export_master_key(file_head, current_key, export_key) {
   throw new EncryptionVersionMismatchException();
 }
 async function change_file_password_1_1_0(file_head, current_key, new_key) {
-  if (file_head.size < 1024 + 16 + 4) throw new Error("Data not enough");
+  if (!(file_head instanceof Blob)) throw new InvalidParameterException();
+  if (typeof current_key !== "string" || typeof new_key !== "string") throw new InvalidParameterException();
+  if (file_head.size < 1024 + 16 + 4) throw new BadDataException("Data not enough");
   const headerBlob = file_head.slice(0, 16);
   const header = await headerBlob.text();
   if (header !== "MyEncryption/1.1") {
@@ -1004,7 +1178,9 @@ async function change_file_password_1_1_0(file_head, current_key, new_key) {
   return new Blob(new_ekey_parts);
 }
 async function change_file_password(file_head, current_key, new_key) {
-  if (file_head.size < 1024 + 16 + 4) throw new Error("Data not enough");
+  if (!(file_head instanceof Blob)) throw new InvalidParameterException();
+  if (typeof current_key !== "string" || typeof new_key !== "string") throw new InvalidParameterException();
+  if (file_head.size < 1024 + 16 + 4) throw new BadDataException("Data not enough");
   const version = await GetFileVersion(async (start, end) => {
     return new Uint8Array(await file_head.slice(start, end).arrayBuffer());
   });
@@ -1062,18 +1238,20 @@ async function crypt_context_destroy(ctx) {
 
 // src/stream.js
 var InputStream = class {
-  #reader = null;
+  /** @type {((start: number, end: number, signal?: AbortSignal) => Promise<Uint8Array>) | null} */
+  #reader;
   #cache = {
-    position: null,
-    end: null,
+    position: 0,
+    end: 0,
+    /** @type {?Uint8Array} */
     data: null
   };
-  #size = null;
+  #size;
   get [Symbol.toStringTag]() {
     return "Stream";
   }
   /**
-   * @param {function(number, number, AbortSignal): Promise<Uint8Array>} reader The reader function
+   * @param {(start: number, end: number, signal?: AbortSignal) => Promise<Uint8Array>} reader The reader function
    * @param {number} size The size of the stream
    */
   constructor(reader, size) {
@@ -1102,9 +1280,9 @@ var InputStream = class {
     }
     if (start < 0) throw new InvalidParameterException("Stream: Invalid start position");
     if (end > this.#size) end = this.#size;
-    if (suggestion_end > this.#size) suggestion_end = this.#size;
+    if (suggestion_end != null && suggestion_end > this.#size) suggestion_end = this.#size;
     this.#abort_controller = abort;
-    if (suggestion_end) {
+    if (suggestion_end != null && suggestion_end !== 0) {
       const data2 = await this.#reader(start, suggestion_end, abort?.signal);
       this.#abort_controller = null;
       this.#cache.position = start;
@@ -1120,7 +1298,8 @@ var InputStream = class {
     this.#abort_controller?.abort();
   }
   purge() {
-    this.#cache.position = this.#cache.data = this.#cache.end = null;
+    this.#cache.position = this.#cache.end = 0;
+    this.#cache.data = null;
   }
   close() {
     this.#reader = null;
@@ -1250,11 +1429,11 @@ async function decrypt_stream(ctx, bytes_start, bytes_end, abort) {
       }
       return data;
     } catch (e) {
-      if (!e) throw new InternalError(`Internal error.`, { cause: e });
+      if (!e || !(e instanceof DOMException)) throw new InternalError(`Internal error.`, { cause: e });
       const name = e.name;
       if (name === "InvalidAccessError") throw new InvalidParameterException("InvalidAccessError.", { cause: e });
       if (name === "OperationError") throw new CannotDecryptException("Cannot decrypt. Did you provide the correct password?", { cause: e });
-      if (!e) throw new InternalError(`Unexpected error.`, { cause: e });
+      throw new InternalError(`Unexpected error.`, { cause: e });
     }
   };
   let EOFbit = false;
@@ -1284,7 +1463,8 @@ var Internals = {
   GetFileVersion,
   GetFileInfo,
   GetFileChunkSize,
-  derive_key_default_phrases_list: deriveKey__phrases
+  derive_key_default_phrases_list: deriveKey__phrases,
+  POWER_2_64
 };
 
 // src/util-wrappers.js
@@ -1317,10 +1497,7 @@ async function createReaderForRemoteObject(url) {
   };
 }
 async function createWriterForFileSystemHandle(fileSystemHandle) {
-  const writable = await fileSystemHandle.createWritable();
-  return async (data) => {
-    await writable.write(data);
-  };
+  throw new DeprecationException();
 }
 async function createWriterForMemoryBuffer(bufferOutput) {
   return async (data) => {
@@ -1329,7 +1506,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.2 Package/1.56.2";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.3 Package/1.56.3";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,

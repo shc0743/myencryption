@@ -18,9 +18,10 @@ export { normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_1
 
 /**
  * 加密文件
- * @param {Function} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
- * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(data: Uint8Array) => Promise<void>} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {string} user_key - 用户密钥
+ * @param {((progress: number) => void)|null} callback - 可选回调函数，用于报告加密进度
  * @param {string|null} phrase - 可选短语，用于密钥派生
  * @param {number|null} N - scrypt参数N
  * @param {number} chunk_size - 分块大小，默认为32MiB
@@ -161,6 +162,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
  * @deprecated 仅供兼容1.1版本使用。
  * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
  * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
+ * @param {((progress: number) => void)|null} callback - 可选回调函数，用于报告加密进度
  * @param {string} user_key - 用户提供的解密密钥
  * @param {Function} [callback=null] - 进度回调函数
  * @returns {Promise<boolean>} 返回解密是否成功
@@ -264,13 +266,14 @@ export async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, c
 }
 /**
  * 解密文件
- * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
- * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(data: Uint8Array) => Promise<void>} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {string|Uint8Array} user_key - 用户提供的解密密钥（字符串）或者派生后的密钥（Uint8Array）
- * @param {Function} [callback=null] - 进度回调函数
+ * @param {((progress: number) => void)|null} callback - 可选回调函数，用于报告加密进度
  * @returns {Promise<boolean>} 返回解密是否成功
  */
 export async function decrypt_file(file_reader, file_writer, user_key, callback = null) {
+    // 考虑到JavaScript一般不会处理2^53数量级的文件，我们对read_pos使用number而不是bigint
     let read_pos = 16 + 4;
     const version = await GetFileVersion(file_reader);
 
@@ -322,9 +325,9 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
     // 对应加密时，需要提供一个iv，我们把iv取回来，重新生成密钥（所有数据块的密钥是相同的）
     callback?.(0);
     await nextTick();
-    const derived_key = (typeof user_key === 'string') ?
-        ((await derive_key(key, iv4key, phrase, N, salt)).derived_key) :
-        user_key;
+    const derived_key = (typeof user_key === 'string') ? (
+        key ? ((await derive_key(key, iv4key, phrase, N, salt)).derived_key) : Exceptions.raise(new Exceptions.InternalError())
+    ) : user_key;
 
     let total_bytes = 0, is_final_chunk = false;
     // 分块解密循环
@@ -381,11 +384,11 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
             await file_writer(new Uint8Array(decrypted));
             total_bytes += decrypted.byteLength;
         } catch (e) {
-            if (!e) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
+            if (!e || !(e instanceof DOMException)) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
             const name = e.name;
             if (name === 'InvalidAccessError') throw new Exceptions.InvalidParameterException('InvalidAccessError.', { cause: e });
             if (name === 'OperationError') throw new Exceptions.UnexpectedFailureInChunkDecryptionException(undefined, { cause: e });
-            if (!e) throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
+            throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
         }
         if (callback) callback(total_bytes);
     }
@@ -411,8 +414,8 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
  */
 export async function encrypt_blob(blob, password) {
     const buffer = [];
-    const file_reader = async (start, end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
-    const file_writer = (data) => buffer.push(data);
+    const file_reader = async (/** @type {number} */ start, /** @type {number} */ end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
+    const file_writer = async (/** @type {Uint8Array} */ data) => { buffer.push(data) };
     if (!await encrypt_file(file_reader, file_writer, password)) throw new Exceptions.UnexpectedError();
     return new Blob(buffer);
 }
@@ -422,8 +425,8 @@ export async function encrypt_blob(blob, password) {
  */
 export async function decrypt_blob(blob, password) {
     const buffer = [];
-    const file_reader = async (start, end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
-    const file_writer = (data) => buffer.push(data);
+    const file_reader = async (/** @type {number} */ start, /** @type {number} */ end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
+    const file_writer = async (/** @type {Uint8Array} */ data) => { buffer.push(data) };
     if (!await decrypt_file(file_reader, file_writer, password)) throw new Exceptions.UnexpectedError();
     return new Blob(buffer);
 }

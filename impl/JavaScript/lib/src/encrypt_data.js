@@ -5,6 +5,9 @@ import { str_decode, str_encode } from "./str.js";
 import * as Exceptions from './exceptions.js';
 import { CheckAlgorithm } from "./internal-util.js";
 
+/**
+ * @param {string} json
+ */
 function safeparse(json) {
     try {
         return JSON.parse(json);
@@ -16,18 +19,18 @@ function safeparse(json) {
 /**
  * @param {string} message
  * @param {string} key
- * @param {?string} [phrase] phrase
- * @param {number} [N] N
+ * @param {?string} phrase phrase
+ * @param {?number} N N
  */
 export async function encrypt_data(message, key, phrase = null, N = null) {
     // (1) 生成随机IV (12 bytes for GCM)
     const iv = get_random_bytes(12);
 
-    // 派生密钥
+    // (2) 派生密钥
     const { derived_key, parameter, N: N2 } = await derive_key(key, iv, phrase, N);
     N = N2;
 
-    // (4) 加密消息
+    // (3) 导入密钥
     const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
 
     if (typeof message !== "string") {
@@ -36,6 +39,7 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
 
     const alg = "AES-GCM";
 
+    // (4) 加密消息
     const ciphertext = await crypto.subtle.encrypt(
         {
             name: alg,
@@ -97,6 +101,7 @@ export async function decrypt_data(message_encrypted, key) {
     const derived_key = (typeof key === "string") ?
         ((await derive_key(key, iv, phrase, N, salt)).derived_key) :
         (key);
+    if (!(derived_key instanceof Uint8Array)) throw new Exceptions.InvalidParameterException("The key is not valid.");
 
     const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
 
@@ -117,11 +122,11 @@ export async function decrypt_data(message_encrypted, key) {
         }
     }
     catch (e) {
-        if (!e) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
+        if (!e || !(e instanceof DOMException)) throw new Exceptions.InternalError(`Internal error.`, { cause: e });
         const name = e.name;
         if (name === 'InvalidAccessError') throw new Exceptions.InvalidParameterException('InvalidAccessError.', { cause: e });
         if (name === 'OperationError') throw new Exceptions.CannotDecryptException('Cannot decrypt. Did you provide the correct password?', { cause: e });
-        if (!e) throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
+        throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
     }
 }
 

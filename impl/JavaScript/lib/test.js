@@ -195,7 +195,7 @@ if (skip_tests.includes("node-test")) {
 
     unitLog('Test derive a key');
     {
-        const key = new Uint8Array(await new Blob(['lalala12378']).arrayBuffer());
+        const key = 'mykeylalala123'
         const iv = new Uint8Array(await new Blob(['bebebe45609']).arrayBuffer());
         const phrase = 'Furina';
         const dk1 = await derive_key(key, iv, phrase, scN, new Uint8Array(await new Blob([scsalt, 'exex']).arrayBuffer()), scr, scp, scdklen);
@@ -225,9 +225,6 @@ if (skip_tests.includes("node-test")) {
         const str = new Uint8Array(await new Blob(['456789']).arrayBuffer())
         unitAssert((hexlify(str)) === '343536373839');
     }
-
-    // console.info('More tests required -- will be added later')
-    
 }
 
 console.log("--NODE.JS TEST END--\n\nBrowser test:\n");

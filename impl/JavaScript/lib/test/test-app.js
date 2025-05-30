@@ -27,7 +27,8 @@ import {
     scrypt_hex,
     // str_decode,
     // str_encode,
-    unhexlify
+    unhexlify,
+    Wrappers,
 } from 'simple-data-crypto';
 
 console.log('Version: ', VERSION);
@@ -97,6 +98,17 @@ try {
     let decryptedFile = new Blob(buffer);
     let originalText = await srcFile.text();
     let decryptedText = await decryptedFile.text();
+    unitLog('decryptedText=', decryptedText);
+    unitAssert(decryptedText === originalText);
+
+    unitLog("Using a wrapper?");
+    buffer.length = 0;
+    unitAssert(await decrypt_file(
+        await Wrappers.createReaderForLocalFile(encryptedFile),
+        await Wrappers.createWriterForMemoryBuffer(buffer),
+        password));
+    decryptedFile = new Blob(buffer);
+    decryptedText = await decryptedFile.text();
     unitLog('decryptedText=', decryptedText);
     unitAssert(decryptedText === originalText);
 
@@ -190,7 +202,7 @@ export async function scrypt_hex(key, salt, N, r, p, dklen) {
 
 
     unitLog('Test derive a key');
-    const key = new Uint8Array(await new Blob(['lalala12378']).arrayBuffer());
+    const key = '12341234567890'
     const iv = new Uint8Array(await new Blob(['bebebe45609']).arrayBuffer());
     const phrase = 'Furina';
     const dk1 = await derive_key(key, iv, phrase, scN, new Uint8Array(await new Blob([scsalt, 'exex']).arrayBuffer()), scr, scp, scdklen);

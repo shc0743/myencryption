@@ -1,4 +1,5 @@
 import { NetworkError } from "./exceptions.js";
+import * as Exceptions from './exceptions.js';
 
 
 /**
@@ -43,12 +44,10 @@ export async function createReaderForRemoteObject(url) {
 /**
  * Create a file writer for FileSystemFileHandle.
  * @param {FileSystemFileHandle} fileSystemHandle The file handle. Can only be a FileSystemFileHandle (using File System Access API like `window.showOpenFilePicker`)
+ * @deprecated This function is deprecated because it can't close the file handle. Please implement your own writer function. (It is simple!)
  */
 export async function createWriterForFileSystemHandle(fileSystemHandle) {
-    const writable = await fileSystemHandle.createWritable();
-    return async (/** @type {Uint8Array} */ data) => {
-        await writable.write(data);
-    };
+    throw new Exceptions.DeprecationException();
 }
 
 

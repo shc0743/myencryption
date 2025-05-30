@@ -14,15 +14,18 @@ export const deriveKey__phrases = ['Furina', 'Neuvillette', 'Venti', 'Nahida', '
  * @param {?string} phrase 
  * @param {?number} N 
  * @param {?Uint8Array} salt 
- * @param {?number} r 
- * @param {?number} p 
- * @param {?number} dklen 
+ * @param {number} r 
+ * @param {number} p 
+ * @param {number} dklen 
  */
 export async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
     if (N === null) N = 262144;
-    if (typeof N !== "number" || N > 2097152) {
+    if (typeof N !== "number" || N > 2097152 || r < 1 || p < 1 || typeof r !== "number" || typeof p !== "number" || typeof dklen !== "number") {
         throw new Exceptions.InvalidScryptParameterException();
     }
+    if (typeof key !== "string") throw new Exceptions.InvalidParameterException("key must be a string");
+    if (!(iv instanceof Uint8Array)) throw new Exceptions.InvalidParameterException("iv must be a Uint8Array");
+    if (phrase !== null && typeof phrase !== "string") throw new Exceptions.InvalidParameterException("phrase must be a string");
 
     // (2) 生成salt
     if (!salt) {
@@ -55,7 +58,7 @@ export async function derive_key(key, iv, phrase = null, N = null, salt = null, 
 
 /**
  * Derive a key for a file.
- * @param {(start, end) => Promise<Uint8Array>} file_reader 
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader 
  * @param {string} user_key 
  */
 export async function derive_key_for_file(file_reader, user_key) {

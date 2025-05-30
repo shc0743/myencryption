@@ -1,14 +1,30 @@
 // Base Exception Class.
 export class LibraryError extends Error {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'Library Error', additional = undefined) {
         super(message, additional);
         this.name = 'LibraryError';
     }
 }
 
+/**
+ * @param {any} error
+ * @returns {never}
+ */
+export function raise(error) {
+    throw error; 
+}
+
 // Level 1
 
 export class EncryptionError extends LibraryError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'Encryption Error', additional = undefined) {
         super(message, additional);
         this.name = 'EncryptionError';
@@ -16,6 +32,10 @@ export class EncryptionError extends LibraryError {
 }
 
 export class NetworkError extends LibraryError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(Network Error)', additional = undefined) {
         super(message, additional);
         this.name = 'NetworkError';
@@ -25,6 +45,10 @@ export class NetworkError extends LibraryError {
 // Level 2
 
 export class ExpectedError extends EncryptionError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(Expected Error)', additional = undefined) {
         super(message, additional);
         this.name = 'ExpectedError';
@@ -32,6 +56,10 @@ export class ExpectedError extends EncryptionError {
 }
 
 export class RuntimeException extends EncryptionError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(Runtime Error)', additional = undefined) {
         super(message, additional);
         this.name = 'RuntimeException';
@@ -39,6 +67,10 @@ export class RuntimeException extends EncryptionError {
 }
 
 export class UnexpectedError extends RuntimeException {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(Unexpected Error)', additional = undefined) {
         super(message, additional);
         this.name = 'UnexpectedError';
@@ -46,6 +78,10 @@ export class UnexpectedError extends RuntimeException {
 }
 
 export class InternalError extends UnexpectedError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(Internal Error)', additional = undefined) {
         super(message, additional);
         this.name = 'InternalError';
@@ -53,6 +89,10 @@ export class InternalError extends UnexpectedError {
 }
 
 export class InputError extends RuntimeException {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(Input Error)', additional = undefined) {
         super(message, additional);
         this.name = 'InputError';
@@ -60,6 +100,10 @@ export class InputError extends RuntimeException {
 }
 
 export class ParameterError extends InputError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(Data Error)', additional = undefined) {
         super(message, additional);
         this.name = 'ParameterError';
@@ -67,6 +111,10 @@ export class ParameterError extends InputError {
 }
 
 export class DataError extends InputError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(Data Error)', additional = undefined) {
         super(message, additional);
         this.name = 'DataError';
@@ -74,6 +122,10 @@ export class DataError extends InputError {
 }
 
 export class UserException extends RuntimeException {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(The end user has a fault that caused the exception. This is not code bug.)', additional = undefined) {
         super(message, additional);
         this.name = 'UserException';
@@ -83,6 +135,10 @@ export class UserException extends RuntimeException {
 // Level 3
 
 export class VersionSystemError extends DataError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = '(Version System Error)', additional = undefined) {
         super(message, additional);
         this.name = 'VersionSystemError';
@@ -92,6 +148,10 @@ export class VersionSystemError extends DataError {
 // Level 4 -- Detailed Errors
 
 export class InvalidParameterException extends ParameterError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'The parameter provided is invalid.', additional = undefined) {
         super(message, additional);
         this.name = 'InvalidParameterException';
@@ -99,6 +159,10 @@ export class InvalidParameterException extends ParameterError {
 }
 
 export class BadDataException extends DataError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'The data is bad.', additional = undefined) {
         super(message, additional);
         this.name = 'BadDataException';
@@ -106,6 +170,10 @@ export class BadDataException extends DataError {
 }
 
 export class InvalidScryptParameterException extends ParameterError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'The N, r, or p is not valid or out of range.', additional = undefined) {
         super(message, additional);
         this.name = 'InvalidScryptParameterException';
@@ -113,6 +181,10 @@ export class InvalidScryptParameterException extends ParameterError {
 }
 
 export class EncryptionVersionMismatchException extends VersionSystemError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'The version of the encryption library doesn\'t match.', additional = undefined) {
         super(message, additional);
         this.name = 'EncryptionVersionMismatchException';
@@ -120,6 +192,10 @@ export class EncryptionVersionMismatchException extends VersionSystemError {
 }
 
 export class InvalidFileFormatException extends DataError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'The file format is invalid.', additional = undefined) {
         super(message, additional);
         this.name = 'InvalidFileFormatException';
@@ -127,6 +203,10 @@ export class InvalidFileFormatException extends DataError {
 }
 
 export class IVException extends InternalError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'IV Exception.', additional = undefined) {
         super(message, additional);
         this.name = 'IVException';
@@ -134,6 +214,10 @@ export class IVException extends InternalError {
 }
 
 export class FileCorruptedException extends DataError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'File is corrupted.', additional = undefined) {
         super(message, additional);
         this.name = 'FileCorruptedException';
@@ -141,6 +225,10 @@ export class FileCorruptedException extends DataError {
 }
 
 export class InvalidEndMarkerException extends DataError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'The end marker is invalid.', additional = undefined) {
         super(message, additional);
         this.name = 'InvalidEndMarkerException';
@@ -148,6 +236,10 @@ export class InvalidEndMarkerException extends DataError {
 }
 
 export class CannotDecryptException extends UserException {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'Cannot decrypt', additional = undefined) {
         super(message, additional);
         this.name = 'CannotDecryptException';
@@ -155,6 +247,10 @@ export class CannotDecryptException extends UserException {
 }
 
 export class UnexpectedFailureInChunkDecryptionException extends UnexpectedError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'An unexpected failure occurred while decrypting the chunk. The file may be corrupted.', additional = undefined) {
         super(message, additional);
         this.name = 'UnexpectedFailureInChunkDecryptionException';
@@ -162,6 +258,10 @@ export class UnexpectedFailureInChunkDecryptionException extends UnexpectedError
 }
 
 export class CryptContextReusedException extends ParameterError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'Not allowed to reuse a crypt context.', additional = undefined) {
         super(message, additional);
         this.name = 'CryptContextReusedException';
@@ -169,9 +269,24 @@ export class CryptContextReusedException extends ParameterError {
 }
 
 export class NotSupportedException extends InputError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'Operation not supported', additional = undefined) {
         super(message, additional);
         this.name = 'NotSupportedException';
+    }
+}
+
+export class DeprecationException extends InputError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
+    constructor(message = 'Trying to use a deprecated feature.', additional = undefined) {
+        super(message, additional);
+        this.name = 'DeprecationException';
     }
 }
 
@@ -192,6 +307,10 @@ export class EndOfFileException extends ExpectedError {
 }
 
 export class CryptContextNotInitedException extends ParameterError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'Crypt context is not initialized.', additional = undefined) {
         super(message, additional);
         this.name = 'CryptContextNotInitedException';
@@ -199,6 +318,10 @@ export class CryptContextNotInitedException extends ParameterError {
 }
 
 export class InvalidCryptContextTypeException extends ParameterError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'Invalid crypt context type.', additional = undefined) {
         super(message, additional);
         this.name = 'InvalidCryptContextTypeException';
@@ -206,6 +329,10 @@ export class InvalidCryptContextTypeException extends ParameterError {
 }
 
 export class CryptContextReleasedException extends ParameterError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'Crypt context has been released.', additional = undefined) {
         super(message, additional);
         this.name = 'CryptContextReleasedException';
@@ -213,6 +340,10 @@ export class CryptContextReleasedException extends ParameterError {
 }
 
 export class OperationNotPermittedException extends ParameterError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'Operation not permitted.', additional = undefined) {
         super(message, additional);
         this.name = 'OperationNotPermittedException';
@@ -220,6 +351,10 @@ export class OperationNotPermittedException extends ParameterError {
 }
 
 export class EncryptionAlgorithmNotSupportedException extends DataError {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'The specified encryption algorithm is not supported.', additional = undefined) {
         super(message, additional);
         this.name = 'EncryptionAlgorithmNotSupportedException';
@@ -227,6 +362,10 @@ export class EncryptionAlgorithmNotSupportedException extends DataError {
 }
 
 export class ChaCha20NotSupportedException extends EncryptionAlgorithmNotSupportedException {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'ChaCha20 is not supported yet.', additional = undefined) {
         super(message, additional);
         this.name = 'ChaCha20NotSupportedException';
@@ -234,6 +373,10 @@ export class ChaCha20NotSupportedException extends EncryptionAlgorithmNotSupport
 }
 
 export class DangerousEncryptionAlgorithmException extends EncryptionAlgorithmNotSupportedException {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
     constructor(message = 'The specified encryption algorithm is DANGEROUS.', additional = undefined) {
         super(message, additional);
         this.name = 'DangerousEncryptionAlgorithmException';
