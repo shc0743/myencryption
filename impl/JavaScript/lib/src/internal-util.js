@@ -18,6 +18,10 @@ export const END_MARKER = [
     0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA,
 ];
 export const FILE_END_MARKER = [0xFF, 0xFD, 0xF0, 0x10, 0x13, 0xD0, 0x12, 0x18, 0x55, 0xAA];
+export const POWER_2_64 = 2n ** 64n;
+if (POWER_2_64 !== BigInt('18446744073709551616')) {
+    throw new Exceptions.UnexpectedError('POWER_2_64 is not 2^64');
+}
 
 // @ts-ignore
 const timerproc = (typeof process === 'undefined') ?

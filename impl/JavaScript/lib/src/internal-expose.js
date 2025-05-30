@@ -3,6 +3,7 @@ import {
     END_IDENTIFIER, END_MARKER, FILE_END_MARKER,
     nextTick, PADDING_SIZE, TAIL_BLOCK_MARKER,
     GetFileVersion, GetFileInfo, GetFileChunkSize,
+    POWER_2_64,
 } from "./internal-util.js";
 
 const Internals = {
@@ -16,6 +17,7 @@ const Internals = {
     GetFileInfo,
     GetFileChunkSize,
     derive_key_default_phrases_list: deriveKey__phrases,
+    POWER_2_64,
 };
 
 export { Internals };

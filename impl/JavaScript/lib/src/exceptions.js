@@ -175,10 +175,19 @@ export class NotSupportedException extends InputError {
     }
 }
 
+/**
+ * @deprecated No longer use exceptions to change control flow. Now we return empty blob with {eof: true} to indicate the end of file.
+ */
 export class EndOfFileException extends ExpectedError {
     constructor(message = 'End of File', additional = undefined) {
         super(message, additional);
         this.name = 'EndOfFileException';
+        // @ts-ignore
+        if (typeof process !== 'undefined' && process?.env?.NODE_ENV === 'production') return;
+        globalThis.console.warn('%c[npm::simple-data-crypto] %c[EndOfFileException] %cDEPRECATED!! %cDeprecated and will be removed in the next MAJOR version. See %csrc/exceptions.js%c for more information.\n' +
+            '%cNote: %cThis %cdoes not%c indicate the package is deprecated. Instead, it indicates that your code uses the %cdeprecated%c class %cEndOfFileException%c. Fix your code to suppress this warning.',
+            'color: #007700', 'color: #570263', 'color: red; font-weight: bold;', '', 'font-weight: bold;', '', 'font-weight: bold; color: #0000ff', '',
+            'color: red; font-weight: bold;', '', 'font-style: italic', '', 'color: #570263', '');
     }
 }
 

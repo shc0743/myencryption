@@ -12,6 +12,7 @@ import {
     nextTick,
     GetFileVersion,
     CheckAlgorithm,
+    POWER_2_64,
 } from "./internal-util.js";
 export { normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020 };
 
@@ -86,12 +87,12 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     await file_writer(new Uint8Array(chunkSizeBuffer));
 
     let total_bytes = 0; // 用于统计总字节数
-    let nonce_counter = 1;
+    let nonce_counter = BigInt(1);
     let position = 0;
 
     // 写入iv参数
     const nonce_counter_start = new ArrayBuffer(8);
-    new DataView(nonce_counter_start).setBigUint64(0, BigInt(nonce_counter), true);
+    new DataView(nonce_counter_start).setBigUint64(0, nonce_counter, true);
     await file_writer(new Uint8Array(nonce_counter_start));
 
     // 分块加密处理
@@ -108,11 +109,11 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
         // 为每个分块生成新IV (12字节)
         const iv = new ArrayBuffer(12);
         // 确保 IV 唯一
-        if (nonce_counter >= 2 ** 64 || nonce_counter >= Number.MAX_SAFE_INTEGER) {
+        if (nonce_counter >= POWER_2_64) {
             throw new Exceptions.IVException("nonce_counter exceeded the maximum value.");
         }
-        new DataView(iv).setBigUint64(4, BigInt(nonce_counter), true); // 写入8字节计数器
-        nonce_counter++;
+        new DataView(iv).setBigUint64(4, nonce_counter, true); // 写入8字节计数器
+        nonce_counter++; // 计数器加1
 
         if (isFinalChunk) {
             await file_writer(new Uint8Array(TAIL_BLOCK_MARKER));
@@ -315,7 +316,7 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
 
     // 获取chunk size和iv参数
     const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
-    let nonce_counter = Number(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
+    let nonce_counter = BigInt(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
     read_pos += 16;
 
     // 对应加密时，需要提供一个iv，我们把iv取回来，重新生成密钥（所有数据块的密钥是相同的）
