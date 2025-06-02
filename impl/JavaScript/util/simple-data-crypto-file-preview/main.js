@@ -59,7 +59,10 @@ export class HTMLSimpleDataCryptoFilePreviewElement extends HTMLElement {
         if (this.#ctx) {
             throw new Error("already loaded");
         }
-        if (type !== "video") {
+        if (!type.startsWith('video')) {
+            if (size > 128 * 1048576) {
+                throw new Error("file too large");
+            }
             // 其他文件类型当成blob处理
             const blob = new Blob([await fileReader(0, size)]);
             const decryptedBlob = new Blob([await decrypt_blob(blob, password)], { type });
