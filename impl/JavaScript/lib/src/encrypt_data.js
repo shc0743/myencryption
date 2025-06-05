@@ -13,7 +13,7 @@ const crypto = globalThis.crypto; // To avoid the possible security risk
 function safeparse(json) {
     try {
         const r = JSON.parse(json);
-        if (!r || !r.data || !r.phrase || !r.salt || !r.N || !r.v) throw new Exceptions.BadDataException('The message is bad since the JSON is not complete.');
+        if (!r || !r.data || !r.parameter || !r.N || !r.v) throw new Exceptions.BadDataException('The message is bad since the JSON is not complete.');
         return r;
     } catch {
         throw new Exceptions.BadDataException('The message is bad since it is neither a JSON or a new-format ciphertext.');

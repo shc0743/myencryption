@@ -1153,7 +1153,7 @@ var crypto2 = globalThis.crypto;
 function safeparse(json) {
   try {
     const r = JSON.parse(json);
-    if (!r || !r.data || !r.phrase || !r.salt || !r.N || !r.v) throw new BadDataException("The message is bad since the JSON is not complete.");
+    if (!r || !r.data || !r.parameter || !r.N || !r.v) throw new BadDataException("The message is bad since the JSON is not complete.");
     return r;
   } catch {
     throw new BadDataException("The message is bad since it is neither a JSON or a new-format ciphertext.");
@@ -1950,7 +1950,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.5 Package/1.56.5";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.6 Package/1.56.6";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,
