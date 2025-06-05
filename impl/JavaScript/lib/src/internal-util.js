@@ -117,7 +117,7 @@ export function CheckAlgorithm(algorithm) {
 /**
  * @param {string} message
  */
-export async function IsEncryptedMessage(message) {
+export async function is_encrypted_message(message) {
     if (typeof message !== 'string') return false;
     
     if (message.charAt(0) === ':') {
@@ -143,7 +143,7 @@ export async function IsEncryptedMessage(message) {
 /**
  * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
  */
-export async function IsEncryptedFile(file_reader) {
+export async function is_encrypted_file(file_reader) {
     try {
         const info = await GetFileInfo(file_reader);
         return !!info.version;

@@ -696,7 +696,7 @@ function CheckAlgorithm(algorithm) {
     });
   }
 }
-async function IsEncryptedMessage(message) {
+async function is_encrypted_message(message) {
   if (typeof message !== "string") return false;
   if (message.charAt(0) === ":") {
     const arr = message.split(":");
@@ -714,7 +714,7 @@ async function IsEncryptedMessage(message) {
     return false;
   }
 }
-async function IsEncryptedFile(file_reader) {
+async function is_encrypted_file(file_reader) {
   try {
     const info = await GetFileInfo(file_reader);
     return !!info.version;
@@ -724,23 +724,26 @@ async function IsEncryptedFile(file_reader) {
 }
 
 // src/encrypt_data.js
+var crypto2 = globalThis.crypto;
 function safeparse(json) {
   try {
-    return JSON.parse(json);
+    const r = JSON.parse(json);
+    if (!r || !r.data || !r.phrase || !r.salt || !r.N || !r.v) throw new BadDataException("The message is bad since the JSON is not complete.");
+    return r;
   } catch {
-    throw new InvalidParameterException("The JSON is not valid.");
+    throw new BadDataException("The message is bad since it is neither a JSON or a new-format ciphertext.");
   }
 }
 async function encrypt_data(message, key, phrase = null, N = null) {
   const iv = get_random_bytes(12);
   const { derived_key, parameter, N: N2 } = await derive_key(key, iv, phrase, N);
   N = N2;
-  const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
+  const cipher = await crypto2.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
   if (typeof message !== "string") {
     throw new OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
   }
   const alg = "AES-GCM";
-  const ciphertext = await crypto.subtle.encrypt(
+  const ciphertext = await crypto2.subtle.encrypt(
     {
       name: alg,
       iv
@@ -783,9 +786,9 @@ async function decrypt_data(message_encrypted, key) {
   const tag = encrypted_data.slice(-16);
   const derived_key = typeof key === "string" ? (await derive_key(key, iv, phrase, N, salt)).derived_key : key;
   if (!(derived_key instanceof Uint8Array)) throw new InvalidParameterException("The key is not valid.");
-  const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
+  const cipher = await crypto2.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
   try {
-    const decrypted_data = await crypto.subtle.decrypt(
+    const decrypted_data = await crypto2.subtle.decrypt(
       {
         name: "AES-GCM",
         iv
@@ -869,6 +872,7 @@ async function scrypt_hex(key, salt, N, r, p, dklen) {
 }
 
 // src/encrypt_file.js
+var crypto3 = globalThis.crypto;
 async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024) {
   if (!chunk_size) throw new InvalidParameterException("chunk_size must be greater than 0.");
   await file_writer(str_encode("MyEncryption/1.2"));
@@ -915,7 +919,7 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
   new DataView(nonce_counter_start).setBigUint64(0, nonce_counter, true);
   await file_writer(new Uint8Array(nonce_counter_start));
   callback?.(0);
-  const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["encrypt"]);
+  const cryptoKey = await crypto3.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["encrypt"]);
   while (true) {
     const chunk = await file_reader(position, position + chunk_size);
     if (!(chunk instanceof Uint8Array)) throw new BadDataException("The file chunk is not a Uint8Array.");
@@ -934,7 +938,7 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
       await file_writer(new Uint8Array(chunkLengthBuffer));
     }
     const ivArray = new Uint8Array(iv);
-    const ciphertext = await crypto.subtle.encrypt(
+    const ciphertext = await crypto3.subtle.encrypt(
       {
         name: "AES-GCM",
         iv: ivArray
@@ -982,7 +986,7 @@ async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback
   await nextTick2();
   const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
   let total_bytes = 0;
-  const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
+  const cryptoKey = await crypto3.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
   while (true) {
     const chunk_len_bytes = await file_reader(read_pos, read_pos + 8);
     read_pos += 8;
@@ -997,7 +1001,7 @@ async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback
     const ciphertext = await file_reader(read_pos, read_pos + chunk_len + 16);
     read_pos += chunk_len + 16;
     const full_ciphertext = ciphertext;
-    const decrypted = await crypto.subtle.decrypt(
+    const decrypted = await crypto3.subtle.decrypt(
       {
         name: "AES-GCM",
         iv
@@ -1055,7 +1059,7 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   await nextTick2();
   const derived_key = typeof user_key === "string" ? key ? (await derive_key(key, iv4key, phrase, N, salt)).derived_key : raise(new InternalError()) : user_key;
   let total_bytes = 0, is_final_chunk = false;
-  const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
+  const cryptoKey = await crypto3.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
   while (true) {
     const chunk_tag = await file_reader(read_pos, read_pos + 8);
     let real_size = 0;
@@ -1082,7 +1086,7 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
     read_pos += ciphertext_length + 16;
     const full_ciphertext = ciphertext;
     try {
-      const decrypted = await crypto.subtle.decrypt(
+      const decrypted = await crypto3.subtle.decrypt(
         {
           name: "AES-GCM",
           iv: new Uint8Array(iv_array)
@@ -1112,6 +1116,7 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   return true;
 }
 async function encrypt_blob(blob, password) {
+  if (!(blob instanceof Blob)) throw new InvalidParameterException("blob must be a Blob");
   const buffer = [];
   const file_reader = async (start, end) => new Uint8Array(await blob.slice(start, end).arrayBuffer());
   const file_writer = async (data) => {
@@ -1121,6 +1126,7 @@ async function encrypt_blob(blob, password) {
   return new Blob(buffer);
 }
 async function decrypt_blob(blob, password) {
+  if (!(blob instanceof Blob)) throw new InvalidParameterException("blob must be a Blob");
   const buffer = [];
   const file_reader = async (start, end) => new Uint8Array(await blob.slice(start, end).arrayBuffer());
   const file_writer = async (data) => {
@@ -1237,6 +1243,7 @@ async function crypt_context_destroy(ctx) {
 }
 
 // src/stream.js
+var crypto4 = globalThis.crypto;
 var InputStream = class {
   /** @type {((start: number, end: number, signal?: AbortSignal) => Promise<Uint8Array>) | null} */
   #reader;
@@ -1355,7 +1362,7 @@ async function decrypt_stream_init(ctx, stream, password, {
   let nonce_counter = Number(new DataView((await stream.read(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
   read_pos += 16;
   const { derived_key } = await derive_key(key, iv4key, phrase, N, salt);
-  const cryptoKey = await crypto.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
+  const cryptoKey = await crypto4.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["decrypt"]);
   ctx.key = cryptoKey;
   ctx.chunk_size = chunk_size;
   ctx.nonce_counter = nonce_counter;
@@ -1407,7 +1414,7 @@ async function decrypt_stream(ctx, bytes_start, bytes_end, abort) {
     const iv_array = new ArrayBuffer(12);
     new DataView(iv_array).setBigUint64(4, BigInt(nonce_counter), true);
     try {
-      const data = await crypto.subtle.decrypt(
+      const data = await crypto4.subtle.decrypt(
         {
           name: "AES-GCM",
           iv: new Uint8Array(iv_array)
@@ -1506,7 +1513,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.3 Package/1.56.3";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.4 Package/1.56.4";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,
@@ -1534,8 +1541,8 @@ export {
   get_random_int8_number,
   get_random_uint8_number,
   hexlify,
-  IsEncryptedFile as is_encrypted_file,
-  IsEncryptedMessage as is_encrypted_message,
+  is_encrypted_file,
+  is_encrypted_message,
   normalize_version,
   scrypt,
   scrypt_hex,

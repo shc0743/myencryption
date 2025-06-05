@@ -7,7 +7,7 @@ import { InputStream, decrypt_stream_init, decrypt_stream } from "./stream.js";
 import { hexlify, unhexlify } from "./binascii.js";
 import { get_random_bytes, get_random_int8_number, get_random_uint8_number } from "./random.js";
 import { str_encode, str_decode } from "./str.js";
-import { IsEncryptedFile, IsEncryptedMessage, normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020 } from "./internal-util.js";
+import { is_encrypted_file, is_encrypted_message, normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020 } from "./internal-util.js";
 import { Internals } from "./internal-expose.js";
 import * as Exceptions from './exceptions.js';
 import * as Wrappers from './util-wrappers.js';
@@ -38,8 +38,8 @@ export {
     get_random_bytes,
     get_random_int8_number,
     get_random_uint8_number,
-    IsEncryptedFile as is_encrypted_file,
-    IsEncryptedMessage as is_encrypted_message,
+    is_encrypted_file,
+    is_encrypted_message,
     InputStream,
     Exceptions,
     Wrappers,

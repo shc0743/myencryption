@@ -5,14 +5,18 @@ import { str_decode, str_encode } from "./str.js";
 import * as Exceptions from './exceptions.js';
 import { CheckAlgorithm } from "./internal-util.js";
 
+const crypto = globalThis.crypto; // To avoid the possible security risk
+
 /**
  * @param {string} json
  */
 function safeparse(json) {
     try {
-        return JSON.parse(json);
+        const r = JSON.parse(json);
+        if (!r || !r.data || !r.phrase || !r.salt || !r.N || !r.v) throw new Exceptions.BadDataException('The message is bad since the JSON is not complete.');
+        return r;
     } catch {
-        throw new Exceptions.InvalidParameterException('The JSON is not valid.');
+        throw new Exceptions.BadDataException('The message is bad since it is neither a JSON or a new-format ciphertext.');
     }
 }
 

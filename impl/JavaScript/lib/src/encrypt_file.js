@@ -15,6 +15,9 @@ import {
     POWER_2_64,
 } from "./internal-util.js";
 export { normalize_version, ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020 };
+    
+const crypto = globalThis.crypto; // To avoid the possible security risk
+
 
 /**
  * 加密文件
@@ -413,6 +416,7 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
  * @param {string} password
  */
 export async function encrypt_blob(blob, password) {
+    if (!(blob instanceof Blob)) throw new Exceptions.InvalidParameterException("blob must be a Blob");
     const buffer = [];
     const file_reader = async (/** @type {number} */ start, /** @type {number} */ end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
     const file_writer = async (/** @type {Uint8Array} */ data) => { buffer.push(data) };
@@ -424,6 +428,7 @@ export async function encrypt_blob(blob, password) {
  * @param {string | Uint8Array} password
  */
 export async function decrypt_blob(blob, password) {
+    if (!(blob instanceof Blob)) throw new Exceptions.InvalidParameterException("blob must be a Blob");
     const buffer = [];
     const file_reader = async (/** @type {number} */ start, /** @type {number} */ end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
     const file_writer = async (/** @type {Uint8Array} */ data) => { buffer.push(data) };

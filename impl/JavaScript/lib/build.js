@@ -121,25 +121,6 @@ setTimeout(async () => {
         loader: { '.js': 'jsx' }, // 防止任何非预期的转换
     })
     console.log('✅ 编译完成，所有ESM特性保留！\n');
-
-    // console.log("🔄 复制类型定义文件...");
-    // fs.copyFileSync(
-    //     path.join(__dirname, 'types', 'types.d.ts'),
-    //     path.join(outputDir, 'main.bundle.d.ts')
-    // );
-    // fs.copyFileSync(
-    //     path.join(__dirname, 'types', 'types.d.ts'),
-    //     path.join(outputDir, 'main.bundle.min.d.ts')
-    // );
-    // fs.copyFileSync(
-    //     path.join(__dirname, 'types', 'types.d.ts'),
-    //     path.join(outputDir, 'main.bundle.node.d.ts')
-    // );
-    // fs.copyFileSync(
-    //     path.join(__dirname, 'types', 'types.d.ts'),
-    //     path.join(outputDir, 'main.bundle.builder.d.ts')
-    // );
-    // console.log('✅ 类型定义文件已复制！');
     
     console.log('');
     console.timeEnd('编译用时');

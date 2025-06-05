@@ -8,6 +8,8 @@ import { decrypt_data } from "./encrypt_data.js";
 import { normalize_version, ENCRYPTION_FILE_VER_1_2_10020 } from "./encrypt_file.js";
 import { PADDING_SIZE, END_IDENTIFIER, END_MARKER, TAIL_BLOCK_MARKER, FILE_END_MARKER } from './internal-util.js';
 
+const crypto = globalThis.crypto; // To avoid the possible security risk
+
 
 export class InputStream {
     /** @type {((start: number, end: number, signal?: AbortSignal) => Promise<Uint8Array>) | null} */
