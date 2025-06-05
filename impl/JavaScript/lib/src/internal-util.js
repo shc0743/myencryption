@@ -49,7 +49,7 @@ export const ENCRYPTION_FILE_VER_1_2_10020 = normalize_version('1.2', 10020);
 
 
 /**
- * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start: number, end: number) => Promise<Uint8Array>
  */
 export async function GetFileVersion(file_reader) {
     // 读取文件头并验证
@@ -67,7 +67,7 @@ export async function GetFileVersion(file_reader) {
 }
 
 /**
- * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start: number, end: number) => Promise<Uint8Array>
  */
 export async function GetFileInfo(file_reader) {
     const version = await GetFileVersion(file_reader);
@@ -76,6 +76,8 @@ export async function GetFileInfo(file_reader) {
     }
     if (version === ENCRYPTION_FILE_VER_1_2_10020) {
         let read_pos = 16 + 4;
+        const ekey_len = new DataView((await file_reader(read_pos, read_pos + 4)).buffer).getUint32(0, true);
+        const ekey = str_decode(await file_reader(read_pos + 4, read_pos + 4 + ekey_len));
         read_pos += PADDING_SIZE;
         const json_len_bytes = await file_reader(read_pos, read_pos + 4);
         const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
@@ -83,11 +85,14 @@ export async function GetFileInfo(file_reader) {
         read_pos += json_len;
         const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
         let nonce_counter = Number(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
-        return ({ version, chunk_size, nonce_counter });
+        return ({ version, chunk_size, nonce_counter, ekey });
     }
     throw new Exceptions.EncryptionVersionMismatchException();
 }
 
+/**
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader
+ */
 export async function GetFileChunkSize(file_reader) {
     return (await GetFileInfo(file_reader)).chunk_size;
 }
@@ -141,7 +146,7 @@ export async function is_encrypted_message(message) {
 }
 
 /**
- * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start: number, end: number) => Promise<Uint8Array>
  */
 export async function is_encrypted_file(file_reader) {
     try {

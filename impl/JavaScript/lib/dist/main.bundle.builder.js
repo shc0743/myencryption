@@ -865,6 +865,8 @@ async function GetFileInfo(file_reader) {
   }
   if (version === ENCRYPTION_FILE_VER_1_2_10020) {
     let read_pos = 16 + 4;
+    const ekey_len = new DataView((await file_reader(read_pos, read_pos + 4)).buffer).getUint32(0, true);
+    const ekey = str_decode(await file_reader(read_pos + 4, read_pos + 4 + ekey_len));
     read_pos += PADDING_SIZE;
     const json_len_bytes = await file_reader(read_pos, read_pos + 4);
     const json_len = new DataView(json_len_bytes.buffer).getUint32(0, true);
@@ -872,7 +874,7 @@ async function GetFileInfo(file_reader) {
     read_pos += json_len;
     const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
     let nonce_counter = Number(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
-    return { version, chunk_size, nonce_counter };
+    return { version, chunk_size, nonce_counter, ekey };
   }
   throw new EncryptionVersionMismatchException();
 }
@@ -957,7 +959,7 @@ async function encrypt_data(message, key, phrase = null, N = null) {
   const v = 5.6;
   return `:${message_encrypted}:${parameter}:${N}:${v}:${alg}:`;
 }
-async function decrypt_data(message_encrypted, key) {
+async function parse_ciphertext(message_encrypted) {
   let jsoned;
   if (message_encrypted.charAt(0) === ":") {
     const arr = message_encrypted.split(":");
@@ -978,11 +980,17 @@ async function decrypt_data(message_encrypted, key) {
     salt_b64 = jsoned.salt;
   }
   const salt = unhexlify(salt_b64);
-  if (isNaN(N) || !phrase || !encrypted_data || !salt) throw new BadDataException("The message or parameters are bad.");
-  if (encrypted_data.length < 28) throw new BadDataException("The message was too short.");
+  if (isNaN(N) || !phrase || "string" !== typeof phrase || !encrypted_data || !salt)
+    throw new BadDataException("The message or parameters are bad.");
+  if (encrypted_data.length < 28)
+    throw new BadDataException("The message was too short.");
   const iv = encrypted_data.slice(0, 12);
   const ciphertext = encrypted_data.slice(12, -16);
   const tag = encrypted_data.slice(-16);
+  return { iv, ciphertext, tag, phrase, salt, N };
+}
+async function decrypt_data(message_encrypted, key) {
+  const { iv, ciphertext, tag, phrase, salt, N } = await parse_ciphertext(message_encrypted);
   const derived_key = typeof key === "string" ? (await derive_key(key, iv, phrase, N, salt)).derived_key : key;
   if (!(derived_key instanceof Uint8Array)) throw new InvalidParameterException("The key is not valid.");
   const cipher = await crypto2.subtle.importKey("raw", derived_key, "AES-GCM", false, ["decrypt"]);
@@ -1080,8 +1088,9 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
   new DataView(versionMarkerBuffer).setUint32(0, VERSION_MARKER, true);
   await file_writer(new Uint8Array(versionMarkerBuffer));
   const key = hexlify(get_random_bytes(64));
-  const ekey = await encrypt_data(key, user_key);
+  const ekey = await encrypt_data(key, user_key, phrase, N);
   const ekey_bytes = str_encode(ekey);
+  N = 8192;
   if (ekey_bytes.length > PADDING_SIZE) {
     throw new InternalError("(Internal Error) This should not happen. Contact the application developer.");
   }
@@ -1382,7 +1391,7 @@ async function change_file_password_1_1_0(file_head, current_key, new_key) {
   new_ekey_parts.push(padding);
   return new Blob(new_ekey_parts);
 }
-async function change_file_password(file_head, current_key, new_key) {
+async function change_file_password(file_head, current_key, new_key, phrase = null, N = null) {
   if (!(file_head instanceof Blob)) throw new InvalidParameterException();
   if (typeof current_key !== "string" || typeof new_key !== "string") throw new InvalidParameterException();
   if (file_head.size < 1024 + 16 + 4) throw new BadDataException("Data not enough");
@@ -1392,7 +1401,12 @@ async function change_file_password(file_head, current_key, new_key) {
   if (version === ENCRYPTION_FILE_VER_1_1_0) return await change_file_password_1_1_0(file_head, current_key, new_key);
   const ekey_len = new DataView(await file_head.slice(20, 24).arrayBuffer()).getUint32(0, true);
   const ekey_ciphertext = str_decode(await file_head.slice(24, 24 + ekey_len).arrayBuffer());
-  const new_ekey = await encrypt_data(await decrypt_data(ekey_ciphertext, current_key), new_key);
+  if (!N || !phrase) {
+    const { N: _1, phrase: _2 } = await parse_ciphertext(ekey_ciphertext);
+    if (!N) N = _1;
+    if (!phrase) phrase = _2;
+  }
+  const new_ekey = await encrypt_data(await decrypt_data(ekey_ciphertext, current_key), new_key, phrase, N);
   if (new_ekey.length > 1024) {
     throw new Error("(Internal Error) This should not happen. Contact the application developer.");
   }
@@ -1712,7 +1726,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.4 Package/1.56.4";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.5 Package/1.56.5";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,
@@ -1743,6 +1757,7 @@ export {
   is_encrypted_file,
   is_encrypted_message,
   normalize_version,
+  parse_ciphertext,
   scrypt,
   scrypt_hex,
   str_decode,

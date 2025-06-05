@@ -51,7 +51,16 @@ declare module "simple-data-crypto" {
      */
     export async function derive_key_for_file(
         file_reader: (start : number, end : number) => Promise<Uint8Array>,
-        user_key: string) : Promise<Uint8Array>;
+        user_key: string): Promise<Uint8Array>;
+    
+    export function parse_ciphertext(message_encrypted: string): Promise<{
+        iv: Uint8Array;
+        ciphertext: Uint8Array;
+        tag: Uint8Array;
+        phrase: string;
+        salt: Uint8Array;
+        N: number;
+    }>;
         
     /**
      * Encrypt data.
@@ -92,7 +101,7 @@ declare module "simple-data-crypto" {
 
     /**
      * Encrypt file
-     * @param file_reader - File reader object, should implement (start, end) => Promise<Uint8Array>
+     * @param file_reader - File reader object, should implement (start: number, end: number) => Promise<Uint8Array>
      * @param file_writer - File writer object, should implement write(Uint8Array) method
      * @param user_key - User key
      * @param callback - Progress callback function
@@ -119,7 +128,7 @@ declare module "simple-data-crypto" {
 
     /**
      * Decrypt file
-     * @param file_reader - File reader object, should implement (start, end) => Promise<Uint8Array>
+     * @param file_reader - File reader object, should implement (start: number, end: number) => Promise<Uint8Array>
      * @param file_writer - File writer object, should implement write(Uint8Array) method
      * @param user_key - User decryption key. If provided as string, it will be automatically derived. If as Uint8Array, it will *not* be derived.
      * @param callback - Progress callback function
@@ -173,12 +182,16 @@ declare module "simple-data-crypto" {
      * @param file_head File header. Recommended to provide 5KB.
      * @param current_key current file password
      * @param new_key The new password
+     * @param phrase phrase. If not provided, the previous value will be used.
+     * @param N N. If not provided, the previous value will be used.
      * @returns The new file header. Note that the size of the new header differs from the original file. Do not use it to construct a new file. Instead, overwrite the original file header directly with the new header without offsetting the file.  
      */
     export function change_file_password(
         file_head: Blob,
         current_key: string,
-        new_key: string
+        new_key: string,
+        phrase?: string | null,
+        N?: number | null,
     ): Promise<Blob> & {
         throws:
         | Error
@@ -285,6 +298,7 @@ declare module "simple-data-crypto" {
         version: string;
         chunk_size: number;
         nonce_counter: number;
+        ekey: string;
     }
 
     interface Internals {

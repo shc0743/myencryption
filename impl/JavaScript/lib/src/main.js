@@ -1,5 +1,5 @@
 import { derive_key, scrypt, scrypt_hex, derive_key_for_file } from "./derive_key.js";
-import { encrypt_data, decrypt_data } from "./encrypt_data.js";
+import { encrypt_data, decrypt_data, parse_ciphertext } from "./encrypt_data.js";
 import { encrypt_file, decrypt_file, encrypt_blob, decrypt_blob } from "./encrypt_file.js";
 import { export_master_key, change_file_password } from "./key_management.js";
 import { crypt_context_create, crypt_context_destroy, CryptContext } from "./context.js";
@@ -20,6 +20,7 @@ export {
     derive_key_for_file,
     encrypt_data,
     decrypt_data,
+    parse_ciphertext,
     encrypt_file,
     decrypt_file,
     encrypt_blob,

@@ -21,7 +21,7 @@ const crypto = globalThis.crypto; // To avoid the possible security risk
 
 /**
  * 加密文件
- * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start: number, end: number) => Promise<Uint8Array>
  * @param {(data: Uint8Array) => Promise<void>} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {string} user_key - 用户密钥
  * @param {((progress: number) => void)|null} callback - 可选回调函数，用于报告加密进度
@@ -43,10 +43,12 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     await file_writer(new Uint8Array(versionMarkerBuffer));
 
     // 产生主密钥
-    // TODO: 主密钥的随机性非常重要！考虑让用户移动鼠标来收集随机性
     const key = hexlify(get_random_bytes(64));
-    const ekey = await encrypt_data(key, user_key);
+    // N在这里被使用
+    const ekey = await encrypt_data(key, user_key, phrase, N);
     const ekey_bytes = str_encode(ekey);
+    // 对于64字节的随机主密钥，我们在下面完全没有必要使用过高的N。
+    N = 8192; // 降低文件内容的N以提升性能
 
     // 检查长度
     if (ekey_bytes.length > PADDING_SIZE) {
@@ -70,6 +72,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     N = N2;
 
     // 准备头部JSON数据
+    // 注意：安全性主要依靠主密钥。实际上对于64字节的随机主密钥完全没有必要使用过高的N。
     const header_data = {
         "parameter": parameter,
         "N": N,
@@ -163,7 +166,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
 /**
  * 解密文件（1.1）
  * @deprecated 仅供兼容1.1版本使用。
- * @param {(start, end) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start: number, end: number) => Promise<Uint8Array>
  * @param {Function} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {((progress: number) => void)|null} callback - 可选回调函数，用于报告加密进度
  * @param {string} user_key - 用户提供的解密密钥
@@ -269,7 +272,7 @@ export async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, c
 }
 /**
  * 解密文件
- * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start, end) => Promise<Uint8Array>
+ * @param {(start: number, end: number) => Promise<Uint8Array>} file_reader - 文件读取器对象，需要实现(start: number, end: number) => Promise<Uint8Array>
  * @param {(data: Uint8Array) => Promise<void>} file_writer - 文件写入器对象，需要实现write(Uint8Array)方法
  * @param {string|Uint8Array} user_key - 用户提供的解密密钥（字符串）或者派生后的密钥（Uint8Array）
  * @param {((progress: number) => void)|null} callback - 可选回调函数，用于报告加密进度

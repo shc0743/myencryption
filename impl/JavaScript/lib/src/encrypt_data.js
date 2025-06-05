@@ -68,9 +68,8 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
 
 /**
  * @param {string} message_encrypted
- * @param {string|Uint8Array} key
  */
-export async function decrypt_data(message_encrypted, key) {
+export async function parse_ciphertext(message_encrypted) {
     let jsoned;
     if (message_encrypted.charAt(0) === ':') {
         const arr = message_encrypted.split(':');
@@ -93,15 +92,26 @@ export async function decrypt_data(message_encrypted, key) {
     }
     const salt = unhexlify(salt_b64);
 
-    if (isNaN(N) || !phrase || !encrypted_data || !salt) throw new Exceptions.BadDataException('The message or parameters are bad.')
-    if (encrypted_data.length < 28) throw new Exceptions.BadDataException("The message was too short.");
+    if (isNaN(N) || !phrase || ('string' !== typeof phrase) || !encrypted_data || !salt)
+        throw new Exceptions.BadDataException('The message or parameters are bad.')
+    if (encrypted_data.length < 28)
+        throw new Exceptions.BadDataException("The message was too short.");
 
     // 提取 IV (前12字节)、密文和认证标签(最后16字节)
     const iv = encrypted_data.slice(0, 12);
     const ciphertext = encrypted_data.slice(12, -16);
     const tag = encrypted_data.slice(-16);
 
-    // const { derived_key } = await derive_key(key, iv, phrase, N, salt);
+    return { iv, ciphertext, tag, phrase, salt, N };
+}
+
+/**
+ * @param {string} message_encrypted
+ * @param {string|Uint8Array} key
+ */
+export async function decrypt_data(message_encrypted, key) {
+    const { iv, ciphertext, tag, phrase, salt, N } = await parse_ciphertext(message_encrypted);
+
     const derived_key = (typeof key === "string") ?
         ((await derive_key(key, iv, phrase, N, salt)).derived_key) :
         (key);

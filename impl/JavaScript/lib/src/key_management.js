@@ -1,10 +1,11 @@
 // @ts-nocheck
 import { str_encode, str_decode } from "./str.js";
-import { encrypt_data, decrypt_data } from "./encrypt_data.js";
+import { encrypt_data, decrypt_data, parse_ciphertext } from "./encrypt_data.js";
 import {
     PADDING_SIZE, normalize_version,
     ENCRYPTION_FILE_VER_1_1_0, ENCRYPTION_FILE_VER_1_2_10020,
     GetFileVersion,
+    GetFileInfo,
 } from "./internal-util.js";
 import * as Exceptions from './exceptions.js';
 
@@ -92,10 +93,12 @@ async function change_file_password_1_1_0(file_head, current_key, new_key) {
  * @param {Blob} file_head File header. Recommended to provide 2KB. At least provide 1044 bytes.
  * @param {String} current_key current file password
  * @param {String} new_key The new password
+ * @param {?string} phrase phrase. If not provided, the previous value will be used.
+ * @param {?number} N N. If not provided, the previous value will be used.
  * @returns Blob The new file header. Note that the size of the new header differs from the original file. Do not use it to construct a new file. Instead, overwrite the original file header directly with the new header without offsetting the file.  
  * @throws {Error} If the file header is invalid or the file size is not enough.
  */
-export async function change_file_password(file_head, current_key, new_key) {
+export async function change_file_password(file_head, current_key, new_key, phrase = null, N = null) {
     if (!(file_head instanceof Blob)) throw new Exceptions.InvalidParameterException();
     if (typeof current_key !== 'string' || typeof new_key !== 'string') throw new Exceptions.InvalidParameterException();
     if (file_head.size < (1024 + 16 + 4)) throw new Exceptions.BadDataException('Data not enough');
@@ -112,7 +115,12 @@ export async function change_file_password(file_head, current_key, new_key) {
     const ekey_ciphertext = str_decode(await file_head.slice(24, 24 + ekey_len).arrayBuffer());
 
     // Decrypt master key with current_key and re-encrypt with export_key
-    const new_ekey = await encrypt_data(await decrypt_data(ekey_ciphertext, current_key), new_key);
+    if (!N || !phrase) {
+        const { N : _1, phrase : _2 } = await parse_ciphertext(ekey_ciphertext);
+        if (!N) N = _1;
+        if (!phrase) phrase = _2;
+    }
+    const new_ekey = await encrypt_data(await decrypt_data(ekey_ciphertext, current_key), new_key, phrase, N);
     // Check length
     if (new_ekey.length > 1024) {
         throw new Error("(Internal Error) This should not happen. Contact the application developer.");
