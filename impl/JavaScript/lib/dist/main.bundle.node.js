@@ -1184,6 +1184,7 @@ async function encrypt_data(message, key, phrase = null, N = null) {
   return `:${message_encrypted}:${parameter}:${N}:${v}:${alg}:`;
 }
 async function parse_ciphertext(message_encrypted) {
+  if (typeof message_encrypted !== "string") throw new InvalidParameterException("The message is not a string.");
   let jsoned;
   if (message_encrypted.charAt(0) === ":") {
     const arr = message_encrypted.split(":");
@@ -1950,7 +1951,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.6 Package/1.56.7";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.6 Package/1.56.8";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,

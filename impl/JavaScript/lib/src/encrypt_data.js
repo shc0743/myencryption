@@ -70,6 +70,7 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
  * @param {string} message_encrypted
  */
 export async function parse_ciphertext(message_encrypted) {
+    if (typeof message_encrypted !== "string") throw new Exceptions.InvalidParameterException("The message is not a string.");
     let jsoned;
     if (message_encrypted.charAt(0) === ':') {
         const arr = message_encrypted.split(':');
