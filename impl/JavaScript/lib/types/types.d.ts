@@ -92,8 +92,18 @@ declare module "simple-data-crypto" {
         | Exceptions.InternalError
         | Exceptions.CannotDecryptException
     }
-    export async function encrypt_blob(blob: Blob, password: string): Promise<Blob>;
-    export async function decrypt_blob(blob: Blob, password: string): Promise<Blob>;
+    
+    export async function encrypt_blob(
+        blob: Blob, password: string,
+        callback?: ProgressCallback | null,
+        phrase?: string | null,
+        N?: number | null,
+        chunk_size?: number
+    ): Promise<Blob>;
+    export async function decrypt_blob(
+        blob: Blob, password: string,
+        callback?: ProgressCallback | null
+    ): Promise<Blob>;
     
     type FileReader = (start: number, end: number) => Promise<Uint8Array>;
     type FileWriter = (data: Uint8Array) => Promise<void> | void;

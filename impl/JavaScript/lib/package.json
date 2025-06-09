@@ -1,6 +1,6 @@
 {
     "name": "simple-data-crypto",
-    "version": "1.56.6",
+    "version": "1.56.7",
     "description": "A comprehensive encryption library providing simple tools for data and file encryption/decryption with modern cryptographic standards, works well with node and build tools.",
     "main": "src/main.js",
     "type": "module",

@@ -417,24 +417,31 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
 /**
  * @param {Blob} blob
  * @param {string} password
+ * @param {((progress: number) => void)|null} callback - 可选回调函数，用于报告加密进度
+ * @param {string|null} phrase - 可选短语，用于密钥派生
+ * @param {number|null} N - scrypt参数N
+ * @param {number} chunk_size - 分块大小，默认为32MiB
+ * @returns {Promise<Blob>}
  */
-export async function encrypt_blob(blob, password) {
+export async function encrypt_blob(blob, password, callback, phrase, N, chunk_size) {
     if (!(blob instanceof Blob)) throw new Exceptions.InvalidParameterException("blob must be a Blob");
     const buffer = [];
     const file_reader = async (/** @type {number} */ start, /** @type {number} */ end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
     const file_writer = async (/** @type {Uint8Array} */ data) => { buffer.push(data) };
-    if (!await encrypt_file(file_reader, file_writer, password)) throw new Exceptions.UnexpectedError();
+    if (!await encrypt_file(file_reader, file_writer, password, callback, phrase, N, chunk_size)) throw new Exceptions.UnexpectedError();
     return new Blob(buffer);
 }
 /**
  * @param {Blob} blob
  * @param {string | Uint8Array} password
+ * @param {((progress: number) => void)|null} callback - 可选回调函数，用于报告加密进度
+ * @returns {Promise<Blob>}
  */
-export async function decrypt_blob(blob, password) {
+export async function decrypt_blob(blob, password, callback) {
     if (!(blob instanceof Blob)) throw new Exceptions.InvalidParameterException("blob must be a Blob");
     const buffer = [];
     const file_reader = async (/** @type {number} */ start, /** @type {number} */ end) => new Uint8Array(await (blob.slice(start, end).arrayBuffer()));
     const file_writer = async (/** @type {Uint8Array} */ data) => { buffer.push(data) };
-    if (!await decrypt_file(file_reader, file_writer, password)) throw new Exceptions.UnexpectedError();
+    if (!await decrypt_file(file_reader, file_writer, password, callback)) throw new Exceptions.UnexpectedError();
     return new Blob(buffer);
 }

@@ -1124,24 +1124,24 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   if (!end_marker.every((v, i) => v === FILE_END_MARKER[i])) throw new InvalidEndMarkerException();
   return true;
 }
-async function encrypt_blob(blob, password) {
+async function encrypt_blob(blob, password, callback, phrase, N, chunk_size) {
   if (!(blob instanceof Blob)) throw new InvalidParameterException("blob must be a Blob");
   const buffer = [];
   const file_reader = async (start, end) => new Uint8Array(await blob.slice(start, end).arrayBuffer());
   const file_writer = async (data) => {
     buffer.push(data);
   };
-  if (!await encrypt_file(file_reader, file_writer, password)) throw new UnexpectedError();
+  if (!await encrypt_file(file_reader, file_writer, password, callback, phrase, N, chunk_size)) throw new UnexpectedError();
   return new Blob(buffer);
 }
-async function decrypt_blob(blob, password) {
+async function decrypt_blob(blob, password, callback) {
   if (!(blob instanceof Blob)) throw new InvalidParameterException("blob must be a Blob");
   const buffer = [];
   const file_reader = async (start, end) => new Uint8Array(await blob.slice(start, end).arrayBuffer());
   const file_writer = async (data) => {
     buffer.push(data);
   };
-  if (!await decrypt_file(file_reader, file_writer, password)) throw new UnexpectedError();
+  if (!await decrypt_file(file_reader, file_writer, password, callback)) throw new UnexpectedError();
   return new Blob(buffer);
 }
 
@@ -1527,7 +1527,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.6 Package/1.56.6";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.6 Package/1.56.7";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,
