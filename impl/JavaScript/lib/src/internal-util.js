@@ -111,7 +111,7 @@ export function CheckAlgorithm(algorithm) {
             throw new Exceptions.DangerousEncryptionAlgorithmException();
         }
         if (algorithm === 'XTS-AES') {
-            throw new Exceptions.EncryptionAlgorithmNotSupportedException("XTS-AES Not supported yet");
+            throw new Exceptions.EncryptionAlgorithmNotSupportedException("XTS-AES is not supported yet");
         }
         throw new Exceptions.EncryptionAlgorithmNotSupportedException(undefined, {
             cause: new Error(String(algorithm))

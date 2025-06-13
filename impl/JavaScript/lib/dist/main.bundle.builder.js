@@ -890,7 +890,7 @@ function CheckAlgorithm(algorithm) {
       throw new DangerousEncryptionAlgorithmException();
     }
     if (algorithm === "XTS-AES") {
-      throw new EncryptionAlgorithmNotSupportedException("XTS-AES Not supported yet");
+      throw new EncryptionAlgorithmNotSupportedException("XTS-AES is not supported yet");
     }
     throw new EncryptionAlgorithmNotSupportedException(void 0, {
       cause: new Error(String(algorithm))
@@ -1022,7 +1022,7 @@ async function decrypt_data(message_encrypted, key) {
 var deriveKey__phrases = ["Furina", "Neuvillette", "Venti", "Nahida", "Kinich", "Kazuha"];
 async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
   if (N === null) N = 262144;
-  if (typeof N !== "number" || N > 2097152 || r < 1 || p < 1 || typeof r !== "number" || typeof p !== "number" || typeof dklen !== "number") {
+  if (typeof N !== "number" || N > 4194304 || r < 1 || p < 1 || typeof r !== "number" || typeof p !== "number" || typeof dklen !== "number") {
     throw new InvalidScryptParameterException();
   }
   if (typeof key !== "string") throw new InvalidParameterException("key must be a string");
@@ -1035,7 +1035,7 @@ async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, 
     phrase = deriveKey__phrases[get_random_uint8_number() % deriveKey__phrases.length];
   }
   if (phrase.includes(":")) {
-    throw new InvalidParameterException('phrase MUST NOT contain ":"');
+    throw new InvalidParameterException('phrase must not contain ":"');
   }
   const parameter = `${phrase}:${hexlify(salt)}`;
   const keyInput = `MyEncryption/1.1 Fontaine/4.2 Iv/${hexlify(iv)} user_parameter=${parameter} user_key=${key}`;
@@ -1088,7 +1088,7 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
   const versionMarkerBuffer = new ArrayBuffer(4);
   new DataView(versionMarkerBuffer).setUint32(0, VERSION_MARKER, true);
   await file_writer(new Uint8Array(versionMarkerBuffer));
-  const key = hexlify(get_random_bytes(64));
+  const key = hexlify(get_random_bytes(128));
   const ekey = await encrypt_data(key, user_key, phrase, N);
   const ekey_bytes = str_encode(ekey);
   N = 8192;
@@ -1694,7 +1694,6 @@ __export(util_wrappers_exports, {
   createReaderForFileSystemHandle: () => createReaderForFileSystemHandle,
   createReaderForLocalFile: () => createReaderForLocalFile,
   createReaderForRemoteObject: () => createReaderForRemoteObject,
-  createWriterForFileSystemHandle: () => createWriterForFileSystemHandle,
   createWriterForMemoryBuffer: () => createWriterForMemoryBuffer
 });
 async function createReaderForLocalFile(file) {
@@ -1717,9 +1716,6 @@ async function createReaderForRemoteObject(url) {
     return new Uint8Array(await resp.arrayBuffer());
   };
 }
-async function createWriterForFileSystemHandle(fileSystemHandle) {
-  throw new DeprecationException();
-}
 async function createWriterForMemoryBuffer(bufferOutput) {
   return async (data) => {
     bufferOutput.push(data);
@@ -1727,7 +1723,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.6 Package/1.56.8";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.6 Package/1.56.9";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,

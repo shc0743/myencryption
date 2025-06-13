@@ -11,8 +11,6 @@ const filesToDelete = [
     'main.bundle.min.js', 'main.bundle.min.js.map',
     'main.bundle.node.js', 'main.bundle.node.js.map',
     'main.bundle.builder.js', 'main.bundle.builder.js.map',
-    // d.ts
-    'main.bundle.d.ts', 'main.bundle.min.d.ts', "main.bundle.node.d.ts", 'main.bundle.builder.d.ts',
 ];
 
 filesToDelete.forEach(file => {

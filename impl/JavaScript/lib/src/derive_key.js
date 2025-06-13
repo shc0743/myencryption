@@ -20,7 +20,7 @@ export const deriveKey__phrases = ['Furina', 'Neuvillette', 'Venti', 'Nahida', '
  */
 export async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
     if (N === null) N = 262144;
-    if (typeof N !== "number" || N > 2097152 || r < 1 || p < 1 || typeof r !== "number" || typeof p !== "number" || typeof dklen !== "number") {
+    if (typeof N !== "number" || N > 4194304 || r < 1 || p < 1 || typeof r !== "number" || typeof p !== "number" || typeof dklen !== "number") {
         throw new Exceptions.InvalidScryptParameterException();
     }
     if (typeof key !== "string") throw new Exceptions.InvalidParameterException("key must be a string");
@@ -37,7 +37,7 @@ export async function derive_key(key, iv, phrase = null, N = null, salt = null, 
         phrase = deriveKey__phrases[(get_random_uint8_number()) % deriveKey__phrases.length];
     }
     if (phrase.includes(":")) {
-        throw new Exceptions.InvalidParameterException("phrase MUST NOT contain \":\"");
+        throw new Exceptions.InvalidParameterException("phrase must not contain \":\"");
     }
 
     const parameter = `${phrase}:${hexlify(salt)}`;

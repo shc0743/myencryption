@@ -43,11 +43,11 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     await file_writer(new Uint8Array(versionMarkerBuffer));
 
     // 产生主密钥
-    const key = hexlify(get_random_bytes(64));
+    const key = hexlify(get_random_bytes(128));
     // N在这里被使用
     const ekey = await encrypt_data(key, user_key, phrase, N);
     const ekey_bytes = str_encode(ekey);
-    // 对于64字节的随机主密钥，我们在下面完全没有必要使用过高的N。
+    // 对于128字节的随机主密钥，我们在下面完全没有必要使用过高的N。
     N = 8192; // 降低文件内容的N以提升性能
 
     // 检查长度

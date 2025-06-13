@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "test",
+			"path": "impl/JavaScript/myencryption",
+			"group": "test",
+			"problemMatcher": [],
+			"label": "npm: test - impl/JavaScript/myencryption",
+			"detail": "node test.js"
+		}
+	]
+}
