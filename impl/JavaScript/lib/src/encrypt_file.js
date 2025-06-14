@@ -31,7 +31,24 @@ const crypto = globalThis.crypto; // To avoid the possible security risk
  * @returns {Promise<boolean>} 返回加密是否成功
  */
 export async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024) {
+    // fast-fail
+    if (typeof file_reader !== 'function' || typeof file_writer !== 'function') {
+        throw new Exceptions.InvalidParameterException("file_reader and file_writer must be functions");
+    }
+    if ((typeof user_key !== 'string')) {
+        throw new Exceptions.InvalidParameterException("user_key must be a string");
+    }
     if (!chunk_size) throw new Exceptions.InvalidParameterException('chunk_size must be greater than 0.');
+    const original_callback = callback;
+    callback = (typeof callback === 'function') ? async function UserCallback(progress) {
+        try {
+            const r = original_callback?.(progress);
+            // @ts-ignore
+            if ((r) && (r instanceof Promise)) await r;
+        } catch (e) {
+            throw new Exceptions.UnhandledExceptionInUserCallback('An unhandled exception was encountered during a user callback.', { cause: e });
+        }
+    } : null;
 
     // 写入文件头标识和版本 (16字节)
     await file_writer(str_encode('MyEncryption/1.2'));
@@ -66,7 +83,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     await file_writer(padding);
 
     // 生成初始IV用于派生密钥 (12字节)
-    callback?.(0); await nextTick();
+    await callback?.(0); await nextTick();
     const iv_for_key = get_random_bytes(12);
     const { derived_key, parameter, N: N2 } = await derive_key(key, iv_for_key, phrase, N);
     N = N2;
@@ -103,7 +120,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
     await file_writer(new Uint8Array(nonce_counter_start));
 
     // 分块加密处理
-    callback?.(0);
+    await callback?.(0);
     const cryptoKey = await crypto.subtle.importKey('raw', derived_key, { name: 'AES-GCM' }, false, ['encrypt']);
     while (true) {
         // 读取文件块
@@ -149,7 +166,7 @@ export async function encrypt_file(file_reader, file_writer, user_key, callback 
         total_bytes += chunk.length;
         position += chunk.length;
 
-        callback?.(total_bytes);
+        await callback?.(total_bytes);
     }
 
     // 写入结束标记和总字节数
@@ -279,6 +296,24 @@ export async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, c
  * @returns {Promise<boolean>} 返回解密是否成功
  */
 export async function decrypt_file(file_reader, file_writer, user_key, callback = null) {
+    // fast-fail
+    if (typeof file_reader !== 'function' || typeof file_writer !== 'function') {
+        throw new Exceptions.InvalidParameterException("file_reader and file_writer must be functions");
+    }
+    if ((typeof user_key !== 'string') && (!(user_key instanceof ArrayBuffer)) && (!(user_key instanceof Uint8Array))) {
+        throw new Exceptions.InvalidParameterException("user_key must be a string or ArrayBuffer or Uint8Array");
+    }
+    const original_callback = callback;
+    callback = (typeof callback === 'function') ? async function UserCallback(progress) {
+        try {
+            const r = original_callback?.(progress);
+            // @ts-ignore
+            if ((r) && (r instanceof Promise)) await r;
+        } catch (e) {
+            throw new Exceptions.UnhandledExceptionInUserCallback('An unhandled exception was encountered during a user callback.', { cause: e });
+        }
+    } : null;
+
     // 考虑到JavaScript一般不会处理2^53数量级的文件，我们对read_pos使用number而不是bigint
     let read_pos = 16 + 4;
     const version = await GetFileVersion(file_reader);
@@ -329,7 +364,7 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
     read_pos += 16;
 
     // 对应加密时，需要提供一个iv，我们把iv取回来，重新生成密钥（所有数据块的密钥是相同的）
-    callback?.(0);
+    await callback?.(0);
     await nextTick();
     const derived_key = (typeof user_key === 'string') ? (
         key ? ((await derive_key(key, iv4key, phrase, N, salt)).derived_key) : Exceptions.raise(new Exceptions.InternalError())
@@ -396,7 +431,7 @@ export async function decrypt_file(file_reader, file_writer, user_key, callback 
             if (name === 'OperationError') throw new Exceptions.UnexpectedFailureInChunkDecryptionException(undefined, { cause: e });
             throw new Exceptions.InternalError(`Unexpected error.`, { cause: e });
         }
-        if (callback) callback(total_bytes);
+        if (callback) await callback(total_bytes);
     }
 
     // 验证总字节数和结束标记

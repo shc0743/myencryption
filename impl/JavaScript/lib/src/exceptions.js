@@ -382,3 +382,18 @@ export class DangerousEncryptionAlgorithmException extends EncryptionAlgorithmNo
         this.name = 'DangerousEncryptionAlgorithmException';
     }
 }
+
+/**
+ * 0xC000041D STATUS_CALLBACK_UNHANDLED_EXCEPTION
+ * An unhandled exception was encountered during a user callback...
+ */
+export class UnhandledExceptionInUserCallback extends RuntimeException {
+    /**
+     * @param {string} message 
+     * @param {Object} [additional] 
+     */
+    constructor(message = 'An unhandled exception was encountered during a user callback.', additional = undefined) {
+        super(message, additional);
+        this.name = 'UnhandledExceptionInUserCallback';
+    }
+}

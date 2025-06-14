@@ -38,7 +38,9 @@ export async function encrypt_data(message, key, phrase = null, N = null) {
     const cipher = await crypto.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
 
     if (typeof message !== "string") {
-        throw new Exceptions.OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
+        // @ts-ignore
+        if (message && (message instanceof ArrayBuffer || message instanceof Uint8Array)) throw new Exceptions.OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
+        throw new Exceptions.InvalidParameterException("The message must be a string.");
     }
 
     const alg = "AES-GCM";

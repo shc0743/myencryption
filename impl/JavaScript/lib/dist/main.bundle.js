@@ -115,6 +115,7 @@ __export(exceptions_exports, {
   RuntimeException: () => RuntimeException,
   UnexpectedError: () => UnexpectedError,
   UnexpectedFailureInChunkDecryptionException: () => UnexpectedFailureInChunkDecryptionException,
+  UnhandledExceptionInUserCallback: () => UnhandledExceptionInUserCallback,
   UserException: () => UserException,
   VersionSystemError: () => VersionSystemError,
   raise: () => raise
@@ -466,6 +467,16 @@ var DangerousEncryptionAlgorithmException = class extends EncryptionAlgorithmNot
     this.name = "DangerousEncryptionAlgorithmException";
   }
 };
+var UnhandledExceptionInUserCallback = class extends RuntimeException {
+  /**
+   * @param {string} message 
+   * @param {Object} [additional] 
+   */
+  constructor(message = "An unhandled exception was encountered during a user callback.", additional = void 0) {
+    super(message, additional);
+    this.name = "UnhandledExceptionInUserCallback";
+  }
+};
 
 // src/loader.js
 function load_script(src) {
@@ -743,7 +754,8 @@ async function encrypt_data(message, key, phrase = null, N = null) {
   N = N2;
   const cipher = await crypto2.subtle.importKey("raw", derived_key, "AES-GCM", false, ["encrypt"]);
   if (typeof message !== "string") {
-    throw new OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
+    if (message && (message instanceof ArrayBuffer || message instanceof Uint8Array)) throw new OperationNotPermittedException("The ability to directly encrypt binary data has been removed in the new version. Please use `encrypt_file` instead.");
+    throw new InvalidParameterException("The message must be a string.");
   }
   const alg = "AES-GCM";
   const ciphertext = await crypto2.subtle.encrypt(
@@ -823,8 +835,8 @@ async function decrypt_data(message_encrypted, key) {
 // src/derive_key.js
 var deriveKey__phrases = ["Furina", "Neuvillette", "Venti", "Nahida", "Kinich", "Kazuha"];
 async function derive_key(key, iv, phrase = null, N = null, salt = null, r = 8, p = 1, dklen = 32) {
-  if (N === null) N = 262144;
-  if (typeof N !== "number" || N > 4194304 || r < 1 || p < 1 || typeof r !== "number" || typeof p !== "number" || typeof dklen !== "number") {
+  if (!N) N = 262144;
+  if (typeof N !== "number" || N > 4194304 || r < 1 || p < 1 || typeof r !== "number" || typeof p !== "number" || typeof dklen !== "number" || !((N & N - 1) === 0)) {
     throw new InvalidScryptParameterException();
   }
   if (typeof key !== "string") throw new InvalidParameterException("key must be a string");
@@ -884,7 +896,22 @@ async function scrypt_hex(key, salt, N, r, p, dklen) {
 // src/encrypt_file.js
 var crypto3 = globalThis.crypto;
 async function encrypt_file(file_reader, file_writer, user_key, callback = null, phrase = null, N = null, chunk_size = 32 * 1024 * 1024) {
+  if (typeof file_reader !== "function" || typeof file_writer !== "function") {
+    throw new InvalidParameterException("file_reader and file_writer must be functions");
+  }
+  if (typeof user_key !== "string") {
+    throw new InvalidParameterException("user_key must be a string");
+  }
   if (!chunk_size) throw new InvalidParameterException("chunk_size must be greater than 0.");
+  const original_callback = callback;
+  callback = typeof callback === "function" ? async function UserCallback(progress) {
+    try {
+      const r = original_callback?.(progress);
+      if (r && r instanceof Promise) await r;
+    } catch (e) {
+      throw new UnhandledExceptionInUserCallback("An unhandled exception was encountered during a user callback.", { cause: e });
+    }
+  } : null;
   await file_writer(str_encode("MyEncryption/1.2"));
   const VERSION_MARKER = 10020;
   const versionMarkerBuffer = new ArrayBuffer(4);
@@ -903,7 +930,7 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
   await file_writer(ekey_bytes);
   const padding = new Uint8Array(PADDING_SIZE - ekey_bytes.length - 4).fill(0);
   await file_writer(padding);
-  callback?.(0);
+  await callback?.(0);
   await nextTick2();
   const iv_for_key = get_random_bytes(12);
   const { derived_key, parameter, N: N2 } = await derive_key(key, iv_for_key, phrase, N);
@@ -929,7 +956,7 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
   const nonce_counter_start = new ArrayBuffer(8);
   new DataView(nonce_counter_start).setBigUint64(0, nonce_counter, true);
   await file_writer(new Uint8Array(nonce_counter_start));
-  callback?.(0);
+  await callback?.(0);
   const cryptoKey = await crypto3.subtle.importKey("raw", derived_key, { name: "AES-GCM" }, false, ["encrypt"]);
   while (true) {
     const chunk = await file_reader(position, position + chunk_size);
@@ -961,7 +988,7 @@ async function encrypt_file(file_reader, file_writer, user_key, callback = null,
     await file_writer(ciphertextArray);
     total_bytes += chunk.length;
     position += chunk.length;
-    callback?.(total_bytes);
+    await callback?.(total_bytes);
   }
   await file_writer(new Uint8Array(END_MARKER));
   const totalBytesBuffer = new ArrayBuffer(8);
@@ -1035,6 +1062,21 @@ async function decrypt_file_V_1_1_0(file_reader, file_writer, user_key, callback
   return true;
 }
 async function decrypt_file(file_reader, file_writer, user_key, callback = null) {
+  if (typeof file_reader !== "function" || typeof file_writer !== "function") {
+    throw new InvalidParameterException("file_reader and file_writer must be functions");
+  }
+  if (typeof user_key !== "string" && !(user_key instanceof ArrayBuffer) && !(user_key instanceof Uint8Array)) {
+    throw new InvalidParameterException("user_key must be a string or ArrayBuffer or Uint8Array");
+  }
+  const original_callback = callback;
+  callback = typeof callback === "function" ? async function UserCallback(progress) {
+    try {
+      const r = original_callback?.(progress);
+      if (r && r instanceof Promise) await r;
+    } catch (e) {
+      throw new UnhandledExceptionInUserCallback("An unhandled exception was encountered during a user callback.", { cause: e });
+    }
+  } : null;
   let read_pos = 16 + 4;
   const version = await GetFileVersion(file_reader);
   if (version === ENCRYPTION_FILE_VER_1_1_0) {
@@ -1066,7 +1108,7 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
   const chunk_size = Number(new DataView((await file_reader(read_pos, read_pos + 8)).buffer).getBigUint64(0, true));
   let nonce_counter = BigInt(new DataView((await file_reader(read_pos + 8, read_pos + 16)).buffer).getBigUint64(0, true));
   read_pos += 16;
-  callback?.(0);
+  await callback?.(0);
   await nextTick2();
   const derived_key = typeof user_key === "string" ? key ? (await derive_key(key, iv4key, phrase, N, salt)).derived_key : raise(new InternalError()) : user_key;
   let total_bytes = 0, is_final_chunk = false;
@@ -1114,7 +1156,7 @@ async function decrypt_file(file_reader, file_writer, user_key, callback = null)
       if (name === "OperationError") throw new UnexpectedFailureInChunkDecryptionException(void 0, { cause: e });
       throw new InternalError(`Unexpected error.`, { cause: e });
     }
-    if (callback) callback(total_bytes);
+    if (callback) await callback(total_bytes);
   }
   const total_bytes_bytes = await file_reader(read_pos, read_pos + 8);
   const total_bytes_decrypted = Number(
@@ -1525,7 +1567,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.10 Package/1.56.10";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.11 Package/1.56.11";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,
