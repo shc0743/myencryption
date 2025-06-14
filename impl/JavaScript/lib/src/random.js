@@ -1,3 +1,5 @@
+const crypto = globalThis.crypto; // To avoid the possible security risk
+
 /**
  * @param {number} count
  */

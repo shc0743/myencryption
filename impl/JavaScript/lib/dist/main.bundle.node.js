@@ -540,6 +540,7 @@ function unhexlify(hexStr) {
 }
 
 // src/random.js
+var crypto = globalThis.crypto;
 function get_random_bytes(count) {
   const randomBytes = new Uint8Array(count);
   crypto.getRandomValues(randomBytes);
@@ -1947,7 +1948,7 @@ async function createWriterForMemoryBuffer(bufferOutput) {
 }
 
 // src/version.js
-var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.6 Package/1.56.9";
+var VERSION = "Encryption/5.6 FileEncryption/1.2 Patch/56.10 Package/1.56.10";
 export {
   CRYPT_CONTEXT as CryptContext,
   ENCRYPTION_FILE_VER_1_1_0,

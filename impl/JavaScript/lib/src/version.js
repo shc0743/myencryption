@@ -1,3 +1,3 @@
-export const VERSION = 'Encryption/5.6 FileEncryption/1.2 Patch/56.6 Package/1.56.9';
+export const VERSION = 'Encryption/5.6 FileEncryption/1.2 Patch/56.10 Package/1.56.10';
 // Genshin/5.6 `Paralogism` [悖理]
 // https://genshin.hoyoverse.com/
