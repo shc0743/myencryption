@@ -59,7 +59,8 @@ export class HTMLSimpleDataCryptoFilePreviewElement extends HTMLElement {
         if (this.#ctx) {
             throw new Error("already loaded");
         }
-        if (!type.startsWith('video')) {
+        const should_fallback_video_on_ios = ((!globalThis.MediaSource) && (size <= 128 * 1048576)); // fallback: 全量加载
+        if ((!type.startsWith('video')) || should_fallback_video_on_ios) {
             if (size > 128 * 1048576) {
                 throw new Error("file too large");
             }
@@ -80,10 +81,10 @@ export class HTMLSimpleDataCryptoFilePreviewElement extends HTMLElement {
         np.playsInline = true;
         this.#preview.replaceWith(np);
         this.#preview = np;
+
         this.#ctx = await crypt_context_create(password);
         const stream = new InputStream(fileReader, size);
         await decrypt_stream_init(this.#ctx, stream, password);
-
         this.#cleanup = await PlayMp4Video(np, (async (start, end, controller) => {
             const buffer = await decrypt_stream(this.#ctx, start, end, controller);
             return buffer;

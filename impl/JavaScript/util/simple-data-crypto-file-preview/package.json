@@ -12,6 +12,6 @@
   "dependencies": {
     "common-file-preview": "^5.6.5",
     "play-video-streamed": "^5.6.2",
-    "simple-data-crypto": "^1.56.2"
+    "simple-data-crypto": "^1.56.9"
   }
 }
